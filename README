@@ -1,0 +1,5 @@
+Experiments in string interoperability, including support for C++0x new character and string types.
+
+Code is suitable for both C++03 and C++0x compilers.
+
+Code is experimental and NOT SUITABLE FOR PRODUCTION WORK.
