@@ -78,6 +78,10 @@
   <ItemGroup>
     <ClCompile Include="..\..\smoke_test.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\boost\interop\string.hpp" />
+    <ClInclude Include="..\..\..\..\..\boost\interop\string_0x.hpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
