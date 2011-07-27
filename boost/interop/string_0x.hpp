@@ -41,7 +41,7 @@
 namespace boost
 {
     typedef unsigned char                   u8_t;
-    typedef std::basic_string<boost::u8t>   u8string;
+    typedef std::basic_string<boost::u8_t>  u8string;
 
 # if defined(BOOST_NO_CHAR16_T) && (!defined(_MSC_VER) || _MSC_VER < 1600)  // VC++10 
     typedef boost::uint16_t                 u16_t;
