@@ -1,0 +1,154 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Unicode White Paper</title>
+<style type="text/css">
+ ins {background-color:#A0FFA0}
+ del {background-color:#FFA0A0}
+ body { font-family: sans-serif; }
+</style>
+</head>
+
+<body>
+
+<h1>Unicode White Paper&nbsp; <span style="background-color: #FFFF00">(DRAFT)</span></h1>
+
+<h2>Introduction</h2>
+
+<p>Unicode support can be decomposed into two levels:</p>
+<ul>
+  <li>Level one deals only with character encoding. It corresponds roughly to 
+  the Unicode support in C++0x.</li>
+  <li>Level two addresses the deeper characteristics of Unicode characters. See 
+  Mathias Gaunard's <a href="http://mathias.gaunard.com/unicode/doc/html/">
+  Unicode project</a> as an example of level two Unicode support.</li>
+</ul>
+
+<p>This white paper is concerned only with level one. Issues are identified and 
+solutions suggested. The solutions are intended to be suitable for Boost 
+initially, and the next C++ standard eventually.</p>
+
+<h2>Issue 1: Missing character type</h2>
+
+<p>There is no built-in character type that specifies UTF-8 encoding. Without 
+such a type, neither template arguments nor function overloads have a way to 
+specify a narrow character with UTF-8 encoding.</p>
+
+<p>Just as character types <code>char16_t</code> and <code>char32_t</code> 
+provide the foundation for <code>u16string</code> and <code>u32string</code>, a 
+character type for 8-bit UTF-8 encoded characters is required as the foundation 
+for solutions to the other issues presented here.</p>
+
+<p>Because unsigned char is a distinct type from char, we can hijack it as the 
+implicit UTF-8 encoded character type. The oddity of the <code>unsigned char 
+somename[] = &quot;this does work&quot;;</code> conversion of literals may be a help 
+rather than a hinderance.</p>
+
+<h3>Proposed resolution</h3>
+
+<blockquote>
+
+<pre>namespace boost
+{
+  typedef unsigned char  char8;   // or perhaps char8_t
+}</pre>
+
+</blockquote>
+
+<h2>Issue 2: Missing string type</h2>
+
+<p dir="ltr">There is no string type that specifies UTF-8 encoding. Without such 
+a type, neither template arguments nor function overloads have a way to specify 
+a narrow character string with UTF-8 encoding.</p>
+
+<h3>Proposed resolution</h3>
+
+<p>Provide:</p>
+<blockquote>
+
+<pre dir="ltr">namespace boost
+{
+  typedef std::basic_string&lt;boost::char8&gt; u8string;
+}</pre>
+</blockquote>
+
+<h2>Issue 3: String types do not interoperate</h2>
+
+<p>This code does not currently compile:</p>
+<blockquote>
+  <pre>u32string s32;
+s32 = &quot;foo&quot;;         // error!
+u16string s16(s32);  // error!
+wstring ws(s32.begin(), s32.end()); // error!</pre>
+  <pre>void f(const string&amp;);</pre>
+  <pre>f(s32);  //error!</pre>
+</blockquote>
+<p>The encoding of basic_string instantiations can be determined for 
+the types under discussion. It is either implicit in the string's value_type or 
+can be determined via the locale.&nbsp; See Boost.Filesystem V3 class path for 
+an example of how such interoperability might be achieved.</p>
+<p>Experience with Boost.Filesystem V3 class path has demonstrated 
+that string interoperability brings a considerable simplification and 
+improvement to internationalized applications, but that having to provide 
+interoperability without the resolution of the issues presented here is a 
+band-aid. It is being misused, too - users are passing around boost::filesystem::path objects simply to get string encoding interoperability!</p>
+<p>Note: interoperability will be easier to specify, implement, and 
+use if Issue 4 is resolved.</p>
+
+<h3>Proposed resolution</h3>
+
+<blockquote>
+
+<p>Boost resolution????: Provide namespace boost string classes that derived 
+from std::basic_string and add the additional functions necessary to provide as 
+much interoperability as possible without breaking existing code if substituted 
+for existing uses of std::basic_string.</p>
+
+<p>Standard library resolution????: Add additional std::basic_string function 
+overloadss 
+as necessary to provide as much interoperability as possible without breaking 
+existing code if substituted for existing uses of std::basic_string.</p>
+</blockquote>
+<h2>Issue 4: Conversion between character encodings is awkward</h2>
+<p>Concerns revolve around std::codecvt, std::locale, 
+std::wstring_convert, and other standard library conversion facilities:</p>
+<ul>
+  <li>Given <b><i>n</i></b> encodings, necessity of 
+  providing <i><b>n<sup>2</sup></b></i> codecvt facets rather than <i><b>2n</b></i> codecs. 
+  UTF-32 is the obvious choice for the common encoding to pass between codecs. 
+  ICU already provides to/from </li>
+  <li>Interfaces don't work well with generic programming 
+  techniques.</li>
+  <li>Unnecessary creation of temporary strings, with 
+  attendant memory allocations/deallocations.</li>
+  <li>Complex, difficult to learn, and difficult to use std::codecvt interfaces.</li>
+  <li>Intertwining of std::locale and code conversion, even when these 
+  are implementation details that should be hidden from the application.</li>
+  </ul>
+<h3>Proposed resolution</h3>
+<blockquote>
+<p>Provide a boost library header inspired by the iterator adaptor approach to 
+encoding conversion pioneered by John Maddock in boost/regex/pending/unicode_iterator.hpp:</p>
+  <ul>
+    <li>from_<b><i>X</i></b> and to_<i><b>X</b></i> iterator adaptor codecs to 
+    and from UTF-32. Possibly implemented using ICU iterators for the less 
+    common encodings.</li>
+    <li>General composition support for combining a from_<b><i>X</i></b> and to_<b><i>X</i></b> 
+    into a complete conversion adaptor.</li>
+    <li>Specializations or overloads prepackaging the 25 char, wchar_t, char8_t, 
+    char16_t, and char32_t complete conversion adaptors.</li>
+  </ul>
+</blockquote>
+<hr>
+<p>© Copyright Beman Dawes 2011</p>
+<p>Revised 
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->26 July, 2011<!--webbot bot="Timestamp" endspan i-checksum="21082" --></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

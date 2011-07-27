@@ -1,15 +1,28 @@
+//  boost/string_0x.hpp             ---------------------------------------------------//
+
+//  Copyright Beman Dawes 2010
+
+//  Distributed under the Boost Software License, Version 1.0.
+//  See http://www.boost.org/LICENSE_1_0.txt
+
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
 //   In namespace boost, provide typdefs for C++0x types if present, otherwise for      //
-//   C++03 equivalent types. By using the boost:: typedefs, these Ox features become    //
+//   C++03 equivalent types. By using the boost typedefs, these C++0x features become   //
 //   available for use with C++03 compilers.                                            //
 //                                                                                      //
-//   Boost              C++0x           C++03                                           //
-//   ----------------   --------------  --------------------------------                //
-//   boost::char16      char16_t        uint16_t                                        //
-//   boost::char32      char32_t        uint32_t                                        //
-//   boost::u16string   std::u16string  std::basic_string<boost::char16>                //
-//   boost::u32string   std::u32string  std::basic_string<boost::char32>                //
+//   Also provide character type u8_t and string type u8string for UTF-8 encoded        //
+//   characters and strings.                                                            //
+//                                                                                      //
+//   Boost              C++0x            C++03                                          //
+//   ----------------   --------------   --------------------------------               //
+//   boost::u8_t        unsigned char    unsigned char                                  //
+//   boost::u16_t       char16_t         uint16_t                                       //
+//   boost::u32_t       char32_t         uint32_t                                       //
+//   boost::u8string    std::basic_string<boost::u8_t>                                  //
+//                                       std::basic_string<boost::u8_t>                 //
+//   boost::u16string   std::u16string   std::basic_string<boost::u16_t>                //
+//   boost::u32string   std::u32string   std::basic_string<boost::u32_t>                //
 //                                                                                      //
 //   Will use the typedefs provided by Microsoft Visual C++ 2010 if present             //
 //                                                                                      //
@@ -27,21 +40,23 @@
 
 namespace boost
 {
+    typedef unsigned char                   u8_t;
+    typedef std::basic_string<boost::u8t>   u8string;
 
 # if defined(BOOST_NO_CHAR16_T) && (!defined(_MSC_VER) || _MSC_VER < 1600)  // VC++10 
-    typedef boost::uint16_t  char16;
-    typedef std::basic_string<boost::char16> u16string;
+    typedef boost::uint16_t                 u16_t;
+    typedef std::basic_string<boost::u16_t> u16string;
 # else
-    typedef char16_t char16;
-    typedef std::u16string u16string;
+    typedef char16_t                        u16_t;
+    typedef std::u16string                  u16string;
 # endif
 
 # if defined(BOOST_NO_CHAR32_T) && (!defined(_MSC_VER) || _MSC_VER < 1600)  // VC++10 
-    typedef  boost::uint32_t  char32;
-    typedef std::basic_string<boost::char32> u32string;
+    typedef  boost::uint32_t                u32_t;
+    typedef std::basic_string<boost::u32_t> u32string;
 # else
-    typedef char32_t char32;
-    typedef std::u32string u32string;
+    typedef char32_t                        u32_t;
+    typedef std::u32string                  u32string;
 # endif
 
 }  // namespace boost
