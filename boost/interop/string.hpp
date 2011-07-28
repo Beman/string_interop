@@ -9,7 +9,7 @@
 # define BOOST_INTEROP_STRING_HPP
 
 #include <boost/interop/string_0x.hpp>
-#include <boost/interop/convertion_iterator_adapters.hpp>
+#include <boost/interop/conversion_iterator_adapters.hpp>
 
 namespace boost
 {
