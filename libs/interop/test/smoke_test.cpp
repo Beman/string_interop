@@ -40,7 +40,24 @@ int cpp_main(int, char*[])
   siu32.append(csu32);
   BOOST_TEST_EQ(siu32.size(), 5U);
 
-  siu32.append(siu8.c_str());
+  const u8_t* p = siu8.c_str();
+//  siu32.new_append(p);
+
+  u32_t U024B62[] = { 0x024B62, 0x0 };  // see http://en.wikipedia.org/wiki/Utf-8
+  iu32string s32;
+  s32.append(U024B62);
+  BOOST_TEST_EQ(s32.size(), 1U);
+  iu8string s8;
+  s8.new_append(s32.c_str());
+  BOOST_TEST_EQ(s8.size(), 4U);
+
+  cout << hex << int(s8[0]) << ' ' << int(s8[1]) << ' '
+       << int(s8[2]) << ' ' << int(s8[3]) << '\n';
+
+  BOOST_TEST(s8[0] == 0xF0);
+  BOOST_TEST(s8[1] == 0xA4);
+  BOOST_TEST(s8[2] == 0xAD);
+  BOOST_TEST(s8[3] == 0xA2);
 
   return ::boost::report_errors();
 }

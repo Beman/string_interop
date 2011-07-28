@@ -10,6 +10,7 @@
 
 #include <boost/interop/string_0x.hpp>
 #include <boost/interop/conversion_iterator_adapters.hpp>
+#include <boost/interop/traits.hpp>
 
 namespace boost
 {
@@ -28,13 +29,25 @@ namespace boost
   public:
 
     template <class NTCSIterator>
-    basic_string& append(NTCSIterator it)
+    basic_string& new_append(NTCSIterator it)
     {
-      std::cout << "********\n";
-      //return append(converting_iterator<NTCSIterator,
-      //  std::iterator_traits<NTCSIterator>::value_type, value_type>(it));
+      converting_iterator<NTCSIterator,
+        std::iterator_traits<NTCSIterator>::value_type, value_type> converting_it(it);
+      for (; *converting_it; ++converting_it)
+        push_back(*converting_it);
       return *this;
     }
+
+    //template <class NTCSIterator>
+    //  typename boost::disable_if<boost::is_same<CharT*,
+    //    typename boost::remove_const<NTCSIterator>::type>, basic_string&>::type
+    //append(NTCSIterator it)
+    //{
+    //  std::cout << "********\n";
+    //  //return append(converting_iterator<NTCSIterator,
+    //  //  std::iterator_traits<NTCSIterator>::value_type, value_type>(it));
+    //  return *this;
+    //}
   };
 }
 
