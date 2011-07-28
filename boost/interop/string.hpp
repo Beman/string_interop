@@ -21,12 +21,20 @@ namespace boost
   typedef basic_string<u8_t>     iu8string;   // u8_t with UTF-8 encoding
   typedef basic_string<u16_t>    iu16string;  // u16_t with UTF-16 encoding
   typedef basic_string<u32_t>    iu32string;  // u32_t with UTF-32 encoding
-
     
   template<class CharT, class Traits, class Allocator >
   class basic_string : public std::basic_string<CharT,Traits,Allocator>
   {
   public:
+
+    template <class NTCSIterator>
+    basic_string& append(NTCSIterator it)
+    {
+      std::cout << "********\n";
+      //return append(converting_iterator<NTCSIterator,
+      //  std::iterator_traits<NTCSIterator>::value_type, value_type>(it));
+      return *this;
+    }
   };
 }
 

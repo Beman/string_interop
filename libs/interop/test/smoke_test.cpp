@@ -5,6 +5,7 @@
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
 
+#include <iostream>
 #include <boost/interop/string.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
@@ -17,6 +18,8 @@ using namespace boost;
 
 int cpp_main(int, char*[])
 {
+  cout << "smoke test...\n";
+
   istring si;   
   iwstring siw;  
   iu8string siu8; 
@@ -36,6 +39,8 @@ int cpp_main(int, char*[])
   u32_t csu32[] = {'s', 'i', 'u', '3', '2', '\0'};
   siu32.append(csu32);
   BOOST_TEST_EQ(siu32.size(), 5U);
+
+  siu32.append(siu8.c_str());
 
   return ::boost::report_errors();
 }
