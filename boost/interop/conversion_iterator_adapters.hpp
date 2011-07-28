@@ -80,7 +80,8 @@ namespace boost
       : from_utf32_iterator<to_utf32_iterator<BaseIterator, From>, To>(it) {}
   };
 
-  template <class BaseIterator, class To>  // primary template
+  //  case of source already u32_t
+  template <class BaseIterator, class To>
   class converting_iterator<BaseIterator, u32_t, To>                
     :  public from_utf32_iterator<BaseIterator, To>
   {
@@ -88,6 +89,16 @@ namespace boost
     explicit converting_iterator(BaseIterator it)
       : from_utf32_iterator<BaseIterator, To>(it) {}
   };
+
+  ////  case of target already u32_t
+  //template <class BaseIterator, class From>
+  //class converting_iterator<BaseIterator, From, u32_t>                
+  //  :  public to_utf32_iterator<BaseIterator, From>
+  //{
+  //public:
+  //  explicit converting_iterator(BaseIterator it)
+  //    : to_utf32_iterator<BaseIterator, From>(it) {}
+  //};
 
 
 
@@ -283,116 +294,116 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 //---------------------------  <u16_t> to_utf32_iterator  -----------------------------//
 
-//  template <class BaseIterator>
-//  class to_utf32_iterator<BaseIterator, u16_t>
-//   : public boost::iterator_facade<u16_to_u32_iterator<BaseIterator, u32_t>, u32_t, std::bidirectional_iterator_tag, const u32_t>
-//{
-//   typedef boost::iterator_facade<u16_to_u32_iterator<BaseIterator, u32_t>, u32_t, std::bidirectional_iterator_tag, const u32_t> base_type;
-//   // special values for pending iterator reads:
-//   BOOST_STATIC_CONSTANT(u32_t, pending_read = 0xffffffffu);
-//
-//   typedef typename std::iterator_traits<BaseIterator>::value_type base_value_type;
-//
-//   BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
-//   BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
-//
-//public:
-//   typename base_type::reference
-//      dereference()const
-//   {
-//      if(m_value == pending_read)
-//         extract_current();
-//      return m_value;
-//   }
-//   bool equal(const u16_to_u32_iterator& that)const
-//   {
-//      return m_position == that.m_position;
-//   }
-//   void increment()
-//   {
-//      // skip high surrogate first if there is one:
-//      if(detail::is_high_surrogate(*m_position)) ++m_position;
-//      ++m_position;
-//      m_value = pending_read;
-//   }
-//   void decrement()
-//   {
-//      --m_position;
-//      // if we have a low surrogate then go back one more:
-//      if(detail::is_low_surrogate(*m_position)) 
-//         --m_position;
-//      m_value = pending_read;
-//   }
-//   BaseIterator base()const
-//   {
-//      return m_position;
-//   }
-//   // construct:
-//   u16_to_u32_iterator() : m_position()
-//   {
-//      m_value = pending_read;
-//   }
-//   u16_to_u32_iterator(BaseIterator b) : m_position(b)
-//   {
-//      m_value = pending_read;
-//   }
-//   //
-//   // Range checked version:
-//   //
-//   u16_to_u32_iterator(BaseIterator b, BaseIterator start, BaseIterator end) : m_position(b)
-//   {
-//      m_value = pending_read;
-//      //
-//      // The range must not start with a low surrogate, or end in a high surrogate,
-//      // otherwise we run the risk of running outside the underlying input range.
-//      // Likewise b must not be located at a low surrogate.
-//      //
-//      boost::uint16_t val;
-//      if(start != end)
-//      {
-//         if((b != start) && (b != end))
-//         {
-//            val = *b;
-//            if(detail::is_surrogate(val) && ((val & 0xFC00u) == 0xDC00u))
-//               invalid_code_point(val);
-//         }
-//         val = *start;
-//         if(detail::is_surrogate(val) && ((val & 0xFC00u) == 0xDC00u))
-//            invalid_code_point(val);
-//         val = *--end;
-//         if(detail::is_high_surrogate(val))
-//            invalid_code_point(val);
-//      }
-//   }
-//private:
-//   static void invalid_code_point(::boost::uint16_t val)
-//   {
-//      std::stringstream ss;
-//      ss << "Misplaced UTF-16 surrogate U+" << std::showbase << std::hex << val << " encountered while trying to encode UTF-32 sequence";
-//      std::out_of_range e(ss.str());
-//      BOOST_INTEROP_THROW(e);
-//   }
-//   void extract_current()const
-//   {
-//      m_value = static_cast<u32_t>(static_cast< ::boost::uint16_t>(*m_position));
-//      // if the last value is a high surrogate then adjust m_position and m_value as needed:
-//      if(detail::is_high_surrogate(*m_position))
-//      {
-//         // precondition; next value must have be a low-surrogate:
-//         BaseIterator next(m_position);
-//         ::boost::uint16_t t = *++next;
-//         if((t & 0xFC00u) != 0xDC00u)
-//            invalid_code_point(t);
-//         m_value = (m_value - detail::high_surrogate_base) << 10;
-//         m_value |= (static_cast<u32_t>(static_cast< ::boost::uint16_t>(t)) & detail::ten_bit_mask);
-//      }
-//      // postcondition; result must not be a surrogate:
-//      if(detail::is_surrogate(m_value))
-//         invalid_code_point(static_cast< ::boost::uint16_t>(m_value));
-//   }
-//   BaseIterator m_position;
-//   mutable u32_t m_value;
-//};
+  template <class BaseIterator>
+  class to_utf32_iterator<BaseIterator, u16_t>
+   : public boost::iterator_facade<to_utf32_iterator<BaseIterator, u32_t>, u32_t, std::bidirectional_iterator_tag, const u32_t>
+  {
+     typedef boost::iterator_facade<to_utf32_iterator<BaseIterator, u32_t>, u32_t, std::bidirectional_iterator_tag, const u32_t> base_type;
+     // special values for pending iterator reads:
+     BOOST_STATIC_CONSTANT(u32_t, pending_read = 0xffffffffu);
+
+     typedef typename std::iterator_traits<BaseIterator>::value_type base_value_type;
+
+     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
+     BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
+
+  public:
+     typename base_type::reference
+        dereference()const
+     {
+        if(m_value == pending_read)
+           extract_current();
+        return m_value;
+     }
+     bool equal(const to_utf32_iterator& that)const
+     {
+        return m_position == that.m_position;
+     }
+     void increment()
+     {
+        // skip high surrogate first if there is one:
+        if(detail::is_high_surrogate(*m_position)) ++m_position;
+        ++m_position;
+        m_value = pending_read;
+     }
+     void decrement()
+     {
+        --m_position;
+        // if we have a low surrogate then go back one more:
+        if(detail::is_low_surrogate(*m_position)) 
+           --m_position;
+        m_value = pending_read;
+     }
+     BaseIterator base()const
+     {
+        return m_position;
+     }
+     // construct:
+     to_utf32_iterator() : m_position()
+     {
+        m_value = pending_read;
+     }
+     to_utf32_iterator(BaseIterator b) : m_position(b)
+     {
+        m_value = pending_read;
+     }
+     //
+     // Range checked version:
+     //
+     to_utf32_iterator(BaseIterator b, BaseIterator start, BaseIterator end) : m_position(b)
+     {
+        m_value = pending_read;
+        //
+        // The range must not start with a low surrogate, or end in a high surrogate,
+        // otherwise we run the risk of running outside the underlying input range.
+        // Likewise b must not be located at a low surrogate.
+        //
+        boost::uint16_t val;
+        if(start != end)
+        {
+           if((b != start) && (b != end))
+           {
+              val = *b;
+              if(detail::is_surrogate(val) && ((val & 0xFC00u) == 0xDC00u))
+                 invalid_code_point(val);
+           }
+           val = *start;
+           if(detail::is_surrogate(val) && ((val & 0xFC00u) == 0xDC00u))
+              invalid_code_point(val);
+           val = *--end;
+           if(detail::is_high_surrogate(val))
+              invalid_code_point(val);
+        }
+     }
+  private:
+     static void invalid_code_point(::boost::uint16_t val)
+     {
+        std::stringstream ss;
+        ss << "Misplaced UTF-16 surrogate U+" << std::showbase << std::hex << val << " encountered while trying to encode UTF-32 sequence";
+        std::out_of_range e(ss.str());
+        BOOST_INTEROP_THROW(e);
+     }
+     void extract_current()const
+     {
+        m_value = static_cast<u32_t>(static_cast< ::boost::uint16_t>(*m_position));
+        // if the last value is a high surrogate then adjust m_position and m_value as needed:
+        if(detail::is_high_surrogate(*m_position))
+        {
+           // precondition; next value must have be a low-surrogate:
+           BaseIterator next(m_position);
+           ::boost::uint16_t t = *++next;
+           if((t & 0xFC00u) != 0xDC00u)
+              invalid_code_point(t);
+           m_value = (m_value - detail::high_surrogate_base) << 10;
+           m_value |= (static_cast<u32_t>(static_cast< ::boost::uint16_t>(t)) & detail::ten_bit_mask);
+        }
+        // postcondition; result must not be a surrogate:
+        if(detail::is_surrogate(m_value))
+           invalid_code_point(static_cast< ::boost::uint16_t>(m_value));
+     }
+     BaseIterator m_position;
+     mutable u32_t m_value;
+  };
 
 //--------------------------  <u8_t> from_utf32_iterator  -----------------------------//
 
@@ -522,116 +533,116 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 //--------------------------  <u16_t> from_utf32_iterator  ----------------------------//
 
-//  template <class BaseIterator>
-//  class from_utf32_iterator<BaseIterator, u16_t>
-//   : public boost::iterator_facade<u32_to_u16_iterator<BaseIterator, u16_t>, u16_t, std::bidirectional_iterator_tag, const u16_t>
-//{
-//   typedef boost::iterator_facade<u32_to_u16_iterator<BaseIterator, u16_t>, u16_t, std::bidirectional_iterator_tag, const u16_t> base_type;
-//
-//   typedef typename std::iterator_traits<BaseIterator>::value_type base_value_type;
-//
-//   BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
-//   BOOST_STATIC_ASSERT(sizeof(u16_t)*CHAR_BIT == 16);
-//
-//public:
-//   typename base_type::reference
-//      dereference()const
-//   {
-//      if(m_current == 2)
-//         extract_current();
-//      return m_values[m_current];
-//   }
-//   bool equal(const u32_to_u16_iterator& that)const
-//   {
-//      if(m_position == that.m_position)
-//      {
-//         // Both m_currents must be equal, or both even
-//         // this is the same as saying their sum must be even:
-//         return (m_current + that.m_current) & 1u ? false : true;
-//      }
-//      return false;
-//   }
-//   void increment()
-//   {
-//      // if we have a pending read then read now, so that we know whether
-//      // to skip a position, or move to a low-surrogate:
-//      if(m_current == 2)
-//      {
-//         // pending read:
-//         extract_current();
-//      }
-//      // move to the next surrogate position:
-//      ++m_current;
-//      // if we've reached the end skip a position:
-//      if(m_values[m_current] == 0)
-//      {
-//         m_current = 2;
-//         ++m_position;
-//      }
-//   }
-//   void decrement()
-//   {
-//      if(m_current != 1)
-//      {
-//         // decrementing an iterator always leads to a valid position:
-//         --m_position;
-//         extract_current();
-//         m_current = m_values[1] ? 1 : 0;
-//      }
-//      else
-//      {
-//         m_current = 0;
-//      }
-//   }
-//   BaseIterator base()const
-//   {
-//      return m_position;
-//   }
-//   // construct:
-//   u32_to_u16_iterator() : m_position(), m_current(0)
-//   {
-//      m_values[0] = 0;
-//      m_values[1] = 0;
-//      m_values[2] = 0;
-//   }
-//   u32_to_u16_iterator(BaseIterator b) : m_position(b), m_current(2)
-//   {
-//      m_values[0] = 0;
-//      m_values[1] = 0;
-//      m_values[2] = 0;
-//   }
-//private:
-//
-//   void extract_current()const
-//   {
-//      // begin by checking for a code point out of range:
-//      ::boost::uint32_t v = *m_position;
-//      if(v >= 0x10000u)
-//      {
-//         if(v > 0x10FFFFu)
-//            detail::invalid_utf32_code_point(*m_position);
-//         // split into two surrogates:
-//         m_values[0] = static_cast<u16_t>(v >> 10) + detail::high_surrogate_base;
-//         m_values[1] = static_cast<u16_t>(v & detail::ten_bit_mask) + detail::low_surrogate_base;
-//         m_current = 0;
-//         BOOST_ASSERT(detail::is_high_surrogate(m_values[0]));
-//         BOOST_ASSERT(detail::is_low_surrogate(m_values[1]));
-//      }
-//      else
-//      {
-//         // 16-bit code point:
-//         m_values[0] = static_cast<u16_t>(*m_position);
-//         m_values[1] = 0;
-//         m_current = 0;
-//         // value must not be a surrogate:
-//         if(detail::is_surrogate(m_values[0]))
-//            detail::invalid_utf32_code_point(*m_position);
-//      }
-//   }
-//   BaseIterator m_position;
-//   mutable u16_t m_values[3];
-//   mutable unsigned m_current;
-//};
+  template <class BaseIterator>
+  class from_utf32_iterator<BaseIterator, u16_t>
+   : public boost::iterator_facade<from_utf32_iterator<BaseIterator, u16_t>, u16_t, std::bidirectional_iterator_tag, const u16_t>
+  {
+     typedef boost::iterator_facade<from_utf32_iterator<BaseIterator, u16_t>, u16_t, std::bidirectional_iterator_tag, const u16_t> base_type;
+
+     typedef typename std::iterator_traits<BaseIterator>::value_type base_value_type;
+
+     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
+     BOOST_STATIC_ASSERT(sizeof(u16_t)*CHAR_BIT == 16);
+
+  public:
+     typename base_type::reference
+        dereference()const
+     {
+        if(m_current == 2)
+           extract_current();
+        return m_values[m_current];
+     }
+     bool equal(const from_utf32_iterator& that)const
+     {
+        if(m_position == that.m_position)
+        {
+           // Both m_currents must be equal, or both even
+           // this is the same as saying their sum must be even:
+           return (m_current + that.m_current) & 1u ? false : true;
+        }
+        return false;
+     }
+     void increment()
+     {
+        // if we have a pending read then read now, so that we know whether
+        // to skip a position, or move to a low-surrogate:
+        if(m_current == 2)
+        {
+           // pending read:
+           extract_current();
+        }
+        // move to the next surrogate position:
+        ++m_current;
+        // if we've reached the end skip a position:
+        if(m_values[m_current] == 0)
+        {
+           m_current = 2;
+           ++m_position;
+        }
+     }
+     void decrement()
+     {
+        if(m_current != 1)
+        {
+           // decrementing an iterator always leads to a valid position:
+           --m_position;
+           extract_current();
+           m_current = m_values[1] ? 1 : 0;
+        }
+        else
+        {
+           m_current = 0;
+        }
+     }
+     BaseIterator base()const
+     {
+        return m_position;
+     }
+     // construct:
+     from_utf32_iterator() : m_position(), m_current(0)
+     {
+        m_values[0] = 0;
+        m_values[1] = 0;
+        m_values[2] = 0;
+     }
+     from_utf32_iterator(BaseIterator b) : m_position(b), m_current(2)
+     {
+        m_values[0] = 0;
+        m_values[1] = 0;
+        m_values[2] = 0;
+     }
+  private:
+
+     void extract_current()const
+     {
+        // begin by checking for a code point out of range:
+        ::boost::uint32_t v = *m_position;
+        if(v >= 0x10000u)
+        {
+           if(v > 0x10FFFFu)
+              detail::invalid_utf32_code_point(*m_position);
+           // split into two surrogates:
+           m_values[0] = static_cast<u16_t>(v >> 10) + detail::high_surrogate_base;
+           m_values[1] = static_cast<u16_t>(v & detail::ten_bit_mask) + detail::low_surrogate_base;
+           m_current = 0;
+           BOOST_ASSERT(detail::is_high_surrogate(m_values[0]));
+           BOOST_ASSERT(detail::is_low_surrogate(m_values[1]));
+        }
+        else
+        {
+           // 16-bit code point:
+           m_values[0] = static_cast<u16_t>(*m_position);
+           m_values[1] = 0;
+           m_current = 0;
+           // value must not be a surrogate:
+           if(detail::is_surrogate(m_values[0]))
+              detail::invalid_utf32_code_point(*m_position);
+        }
+     }
+     BaseIterator m_position;
+     mutable u16_t m_values[3];
+     mutable unsigned m_current;
+  };
 
 }
 
