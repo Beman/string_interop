@@ -96,7 +96,6 @@ int cpp_main(int, char*[])
   dump(s32);
   BOOST_TEST_EQ(s32.size(), 1U);
 
-
   t8.new_append(s8.c_str());
   dump(t8);
   BOOST_TEST_EQ(t8.size(), 1U);
@@ -108,16 +107,22 @@ int cpp_main(int, char*[])
   BOOST_TEST_EQ(t8.size(), 3U);
   t16.new_append(s8.c_str());
   dump(t16);
+  BOOST_TEST_EQ(t16.size(), 1U);
   t16.new_append(s16.c_str());
   dump(t16);
+  BOOST_TEST_EQ(t16.size(), 2U);
   t16.new_append(s32.c_str());
   dump(t16);
-//  t32.new_append(s8.c_str());
+  BOOST_TEST_EQ(t16.size(), 3U);
+  t32.new_append(s8.c_str());
   dump(t32);
-//  t32.new_append(s16.c_str());
+  BOOST_TEST_EQ(t32.size(), 1U);
+  t32.new_append(s16.c_str());
   dump(t32);
-//  t32.new_append(s32.c_str());
+  BOOST_TEST_EQ(t32.size(), 2U);
+  t32.new_append(s32.c_str());
   dump(t32);
+  BOOST_TEST_EQ(t32.size(), 3U);
 
   return ::boost::report_errors();
 }

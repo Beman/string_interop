@@ -12,6 +12,15 @@
 #include <boost/interop/conversion_iterator_adapters.hpp>
 #include <boost/interop/traits.hpp>
 
+/*****************************************************************************************
+
+  TODO
+
+  * Every std::basic_string function that returns basic_string& needs to be forwarded
+    to get the right return type (boost::basic_string&)
+
+*****************************************************************************************/
+
 namespace boost
 {
   template<class CharT, class Traits = std::char_traits<CharT>,
@@ -27,6 +36,13 @@ namespace boost
   class basic_string : public std::basic_string<CharT,Traits,Allocator>
   {
   public:
+
+    basic_string& new_append(const CharT* it)
+    { 
+      //cout << "new_append (const CharT*)\n";
+      append(it);
+      return *this;
+    } 
 
     template <class NTCSIterator>
     basic_string& new_append(NTCSIterator it)

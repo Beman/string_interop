@@ -80,7 +80,7 @@ namespace boost
       : from_utf32_iterator<to_utf32_iterator<BaseIterator, From>, To>(it) {}
   };
 
-  //  case of source already u32_t
+  //  case of From already u32_t
   template <class BaseIterator, class To>
   class converting_iterator<BaseIterator, u32_t, To>                
     :  public from_utf32_iterator<BaseIterator, To>
@@ -90,15 +90,15 @@ namespace boost
       : from_utf32_iterator<BaseIterator, To>(it) {}
   };
 
-  ////  case of target already u32_t
-  //template <class BaseIterator, class From>
-  //class converting_iterator<BaseIterator, From, u32_t>                
-  //  :  public to_utf32_iterator<BaseIterator, From>
-  //{
-  //public:
-  //  explicit converting_iterator(BaseIterator it)
-  //    : to_utf32_iterator<BaseIterator, From>(it) {}
-  //};
+  //  case of To already u32_t
+  template <class BaseIterator, class From>
+  class converting_iterator<BaseIterator, From, u32_t>                
+    :  public to_utf32_iterator<BaseIterator, From>
+  {
+  public:
+    explicit converting_iterator(BaseIterator it)
+      : to_utf32_iterator<BaseIterator, From>(it) {}
+  };
 
 
 
