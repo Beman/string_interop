@@ -39,7 +39,7 @@ namespace boost
 
     basic_string& new_append(const CharT* it)
     { 
-      //cout << "new_append (const CharT*)\n";
+      cout << "new_append (const CharT*)\n";
       append(it);
       return *this;
     } 
@@ -48,9 +48,13 @@ namespace boost
     basic_string& new_append(NTCSIterator it)
     {
       converting_iterator<NTCSIterator,
-        std::iterator_traits<NTCSIterator>::value_type, value_type> converting_it(it);
+        typename std::iterator_traits<NTCSIterator>::value_type,
+        typename std::basic_string<CharT,Traits,Allocator>::value_type>
+          converting_it(it);
       for (; *converting_it; ++converting_it)
+      {
         push_back(*converting_it);
+      }
       return *this;
     }
 

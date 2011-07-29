@@ -48,11 +48,6 @@ namespace boost
   template <class BaseIterator>
   class to_utf32_iterator<BaseIterator, u16_t>;
 
-  //template <class BaseIterator>
-  //class to_utf32_iterator<BaseIterator, u32_t>
-  //  : public BaseIterator
-  //    { public: to_utf32_iterator(BaseIterator it) : BaseIterator(it) {} };
-
 //------------------------------  from_utf32_iterator  --------------------------------//
 
   template <class BaseIterator, class T>  // primary template
@@ -64,11 +59,6 @@ namespace boost
   template <class BaseIterator>
   class from_utf32_iterator<BaseIterator, u16_t>;
 
-  //template <class BaseIterator>
-  //class from_utf32_iterator<BaseIterator, u32_t>
-  //  : public BaseIterator
-  //    { public: from_utf32_iterator(BaseIterator it) : BaseIterator(it) {} };
-
 //-------------------------------  converting_iterator  --------------------------------//
 
   template <class BaseIterator, class From, class To>  // primary template
@@ -77,7 +67,7 @@ namespace boost
   {
   public:
     explicit converting_iterator(BaseIterator it)
-      : from_utf32_iterator<to_utf32_iterator<BaseIterator, From>, To>(it) {}
+      : from_utf32_iterator<to_utf32_iterator<BaseIterator, From>, To>(it) {cout << "primary\n";}
   };
 
   //  case of From already u32_t
@@ -87,7 +77,7 @@ namespace boost
   {
   public:
     explicit converting_iterator(BaseIterator it)
-      : from_utf32_iterator<BaseIterator, To>(it) {}
+      : from_utf32_iterator<BaseIterator, To>(it) {cout << "From is u32_t\n";}
   };
 
   //  case of To already u32_t
@@ -97,10 +87,8 @@ namespace boost
   {
   public:
     explicit converting_iterator(BaseIterator it)
-      : to_utf32_iterator<BaseIterator, From>(it) {}
+      : to_utf32_iterator<BaseIterator,From>(it) {cout << "To is u32_t\n";}
   };
-
-
 
 //--------------------------------------------------------------------------------------//
 //                                  implementation                                      //
@@ -222,6 +210,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      to_utf32_iterator(BaseIterator b) : m_position(b)
      {
         m_value = pending_read;
+        cout << "utf-8 to utf-32\n";
      }
      //
      // Checked constructor:
@@ -296,9 +285,9 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
   template <class BaseIterator>
   class to_utf32_iterator<BaseIterator, u16_t>
-   : public boost::iterator_facade<to_utf32_iterator<BaseIterator, u32_t>, u32_t, std::bidirectional_iterator_tag, const u32_t>
+   : public boost::iterator_facade<to_utf32_iterator<BaseIterator, u16_t>, u32_t, std::bidirectional_iterator_tag, const u32_t>
   {
-     typedef boost::iterator_facade<to_utf32_iterator<BaseIterator, u32_t>, u32_t, std::bidirectional_iterator_tag, const u32_t> base_type;
+     typedef boost::iterator_facade<to_utf32_iterator<BaseIterator, u16_t>, u32_t, std::bidirectional_iterator_tag, const u32_t> base_type;
      // special values for pending iterator reads:
      BOOST_STATIC_CONSTANT(u32_t, pending_read = 0xffffffffu);
 
@@ -346,6 +335,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      to_utf32_iterator(BaseIterator b) : m_position(b)
      {
         m_value = pending_read;
+        cout << "utf-16 to utf-32\n";
      }
      //
      // Range checked version:
@@ -488,7 +478,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         m_values[2] = 0;
         m_values[3] = 0;
         m_values[4] = 0;
-     }
+         cout << "utf-8 from utf-32\n";
+    }
   private:
 
      void extract_current()const
@@ -610,7 +601,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         m_values[0] = 0;
         m_values[1] = 0;
         m_values[2] = 0;
-     }
+         cout << "utf-16 from utf-32\n";
+    }
   private:
 
      void extract_current()const
