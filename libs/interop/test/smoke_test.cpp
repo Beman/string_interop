@@ -6,15 +6,15 @@
 //  See http://www.boost.org/LICENSE_1_0.txt
 
 #include <iostream>
-using namespace std;
+using std::cout; using std::endl; using std::hex;
 #include <boost/interop/string.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
-//  name clashes between the standard library and this library are not desirable because
-//  interoperability is critical, so provide using namespaces for std and boost to detect
-//  such clashes
-using namespace boost;
+using namespace boost::xop;
+using boost::u8_t;
+using boost::u16_t;
+using boost::u32_t;
 
 namespace
 {
@@ -35,11 +35,11 @@ int cpp_main(int, char*[])
 {
   cout << "smoke test...\n" << hex;
 
-  istring si;   
-  iwstring siw;  
-  iu8string siu8; 
-  iu16string siu16;
-  iu32string siu32;
+  string si;   
+  wstring siw;  
+  u8string siu8; 
+  u16string siu16;
+  u32string siu32;
 
   si.append("si");
   BOOST_TEST_EQ(si.size(), 2U);
@@ -59,9 +59,9 @@ int cpp_main(int, char*[])
 //  siu32.new_append(p);
 
 
-  iu8string s8;
-  iu16string s16;
-  iu32string s32;
+  u8string s8;
+  u16string s16;
+  u32string s32;
 
   u32_t U024B62[] = { 0x024B62, 0x0 };  // see http://en.wikipedia.org/wiki/Utf-8
   s32.append(U024B62);
@@ -79,9 +79,9 @@ int cpp_main(int, char*[])
 
   //  probe each of the combinations we have codecs for
 
-  iu8string t8;
-  iu16string t16;
-  iu32string t32;
+  u8string t8;
+  u16string t16;
+  u32string t32;
 
   s8.clear();
   s16.clear();
