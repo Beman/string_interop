@@ -56,7 +56,7 @@ int cpp_main(int, char*[])
   BOOST_TEST_EQ(siu32.size(), 5U);
 
   const u8_t* p = siu8.c_str();
-//  siu32.new_append(p);
+//  siu32.append(p);
 
 
   u8string s8;
@@ -66,7 +66,7 @@ int cpp_main(int, char*[])
   u32_t U024B62[] = { 0x024B62, 0x0 };  // see http://en.wikipedia.org/wiki/Utf-8
   s32.append(U024B62);
   BOOST_TEST_EQ(s32.size(), 1U);
-  s8.new_append(s32.c_str());
+  s8.append(s32.c_str());
   BOOST_TEST_EQ(s8.size(), 4U);
 
   cout << hex << int(s8[0]) << ' ' << int(s8[1]) << ' '
@@ -97,47 +97,47 @@ int cpp_main(int, char*[])
   BOOST_TEST_EQ(s32.size(), 1U);
 
   cout << "\nUTF-8 <-- UTF-8\n";
-  t8.new_append(s8.c_str());
+  t8.append(s8.c_str());
   dump(t8);
   BOOST_TEST_EQ(t8.size(), 1U);
 
   cout << "\nUTF-8 <-- UTF-16\n";
-  t8.new_append(s16.c_str());
+  t8.append(s16.c_str());
   dump(t8);
   BOOST_TEST_EQ(t8.size(), 2U);
 
   cout << "\nUTF-8 <-- UTF-32\n";
-  t8.new_append(s32.c_str());
+  t8.append(s32.c_str());
   dump(t8);
   BOOST_TEST_EQ(t8.size(), 3U);
 
   cout << "\nUTF-16 <-- UTF-8\n";
-  t16.new_append(s8.c_str());
+  t16.append(s8.c_str());
   dump(t16);
   BOOST_TEST_EQ(t16.size(), 1U);
 
   cout << "\nUTF-16 <-- UTF-16\n";
-  t16.new_append(s16.c_str());
+  t16.append(s16.c_str());
   dump(t16);
   BOOST_TEST_EQ(t16.size(), 2U);
 
   cout << "\nUTF-16 <-- UTF-32\n";
-  t16.new_append(s32.c_str());
+  t16.append(s32.c_str());
   dump(t16);
   BOOST_TEST_EQ(t16.size(), 3U);
 
   cout << "\nUTF-32 <-- UTF-8\n";
-  t32.new_append(s8.c_str());
+  t32.append(s8.c_str());
   dump(t32);
   BOOST_TEST_EQ(t32.size(), 1U);
 
   cout << "\nUTF-32 <-- UTF-16\n";
-  t32.new_append(s16.c_str());
+  t32.append(s16.c_str());
   dump(t32);
   BOOST_TEST_EQ(t32.size(), 2U);
 
   cout << "\nUTF-32 <-- UTF-32\n";
-  t32.new_append(s32.c_str());
+  t32.append(s32.c_str());
   dump(t32);
   BOOST_TEST_EQ(t32.size(), 3U);
 

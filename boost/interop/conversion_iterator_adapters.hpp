@@ -63,7 +63,7 @@ namespace boost
 
   template <class BaseIterator, class From, class To>  // primary template
   class converting_iterator                   // partial specializations *may* be provided
-    :  public from_utf32_iterator<to_utf32_iterator<BaseIterator, From>, To>
+    : public from_utf32_iterator<to_utf32_iterator<BaseIterator, From>, To>
   {
   public:
     explicit converting_iterator(BaseIterator it)
@@ -73,7 +73,7 @@ namespace boost
   //  case of From already u32_t
   template <class BaseIterator, class To>
   class converting_iterator<BaseIterator, u32_t, To>                
-    :  public from_utf32_iterator<BaseIterator, To>
+    : public from_utf32_iterator<BaseIterator, To>
   {
   public:
     explicit converting_iterator(BaseIterator it)
@@ -83,12 +83,22 @@ namespace boost
   //  case of To already u32_t
   template <class BaseIterator, class From>
   class converting_iterator<BaseIterator, From, u32_t>                
-    :  public to_utf32_iterator<BaseIterator, From>
+    : public to_utf32_iterator<BaseIterator, From>
   {
   public:
     explicit converting_iterator(BaseIterator it)
       : to_utf32_iterator<BaseIterator,From>(it) {cout << "To is u32_t\n";}
   };
+
+  //  case of From and To are the same type 
+
+  //  I think this can be made to work...
+  //template <class BaseIterator, class T>
+  //class converting_iterator<BaseIterator, T, T>                
+  //{
+  //public:
+  //  explicit converting_iterator(BaseIterator it) {cout << "Bingo!\n";}
+  //};
 
 //--------------------------------------------------------------------------------------//
 //                                  implementation                                      //
