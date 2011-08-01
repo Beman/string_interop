@@ -1,4 +1,4 @@
-//  boost/interop/conversion_iterator_adapters.hpp  ------------------------------------//
+﻿//  boost/interop/conversion_iterator_adapters.hpp  ------------------------------------//
 
 //  Copyright Beman Dawes 2011
 //  Copyright (c) 2004 John Maddock
@@ -48,6 +48,14 @@ namespace boost
   template <class BaseIterator>
   class to_utf32_iterator<BaseIterator, u16_t>;
 
+  template <class BaseIterator>
+  class to_utf32_iterator<BaseIterator, char>;
+
+  template <class BaseIterator>
+  class to_utf32_iterator<BaseIterator, wchar_t>;
+
+
+
 //------------------------------  from_utf32_iterator  --------------------------------//
 
   template <class BaseIterator, class T>  // primary template
@@ -58,6 +66,12 @@ namespace boost
 
   template <class BaseIterator>
   class from_utf32_iterator<BaseIterator, u16_t>;
+  
+  template <class BaseIterator>
+  class from_utf32_iterator<BaseIterator, char>;
+
+  template <class BaseIterator>
+  class from_utf32_iterator<BaseIterator, wchar_t>;
 
 //-------------------------------  converting_iterator  --------------------------------//
 
@@ -168,9 +182,11 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
   template <class BaseIterator>
   class to_utf32_iterator<BaseIterator, u8_t>
-   : public boost::iterator_facade<to_utf32_iterator<BaseIterator, u8_t>, u32_t, std::bidirectional_iterator_tag, const u32_t>
+   : public boost::iterator_facade<to_utf32_iterator<BaseIterator, u8_t>, u32_t,
+       std::bidirectional_iterator_tag, const u32_t>
   {
-     typedef boost::iterator_facade<to_utf32_iterator<BaseIterator, u8_t>, u32_t, std::bidirectional_iterator_tag, const u32_t> base_type;
+     typedef boost::iterator_facade<to_utf32_iterator<BaseIterator, u8_t>, u32_t,
+       std::bidirectional_iterator_tag, const u32_t> base_type;
      // special values for pending iterator reads:
      BOOST_STATIC_CONSTANT(u32_t, pending_read = 0xffffffffu);
 
@@ -644,6 +660,131 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      BaseIterator m_position;
      mutable u16_t m_values[3];
      mutable unsigned m_current;
+  };
+
+  /***************************************************************************************
+ 
+  char and wchar_t codecs need to know the encoding of char and wchar_t strings.
+
+  They need to know how errors are to be reported, such as by exception or by
+  replacement character.
+
+  Since it is totally ineffcient to write separate codecs for generic cases, they need to
+  know a codec sub-type, such as single character, NTBS, etc, and what table to pass to 
+  that subtype.
+
+  Presumably that information comes from global state information. Details to be worked out.
+
+  For this proof-of-concept, the code assumes encoding is Windows codepage 1252; see
+  http://www.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP1252.TXT. The error
+  action for UTF-32 is replacement character '�' (U+FFFD), and for char it is the '?'
+  character U+003F
+
+  **********
+    
+  What happens when a character not in the current T character set is
+  encountered? One possibility to to translate to a replacement character.
+  One of the ASCII characters not normally encountered might be a good choice.
+  The codes below 0x20 or 0x7f (DEL) might be considered. The Wikipedia UTF-8
+  article suggests these are popular:
+   * The replacement character '�' (U+FFFD)
+   * The symbol for substitute '␦' (U+2426) (ISO 2047)
+   * The '?' or '¿' character (U+003F or U+00BF)
+   * The invalid Unicode code points U+DC80..U+DCFF where the low 8 bits are the
+     byte's value.
+   * Interpret the bytes according to another encoding (often ISO-8859-1 or CP1252).
+
+  ***************************************************************************************/
+
+//----------------------------  <char> to_utf32_iterator  ------------------------------//
+
+  template <class BaseIterator>
+  class to_utf32_iterator<BaseIterator, char>
+   : public boost::iterator_facade<to_utf32_iterator<BaseIterator, char>, u32_t,
+       std::bidirectional_iterator_tag, const u32_t>
+  {
+     typedef boost::iterator_facade<to_utf32_iterator<BaseIterator, char>, u32_t,
+       std::bidirectional_iterator_tag, const u32_t> base_type;
+
+     typedef typename std::iterator_traits<BaseIterator>::value_type base_value_type;
+
+     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
+     BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
+
+     BaseIterator m_iterator;
+
+  public:
+     typename base_type::reference
+        dereference()const
+     {
+        if(m_value == pending_read)
+           extract_current();
+        return m_value;
+     }
+     bool equal(const to_utf32_iterator& that)const
+     {
+        return m_iterator == that.m_iterator;
+     }
+     void increment()
+     {
+        // skip high surrogate first if there is one:
+        unsigned c = detail::utf8_byte_count(*m_iterator);
+        std::advance(m_iterator, c);
+        m_value = pending_read;
+     }
+     void decrement()
+     {
+        // Keep backtracking until we don't have a trailing character:
+        unsigned count = 0;
+        while((*--m_iterator & 0xC0u) == 0x80u) ++count;
+        // now check that the sequence was valid:
+        if(count != detail::utf8_trailing_byte_count(*m_iterator))
+           invalid_sequence();
+        m_value = pending_read;
+     }
+     BaseIterator base()const
+     {
+        return m_iterator;
+     }
+     // construct:
+     to_utf32_iterator() : m_iterator()
+     {
+        m_value = pending_read;
+     }
+     to_utf32_iterator(BaseIterator b) : m_iterator(b)
+     {
+        m_value = pending_read;
+        cout << "utf-8 to utf-32\n";
+     }
+     //
+     // Checked constructor:
+     //
+     to_utf32_iterator(BaseIterator b, BaseIterator start, BaseIterator end) : m_iterator(b)
+     {
+        m_value = pending_read;
+        //
+        // We must not start with a continuation character, or end with a 
+        // truncated UTF-8 sequence otherwise we run the risk of going past
+        // the start/end of the underlying sequence:
+        //
+        if(start != end)
+        {
+           unsigned char v = *start;
+           if((v & 0xC0u) == 0x80u)
+              invalid_sequence();
+           if((b != start) && (b != end) && ((*b & 0xC0u) == 0x80u))
+              invalid_sequence();
+           BaseIterator pos = end;
+           do
+           {
+              v = *--pos;
+           }
+           while((start != pos) && ((v & 0xC0u) == 0x80u));
+           std::ptrdiff_t extra = detail::utf8_byte_count(v);
+           if(std::distance(pos, end) < extra)
+              invalid_sequence();
+        }
+     }
   };
 
 }

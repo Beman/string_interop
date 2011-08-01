@@ -26,8 +26,8 @@ namespace boost
 {
 namespace xop  // short for interoperability
 {
-  template<class CharT, class Traits = std::char_traits<CharT>,
-    class Allocator = std::allocator<CharT> > class basic_string;
+  template<class charT, class traits = std::char_traits<charT>,
+    class Allocator = std::allocator<charT> > class basic_string;
 
   typedef basic_string<char>     string;     // narrow with native encoding
   typedef basic_string<wchar_t>  wstring;    // wide with native encoding
@@ -46,22 +46,25 @@ namespace xop  // short for interoperability
 
   //---------------------------------  implementation  ---------------------------------//
   
-  template<class CharT, class Traits, class Allocator >
-  class basic_string : public std::basic_string<CharT,Traits,Allocator>
+  template<class charT, class traits, class Allocator >
+  class basic_string : public std::basic_string<charT,traits,Allocator>
   {
   public:
 
-    basic_string& append(const CharT* it)
+    //  append  ------------------------------------------------------------------------//
+
+    basic_string& append(const charT* it)
     { 
-      cout << "append(const CharT*)\n";
-      std::basic_string<CharT,Traits,Allocator>::append(it);
+      cout << "append(const charT*)\n";
+      std::basic_string<charT,traits,Allocator>::append(it);
       return *this;
     }
 
-    basic_string& append(CharT* it)
+    // needed as an artifact of the over aggressive template <class NTCSIterator>
+    basic_string& append(charT* it)
     { 
-      cout << "append(CharT*)\n";
-      std::basic_string<CharT,Traits,Allocator>::append(it);
+      cout << "append(charT*)\n";
+      std::basic_string<charT,traits,Allocator>::append(it);
       return *this;
     } 
 
@@ -73,7 +76,7 @@ namespace xop  // short for interoperability
     {
       converting_iterator<NTCSIterator,
         typename std::iterator_traits<NTCSIterator>::value_type,
-        typename std::basic_string<CharT,Traits,Allocator>::value_type>
+        typename std::basic_string<charT,traits,Allocator>::value_type>
           converting_it(it);
       for (; *converting_it; ++converting_it)
         push_back(*converting_it);
@@ -89,7 +92,7 @@ namespace xop  // short for interoperability
       typedef
         converting_iterator<typename Container::const_iterator,
           typename Container::value_type,
-          typename std::basic_string<CharT,Traits,Allocator>::value_type>
+          typename std::basic_string<charT,traits,Allocator>::value_type>
         iterator_adapter_type;
       return append(iterator_adapter_type(ctr.cbegin()),
         iterator_adapter_type(ctr.cend()));
@@ -98,9 +101,99 @@ namespace xop  // short for interoperability
     template <class InputIterator>
     basic_string& append(InputIterator first, InputIterator last)
     {
-      std::basic_string<CharT,Traits,Allocator>::append(first, last);
+      std::basic_string<charT,traits,Allocator>::append(first, last);
       return *this;
     }
+
+    // copy assign  --------------------------------------------------------------------//
+
+    basic_string& operator=(const basic_string& str)
+    {
+      std::basic_string<charT,traits,Allocator>::assign(str);
+      return *this;
+    }
+    //basic_string& operator=(basic_string&& str) noexcept;
+    basic_string& operator=(const charT* s)
+    {
+      std::basic_string<charT,traits,Allocator>::assign(s);
+      return *this;
+    }
+    basic_string& operator=(charT* s)
+    {
+      std::basic_string<charT,traits,Allocator>::assign(s);
+      return *this;
+    }
+
+    template <class NTCSIterator>
+    typename boost::disable_if<is_xop_container
+      <typename boost::decay<NTCSIterator>::type>,
+      basic_string&>::type     
+    operator=(NTCSIterator it)
+    {
+      clear();
+      return append(it);
+    }
+
+    template <class Container>
+    typename boost::enable_if<is_xop_container
+      <typename boost::decay<Container>::type>,
+      basic_string&>::type     
+    operator=(const Container& ctr)
+    {
+      clear();
+      return append(ctr);
+    }
+
+    //basic_string& operator=(charT c);
+    //basic_string& operator=(initializer_list<charT>);
+
+    // assign  -------------------------------------------------------------------------//
+
+    basic_string& assign(const basic_string& str)
+    {
+      std::basic_string<charT,traits,Allocator>::assign(str);
+      return *this;
+    }
+    //basic_string& assign(basic_string&& str) noexcept;
+    //basic_string& assign(const basic_string& str, size_type pos, size_type n);
+    //basic_string& assign(const charT* s, size_type n);
+    basic_string& assign(const charT* s)
+    {
+      std::basic_string<charT,traits,Allocator>::assign(s);
+      return *this;
+    }
+
+    basic_string& assign(charT* s)
+    {
+      std::basic_string<charT,traits,Allocator>::assign(s);
+      return *this;
+    }
+
+    template <class NTCSIterator>
+    typename boost::disable_if<is_xop_container
+      <typename boost::decay<NTCSIterator>::type>,
+      basic_string&>::type     
+    assign(NTCSIterator it)
+    {
+      clear();
+      return append(it);
+    }
+
+    template <class Container>
+    typename boost::enable_if<is_xop_container
+      <typename boost::decay<Container>::type>,
+      basic_string&>::type     
+    assign(const Container& ctr)
+    {
+      clear();
+      return append(ctr);
+    }
+    //basic_string& assign(size_type n, charT c);
+    template<class InputIterator>
+      basic_string& assign(InputIterator first, InputIterator last);
+    //basic_string& assign(initializer_list<charT>);
+
+
   };
 }  // namespace xop
 }  // namespace boost
