@@ -28,6 +28,15 @@
 
 namespace boost
 {
+namespace interop
+{
+namespace detail
+{
+  extern const boost::u16_t  to_utf16[];  
+  extern const unsigned char to_char[];
+  extern const boost::uint8_t to_slice[];
+}
+}
 
 //--------------------------------------------------------------------------------------//
 //  For n encodings, it is desirable to provide 2n adapters rather than n squared       //
@@ -714,76 +723,23 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      BaseIterator m_iterator;
 
   public:
-     typename base_type::reference
-        dereference()const
+     u32_t dereference() const
      {
-        if(m_value == pending_read)
-           extract_current();
-        return m_value;
+       unsigned char c = static_cast<unsigned char>(*m_iterator);
+       return static_cast<u32_t>(interop::detail::to_utf16[c]);
      }
-     bool equal(const to_utf32_iterator& that)const
+     bool equal(const to_utf32_iterator& that) const
      {
-        return m_iterator == that.m_iterator;
+       return m_iterator == that.m_iterator;
      }
-     void increment()
-     {
-        // skip high surrogate first if there is one:
-        unsigned c = detail::utf8_byte_count(*m_iterator);
-        std::advance(m_iterator, c);
-        m_value = pending_read;
-     }
-     void decrement()
-     {
-        // Keep backtracking until we don't have a trailing character:
-        unsigned count = 0;
-        while((*--m_iterator & 0xC0u) == 0x80u) ++count;
-        // now check that the sequence was valid:
-        if(count != detail::utf8_trailing_byte_count(*m_iterator))
-           invalid_sequence();
-        m_value = pending_read;
-     }
-     BaseIterator base()const
-     {
-        return m_iterator;
-     }
+     void increment()  { ++m_iterator; }
+     void decrement()  { --m_iterator; }
+
      // construct:
-     to_utf32_iterator() : m_iterator()
-     {
-        m_value = pending_read;
-     }
+     to_utf32_iterator() : m_iterator() {}
      to_utf32_iterator(BaseIterator b) : m_iterator(b)
      {
-        m_value = pending_read;
-        cout << "utf-8 to utf-32\n";
-     }
-     //
-     // Checked constructor:
-     //
-     to_utf32_iterator(BaseIterator b, BaseIterator start, BaseIterator end) : m_iterator(b)
-     {
-        m_value = pending_read;
-        //
-        // We must not start with a continuation character, or end with a 
-        // truncated UTF-8 sequence otherwise we run the risk of going past
-        // the start/end of the underlying sequence:
-        //
-        if(start != end)
-        {
-           unsigned char v = *start;
-           if((v & 0xC0u) == 0x80u)
-              invalid_sequence();
-           if((b != start) && (b != end) && ((*b & 0xC0u) == 0x80u))
-              invalid_sequence();
-           BaseIterator pos = end;
-           do
-           {
-              v = *--pos;
-           }
-           while((start != pos) && ((v & 0xC0u) == 0x80u));
-           std::ptrdiff_t extra = detail::utf8_byte_count(v);
-           if(std::distance(pos, end) < extra)
-              invalid_sequence();
-        }
+        cout << "char to utf-32\n";
      }
   };
 
