@@ -78,8 +78,14 @@ namespace xop  // short for interoperability
         typename std::iterator_traits<NTCSIterator>::value_type,
         typename std::basic_string<charT,traits,Allocator>::value_type>
           converting_it(it);
-      for (; *converting_it; ++converting_it)
-        push_back(*converting_it);
+      for (;;)
+      {
+        value_type c = *converting_it;
+        if (!c)
+          break;
+        push_back(c);
+        ++converting_it;
+      }
       return *this;
     }
 

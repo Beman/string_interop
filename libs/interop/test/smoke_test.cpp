@@ -143,8 +143,7 @@ int cpp_main(int, char*[])
 
   //  initial char tests
 
-
-
+ 
   string tchar;
   tchar.append("\x80 Euro");
   dump(tchar);
@@ -156,6 +155,13 @@ int cpp_main(int, char*[])
   dump(t32);
   cout << hex << t32[0] << '\n';
   BOOST_TEST_EQ(t32.size(), 6U);
+
+  cout << "\nchar <-- UTF-32\n";
+  tchar.clear();
+  tchar.append(t32.c_str());
+  dump(tchar);
+  cout << hex << tchar[0] << '\n';
+  BOOST_TEST_EQ(tchar.size(), 6U);
 
 
   return ::boost::report_errors();

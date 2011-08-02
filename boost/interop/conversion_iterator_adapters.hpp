@@ -743,6 +743,52 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
   };
 
+//---------------------------  <char> from_utf32_iterator  -----------------------------//
+
+  template <class BaseIterator>
+  class from_utf32_iterator<BaseIterator, char>
+   : public boost::iterator_facade<from_utf32_iterator<BaseIterator, char>,
+       char, std::bidirectional_iterator_tag, const char>
+  {
+     typedef boost::iterator_facade<from_utf32_iterator<BaseIterator, char>,
+       char, std::bidirectional_iterator_tag, const char> base_type;
+   
+     typedef typename std::iterator_traits<BaseIterator>::value_type base_value_type;
+
+     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
+     BOOST_STATIC_ASSERT(sizeof(char)*CHAR_BIT == 8);
+
+     BaseIterator m_iterator;
+
+  public:
+     char dereference() const
+     {
+       u32_t c = *m_iterator;
+       //cout << "*** c is " << hex << c << '\n';
+       //cout << "    to_slice[c >> 8] << 8 is "
+       //  << unsigned int(interop::detail::to_slice[c >> 8] << 8) << '\n';
+       return static_cast<char>(interop::detail::to_char
+         [
+           (interop::detail::to_slice[c >> 8] << 8) | (c & 0xff)
+         ]);
+     }
+
+     bool equal(const from_utf32_iterator& that) const
+     {
+       return m_iterator == that.m_iterator;
+     }
+
+     void increment()  { ++m_iterator; }
+     void decrement()  { --m_iterator; }
+
+     // construct:
+     from_utf32_iterator() : m_iterator() {}
+     from_utf32_iterator(BaseIterator b) : m_iterator(b)
+     {
+        cout << "char from utf-32\n";
+     }
+  };
+
 }
 
 #endif  // BOOST_INTEROP_CONVERSION_ITERATOR_ADAPTERS_HPP
