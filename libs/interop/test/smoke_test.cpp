@@ -144,24 +144,40 @@ int cpp_main(int, char*[])
   //  initial char tests
 
  
-  string tchar;
-  tchar.append("\x80 Euro");
-  dump(tchar);
-  BOOST_TEST_EQ(tchar.size(), 6U);
+  string tc;
+  tc.append("\x80 Euro");
+  dump(tc);
+  BOOST_TEST_EQ(tc.size(), 6U);
 
   cout << "\nUTF-32 <-- char\n";
   t32.clear();
-  t32.append(tchar.c_str());
+  t32.append(tc.c_str());
   dump(t32);
   cout << hex << t32[0] << '\n';
   BOOST_TEST_EQ(t32.size(), 6U);
 
   cout << "\nchar <-- UTF-32\n";
-  tchar.clear();
-  tchar.append(t32.c_str());
-  dump(tchar);
-  cout << hex << tchar[0] << '\n';
-  BOOST_TEST_EQ(tchar.size(), 6U);
+  tc.clear();
+  tc.append(t32.c_str());
+  dump(tc);
+  cout << hex << tc[0] << '\n';
+  BOOST_TEST_EQ(tc.size(), 6U);
+
+  wstring twc;
+  twc.append(L"\x20AC Euro");
+  cout << "\nUTF-32 <-- wchar_t\n";
+  t32.clear();
+  t32.append(twc.c_str());
+  dump(t32);
+  cout << hex << t32[0] << '\n';
+  BOOST_TEST_EQ(t32.size(), 6U);
+
+  cout << "\nwchar_t <-- UTF-32\n";
+  twc.clear();
+  twc.append(t32.c_str());
+  dump(twc);
+  cout << hex << twc[0] << '\n';
+  BOOST_TEST_EQ(twc.size(), 6U);
 
 
   return ::boost::report_errors();

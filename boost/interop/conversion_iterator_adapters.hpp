@@ -115,7 +115,7 @@ namespace detail
 
   //  case of From and To are the same type 
 
-  //  I think this can be made to work...
+  //  Can this be made to work?
   //template <class BaseIterator, class T>
   //class converting_iterator<BaseIterator, T, T>                
   //{
@@ -320,9 +320,11 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
   template <class BaseIterator>
   class to_utf32_iterator<BaseIterator, u16_t>
-   : public boost::iterator_facade<to_utf32_iterator<BaseIterator, u16_t>, u32_t, std::bidirectional_iterator_tag, const u32_t>
+   : public boost::iterator_facade<to_utf32_iterator<BaseIterator, u16_t>, u32_t,
+      std::bidirectional_iterator_tag, const u32_t>
   {
-     typedef boost::iterator_facade<to_utf32_iterator<BaseIterator, u16_t>, u32_t, std::bidirectional_iterator_tag, const u32_t> base_type;
+     typedef boost::iterator_facade<to_utf32_iterator<BaseIterator, u16_t>, u32_t,
+       std::bidirectional_iterator_tag, const u32_t> base_type;
      // special values for pending iterator reads:
      BOOST_STATIC_CONSTANT(u32_t, pending_read = 0xffffffffu);
 
@@ -561,9 +563,11 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
   template <class BaseIterator>
   class from_utf32_iterator<BaseIterator, u16_t>
-   : public boost::iterator_facade<from_utf32_iterator<BaseIterator, u16_t>, u16_t, std::bidirectional_iterator_tag, const u16_t>
+   : public boost::iterator_facade<from_utf32_iterator<BaseIterator, u16_t>,
+      u16_t, std::bidirectional_iterator_tag, const u16_t>
   {
-     typedef boost::iterator_facade<from_utf32_iterator<BaseIterator, u16_t>, u16_t, std::bidirectional_iterator_tag, const u16_t> base_type;
+     typedef boost::iterator_facade<from_utf32_iterator<BaseIterator, u16_t>,
+       u16_t, std::bidirectional_iterator_tag, const u16_t> base_type;
 
      typedef typename std::iterator_traits<BaseIterator>::value_type base_value_type;
 
@@ -788,6 +792,95 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         cout << "char from utf-32\n";
      }
   };
+
+//----------------------------  <wchar_t> to_utf32_iterator  ------------------------------//
+
+#if defined(BOOST_WINDOWS_API)  // assume wchar_t is UTF-16
+
+  BOOST_STATIC_ASSERT(sizeof(wchar_t)*CHAR_BIT == 16);
+
+  namespace detail
+  {
+    template <class BaseIterator, class To>
+    class static_cast_iterator
+      : public boost::iterator_facade<static_cast_iterator<BaseIterator, To>,
+         To, std::bidirectional_iterator_tag, const To> 
+    {
+      BaseIterator m_iterator;
+    public:
+      static_cast_iterator(BaseIterator itr) : m_iterator(itr) {}
+
+      To dereference() const {return static_cast<To>(*m_iterator);}
+
+      bool equal(const static_cast_iterator& that) const
+      {
+         return m_iterator == that.m_iterator;
+      }
+      void increment()  { ++m_iterator; }
+      void decrement()  { --m_iterator; }
+    };
+  }
+
+  template <class BaseIterator>
+  class to_utf32_iterator<BaseIterator, wchar_t>
+    : public to_utf32_iterator<
+    detail::static_cast_iterator<BaseIterator, u16_t>, u16_t>
+  {
+  public:
+    to_utf32_iterator(BaseIterator itr)
+      : to_utf32_iterator<
+         detail::static_cast_iterator<BaseIterator, u16_t>, u16_t>(itr) {}
+  };
+
+# elif defined(BOOST_POSIX_API)  // POSIX; assumes wchar_t is UTF-32
+
+  BOOST_STATIC_ASSERT(sizeof(wchar_t)*CHAR_BIT == 32);
+  ...
+# else
+#   error Sorry, not implemented for other than 16 or 32 bit wchar_t
+# endif
+
+//---------------------------  <wchar_t> from_utf32_iterator  -----------------------------//
+
+#if defined(BOOST_WINDOWS_API)  // assume wchar_t is UTF-16
+
+  BOOST_STATIC_ASSERT(sizeof(wchar_t)*CHAR_BIT == 16);
+
+  template <class BaseIterator>
+  class from_utf32_iterator<BaseIterator, wchar_t>
+   : public boost::iterator_facade<from_utf32_iterator<BaseIterator, wchar_t>,
+       wchar_t, std::bidirectional_iterator_tag, const wchar_t>
+  {
+     from_utf32_iterator<BaseIterator, u16_t>  m_iterator;
+
+  public:
+     wchar_t dereference() const
+     {
+       return static_cast<wchar_t>(*m_iterator);
+     }
+
+     bool equal(const from_utf32_iterator& that) const
+     {
+       return m_iterator == that.m_iterator;
+     }
+
+     void increment()  { ++m_iterator; }
+     void decrement()  { --m_iterator; }
+
+     // construct:
+     from_utf32_iterator() : m_iterator() {}
+     from_utf32_iterator(BaseIterator b) : m_iterator(b)
+     {
+        cout << "wchar_t from utf-32\n";
+     }
+  };
+# elif defined(BOOST_POSIX_API)  // POSIX; assumes wchar_t is UTF-32
+
+  BOOST_STATIC_ASSERT(sizeof(wchar_t)*CHAR_BIT == 32);
+  ...
+# else
+#   error Sorry, not implemented for other than 16 or 32 bit wchar_t
+# endif
 
 }
 
