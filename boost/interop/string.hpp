@@ -217,6 +217,25 @@ public:
 //                               stream inserters
 //--------------------------------------------------------------------------------------//
 
+template <class Ostream, class NTCSIterator>
+typename boost::enable_if<is_character_iterator<NTCSIterator>,
+  Ostream&>::type
+operator<<(Ostream& os, NTCSIterator iterator)
+{
+  converting_iterator< NTCSIterator,
+    typename std::iterator_traits<NTCSIterator>::value_type,
+    typename Ostream::char_type> itr(iterator);
+  for (;;)
+  {
+    typename Ostream::char_type c = *itr;
+    if (!c)
+      break;
+    os << c;
+    ++itr;
+  }
+  return os;
+}
+
 template <class Ostream, class T>
 typename boost::enable_if<is_character_container<T>,
   Ostream&>::type
@@ -266,6 +285,12 @@ template<> class is_character_iterator<wchar_t*>      : public boost::true_type 
 template<> class is_character_iterator<boost::u8_t*>  : public boost::true_type {}; 
 template<> class is_character_iterator<boost::u16_t*> : public boost::true_type {}; 
 template<> class is_character_iterator<boost::u32_t*> : public boost::true_type {};
+
+template<> class is_character_iterator<const char*>         : public boost::true_type {}; 
+template<> class is_character_iterator<const wchar_t*>      : public boost::true_type {}; 
+template<> class is_character_iterator<const boost::u8_t*>  : public boost::true_type {}; 
+template<> class is_character_iterator<const boost::u16_t*> : public boost::true_type {}; 
+template<> class is_character_iterator<const boost::u32_t*> : public boost::true_type {};
 
 template<> class is_character_iterator<boost::xop::string::iterator>    : public boost::true_type {}; 
 template<> class is_character_iterator<boost::xop::wstring::iterator>   : public boost::true_type {}; 

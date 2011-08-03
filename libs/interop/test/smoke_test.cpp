@@ -181,24 +181,23 @@ int cpp_main(int, char*[])
 
   // stream inserter
 
+  cout << "stream inserter tests\n";
+
   s32.clear();
-  s32.push_back(u32_t(0xF0));
-  s32.push_back(u32_t(0xF1));
-  s32.push_back(u32_t(0xF2));
-  s32.push_back(u32_t(0xF3));
-  s32.push_back(u32_t(0xF4));
-  s32.push_back(u32_t(0xF5));
-  s32.push_back(u32_t(0xF6));
-  s32.push_back(u32_t(0xF7));
-  s32.push_back(u32_t(0xF8));
-  s32.push_back(u32_t(0xF9));
-  s32.push_back(u32_t(0xFA));
-  s32.push_back(u32_t(0xFB));
-  s32.push_back(u32_t(0xFC));
-  s32.push_back(u32_t(0xFD));
-  s32.push_back(u32_t(0xFE));
-  s32.push_back(u32_t(0xFF));
-  cout << s32 << '\n';
+  // Windows codepage 437 has these:
+  s32.push_back(u32_t(0x221E));  // U+221E : INFINITY
+  s32.push_back(u32_t(0x2261));  // U+2261 : IDENTICAL TO
+
+  // Windows codepage 1252 has these:
+  s32.push_back(u32_t(0xA9));    // U+00A9 : COPYRIGHT SIGN
+  s32.push_back(u32_t(0x20AC));  // U+20AC : EURO SIGN
+
+  cout << is_character_container<decltype(s32)>::value << " for is_character_container\n";
+  cout << is_character_iterator<decltype(s32.c_str())>::value << " for is_character_iterator\n";
+
+  cout << s32 << " via container\n";
+
+  cout << s32.c_str() << " via container.c_str()\n";
 
   return ::boost::report_errors();
 }
