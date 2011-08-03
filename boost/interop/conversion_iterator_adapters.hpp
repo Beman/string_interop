@@ -749,6 +749,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 //---------------------------  <char> from_utf32_iterator  -----------------------------//
 
+#if defined(BOOST_WINDOWS_API)
+
   template <class BaseIterator>
   class from_utf32_iterator<BaseIterator, char>
    : public boost::iterator_facade<from_utf32_iterator<BaseIterator, char>,
@@ -793,6 +795,41 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
   };
 
+ # elif defined(BOOST_POSIX_API)  // POSIX; assumes char is UTF-8
+
+  template <class BaseIterator>
+  class from_utf32_iterator<BaseIterator, char>
+   : public boost::iterator_facade<from_utf32_iterator<BaseIterator, char>,
+       char, std::bidirectional_iterator_tag, const char>
+  {
+     from_utf32_iterator<BaseIterator, u8_t>  m_iterator;
+
+  public:
+     char dereference() const
+     {
+       return static_cast<char>(*m_iterator);
+     }
+
+     bool equal(const from_utf32_iterator& that) const
+     {
+       return m_iterator == that.m_iterator;
+     }
+
+     void increment()  { ++m_iterator; }
+     void decrement()  { --m_iterator; }
+
+     // construct:
+     from_utf32_iterator() : m_iterator() {}
+     from_utf32_iterator(BaseIterator b) : m_iterator(b)
+     {
+        cout << "char from utf-32\n";
+     }
+  };
+
+# else
+#   error Sorry, not implemented for other than 16 or 32 bit wchar_t
+# endif
+
 //----------------------------  <wchar_t> to_utf32_iterator  ------------------------------//
 
 #if defined(BOOST_WINDOWS_API)  // assume wchar_t is UTF-16
@@ -835,7 +872,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 # elif defined(BOOST_POSIX_API)  // POSIX; assumes wchar_t is UTF-32
 
   BOOST_STATIC_ASSERT(sizeof(wchar_t)*CHAR_BIT == 32);
-  ...
+  //...
 # else
 #   error Sorry, not implemented for other than 16 or 32 bit wchar_t
 # endif
@@ -874,10 +911,11 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         cout << "wchar_t from utf-32\n";
      }
   };
+
 # elif defined(BOOST_POSIX_API)  // POSIX; assumes wchar_t is UTF-32
 
   BOOST_STATIC_ASSERT(sizeof(wchar_t)*CHAR_BIT == 32);
-  ...
+  //...
 # else
 #   error Sorry, not implemented for other than 16 or 32 bit wchar_t
 # endif

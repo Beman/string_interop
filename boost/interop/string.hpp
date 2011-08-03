@@ -91,7 +91,8 @@ public:
         converting_it(it);
     for (;;)
     {
-      value_type c = *converting_it;
+      typename std::basic_string<charT,traits,Allocator>::value_type
+        c = *converting_it;
       if (!c)
         break;
       push_back(c);
@@ -147,7 +148,7 @@ public:
     basic_string&>::type     
   operator=(NTCSIterator it)
   {
-    clear();
+    std::basic_string<charT,traits,Allocator>::clear();
     return append(it);
   }
 
@@ -157,7 +158,7 @@ public:
     basic_string&>::type     
   operator=(const Container& ctr)
   {
-    clear();
+    std::basic_string<charT,traits,Allocator>::clear();
     return append(ctr);
   }
 
@@ -192,7 +193,7 @@ public:
     basic_string&>::type     
   assign(NTCSIterator it)
   {
-    clear();
+    std::basic_string<charT,traits,Allocator>::clear();
     return append(it);
   }
 
@@ -202,7 +203,7 @@ public:
     basic_string&>::type     
   assign(const Container& ctr)
   {
-    clear();
+    std::basic_string<charT,traits,Allocator>::clear();
     return append(ctr);
   }
   //basic_string& assign(size_type n, charT c);
@@ -222,6 +223,7 @@ typename boost::enable_if<is_character_iterator<NTCSIterator>,
   Ostream&>::type
 operator<<(Ostream& os, NTCSIterator iterator)
 {
+  cout << "NTCSIterator stream inserter\n";
   converting_iterator< NTCSIterator,
     typename std::iterator_traits<NTCSIterator>::value_type,
     typename Ostream::char_type> itr(iterator);
