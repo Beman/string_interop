@@ -179,6 +179,26 @@ int cpp_main(int, char*[])
   cout << hex << twc[0] << '\n';
   BOOST_TEST_EQ(twc.size(), 6U);
 
+  // stream inserter
+
+  s32.clear();
+  s32.push_back(u32_t(0xF0));
+  s32.push_back(u32_t(0xF1));
+  s32.push_back(u32_t(0xF2));
+  s32.push_back(u32_t(0xF3));
+  s32.push_back(u32_t(0xF4));
+  s32.push_back(u32_t(0xF5));
+  s32.push_back(u32_t(0xF6));
+  s32.push_back(u32_t(0xF7));
+  s32.push_back(u32_t(0xF8));
+  s32.push_back(u32_t(0xF9));
+  s32.push_back(u32_t(0xFA));
+  s32.push_back(u32_t(0xFB));
+  s32.push_back(u32_t(0xFC));
+  s32.push_back(u32_t(0xFD));
+  s32.push_back(u32_t(0xFE));
+  s32.push_back(u32_t(0xFF));
+  cout << s32 << '\n';
 
   return ::boost::report_errors();
 }

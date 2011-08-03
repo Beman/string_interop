@@ -13,6 +13,7 @@
 #include <boost/interop/conversion_iterator_adapters.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/decay.hpp>
+#include <ostream>
 
 /*****************************************************************************************
 
@@ -213,13 +214,36 @@ public:
 };  // basic_string
 
 //--------------------------------------------------------------------------------------//
+//                               stream inserters
+//--------------------------------------------------------------------------------------//
+
+template <class Ostream, class T>
+typename boost::enable_if<is_character_container<T>,
+  Ostream&>::type
+operator<<(Ostream& os, const T& container)
+{
+  converting_iterator<const typename T::value_type*,
+    typename T::value_type,
+    typename Ostream::char_type> itr(container.c_str());
+  for (;;)
+  {
+    typename Ostream::char_type c = *itr;
+    if (!c)
+      break;
+    os << c;
+    ++itr;
+  }
+  return os;
+}
+
+//--------------------------------------------------------------------------------------//
 //                       interoperability trait specializations
 //--------------------------------------------------------------------------------------//
 
 //  specializations are provided here because some are required by language rules to come
 //  after the defintion of basic_string
 
-//--------------------------------  is_character  ------------------------------------//
+//---------------------------------  is_character  -------------------------------------//
 
 template<> class is_character<char>         : public boost::true_type {}; 
 template<> class is_character<wchar_t>      : public boost::true_type {}; 
@@ -227,7 +251,7 @@ template<> class is_character<boost::u8_t>  : public boost::true_type {};
 template<> class is_character<boost::u16_t> : public boost::true_type {}; 
 template<> class is_character<boost::u32_t> : public boost::true_type {};
 
-//----------------------------  is_character_container  ------------------------------//
+//-----------------------------  is_character_container  -------------------------------//
 
 template<> class is_character_container<boost::xop::string>    : public boost::true_type {}; 
 template<> class is_character_container<boost::xop::wstring>   : public boost::true_type {}; 
@@ -235,7 +259,7 @@ template<> class is_character_container<boost::xop::u8string>  : public boost::t
 template<> class is_character_container<boost::xop::u16string> : public boost::true_type {}; 
 template<> class is_character_container<boost::xop::u32string> : public boost::true_type {};
 
-//----------------------------  is_character_iterator  -------------------------------//
+//-----------------------------  is_character_iterator  --------------------------------//
 
 template<> class is_character_iterator<char*>         : public boost::true_type {}; 
 template<> class is_character_iterator<wchar_t*>      : public boost::true_type {}; 
