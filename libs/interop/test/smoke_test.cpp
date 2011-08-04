@@ -35,6 +35,18 @@ int cpp_main(int, char*[])
 {
   cout << "smoke test...\n" << hex;
 
+  string ysi(L"foo");   
+  wstring ysiw("foo");  
+  u8string ysiu8("foo"); 
+  u16string ysiu16("foo");
+  u32string ysiu32("foo");
+
+  string xsi(ysiu32);   
+  wstring xsiw(xsi);  
+  u8string xsiu8(xsi); 
+  u16string xsiu16(xsi);
+  u32string xsiu32(xsi);
+
   string si;   
   wstring siw;  
   u8string siu8; 

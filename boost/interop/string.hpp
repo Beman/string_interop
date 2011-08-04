@@ -61,8 +61,43 @@ template<class charT, class traits, class Allocator >
 class basic_string : public std::basic_string<charT,traits,Allocator>
 {
 public:
+  //  C++11 constructors
+  explicit basic_string(const Allocator& a = Allocator())
+    : std::basic_string<charT,traits,Allocator>(a) {}
+  basic_string(const basic_string& str)
+    : std::basic_string<charT,traits,Allocator>(str) {}
+  //basic_string(basic_string&& str) noexcept;
+  basic_string(const basic_string& str, size_type pos, size_type n = npos,
+               const Allocator& a = Allocator())
+    : std::basic_string<charT,traits,Allocator>(str, pos, n, a) {}
+  basic_string(const charT* s, size_type n, const Allocator& a = Allocator())
+    : std::basic_string<charT,traits,Allocator>(s, n, a) {}
+  basic_string(const charT* s, const Allocator& a = Allocator())
+    : std::basic_string<charT,traits,Allocator>(s, a) {}
+  basic_string(size_type n, charT c, const Allocator& a = Allocator())
+    : std::basic_string<charT,traits,Allocator>(n, c, a) {}
+  template<class InputIterator>
+    basic_string(InputIterator begin, InputIterator end,
+                 const Allocator& a = Allocator())
+      : std::basic_string<charT,traits,Allocator>(begin, end, a) {}
+  //basic_string(initializer_list<charT>, const Allocator& = Allocator());
+  basic_string(const basic_string& str, const Allocator& a)
+    : std::basic_string<charT,traits,Allocator>(str, a) {}
+  // basic_string(basic_string&&, const Allocator&);
 
-  //  append  ------------------------------------------------------------------------//
+  //  added constructors
+  template <class Container>
+  basic_string(const Container& ctr,
+    typename enable_if<is_character_container
+      <typename boost::decay<Container>::type> >::type* dummy = 0)
+        : std::basic_string<charT,traits,Allocator>() { append(ctr); }
+
+  template <class Iterator>
+  basic_string(Iterator itr,
+    typename enable_if<is_character_iterator<Iterator> >::type* dummy = 0)
+      : std::basic_string<charT,traits,Allocator>() { append(itr); }
+
+//  append  ------------------------------------------------------------------------//
 
   basic_string& append(const charT* it)
   { 
