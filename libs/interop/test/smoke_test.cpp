@@ -47,6 +47,8 @@ int cpp_main(int, char*[])
   u16string xsiu16(xsi);
   u32string xsiu32(xsi);
 
+  cout << xsi << ", " << xsiw << ", " << xsiu8 << ", " << xsiu16 << ", " << xsiu32 << '\n';
+
   string si;   
   wstring siw;  
   u8string siu8; 
