@@ -76,7 +76,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\codepage_1252.cpp" />
+    <ClCompile Include="..\..\..\src\codepage_437.cpp" />
     <ClCompile Include="..\..\smoke_test.cpp" />
   </ItemGroup>
   <ItemGroup>

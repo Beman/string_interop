@@ -34,7 +34,7 @@ namespace detail
 {
   extern const boost::u16_t  to_utf16[];  
   extern const unsigned char to_char[];
-  extern const boost::uint8_t to_slice[];
+  extern const boost::uint8_t slice_index[];
 }
 }
 
@@ -771,11 +771,11 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      {
        u32_t c = *m_iterator;
        //cout << "*** c is " << hex << c << '\n';
-       //cout << "    to_slice[c >> 8] << 8 is "
-       //  << unsigned int(interop::detail::to_slice[c >> 8] << 8) << '\n';
+       //cout << "    to_slice[c >> 7] << 7 is "
+       //  << unsigned int(interop::detail::to_slice[c >> 7] << 7) << '\n';
        return static_cast<char>(interop::detail::to_char
          [
-           (interop::detail::to_slice[c >> 8] << 8) | (c & 0xff)
+           (interop::detail::slice_index[c >> 7] << 7) | (c & 0x7f)
          ]);
      }
 

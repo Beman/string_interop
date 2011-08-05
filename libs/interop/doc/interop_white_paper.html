@@ -21,45 +21,86 @@
 
 <p>Unicode support can be decomposed into two levels:</p>
 <ul>
-  <li>Level one deals only with character encoding. It corresponds roughly to 
+  <li>Level 1 deals only with character encoding. It corresponds roughly to 
   the Unicode support in C++0x.</li>
-  <li>Level two addresses the deeper characteristics of Unicode characters. See 
+  <li>Level 2 addresses the deeper characteristics of Unicode characters. See 
   Mathias Gaunard's <a href="http://mathias.gaunard.com/unicode/doc/html/">
   Unicode project</a> as an example of level two Unicode support.</li>
 </ul>
 
-<p>This white paper is concerned only with level one. Issues are identified and 
+<p>This white paper is concerned only with Level 1. Issues are identified and 
 solutions suggested. The solutions are intended to be suitable for Boost 
 initially, and the next C++ standard eventually.</p>
 
-<h2>Issue 1: Missing character type</h2>
+<h3>Proof-of-concept implementation</h3>
+
+<p>A &quot;proof-of-concept&quot; implementation of the solutions presented here is 
+available at <span style="background-color: #FFFF00">...</span>.</p>
+
+<h2>Motivating examples</h2>
+
+<h3>Asian &quot;Hello World&quot;</h3>
+
+<blockquote>
+  <pre>#include &lt;iostream&gt;
+int main()
+{
+  std::cout &lt;&lt; U&quot;&#24744;&#22909;&#19990;&#30028;&quot;;   // error in C++0x!
+}</pre>
+</blockquote>
+<p>As long as the encoding of <code>char</code> supports &#24744;&#22909;&#19990;&#30028;, this code should 
+&quot;just work&quot;, even though the type of <code>U&quot;&#24744;&#22909;&#19990;&#30028;&quot;</code> is <code>const 
+char32_t*</code>, not <code>const char*</code>. In the proof-of-concept 
+implementation, running on Linux with <code>char</code> encoding of UTF-8, the 
+above example does compile after adding an additional #include, and execution 
+produces the expected &#24744;&#22909;&#19990;&#30028; output.</p>
+<h2>Issue 1: Missing UTF-8 character type</h2>
 
 <p>There is no built-in character type that specifies UTF-8 encoding. Without 
 such a type, neither template arguments nor function overloads have a way to 
-specify a narrow character with UTF-8 encoding.</p>
+specify a narrow character with UTF-8 encoding. This is a confusing 
+inconsistency with char16_t and char32_t. It sends the message to users that 
+UTF-8 encoding is a second class citizen of the C++ world.</p>
 
 <p>Just as character types <code>char16_t</code> and <code>char32_t</code> 
 provide the foundation for <code>u16string</code> and <code>u32string</code>, a 
 character type for 8-bit UTF-8 encoded characters is required as the foundation 
 for solutions to the other issues presented here.</p>
 
-<p>Because unsigned char is a distinct type from char, we can hijack it as the 
-implicit UTF-8 encoded character type. The oddity of the <code>unsigned char 
-somename[] = &quot;this does work&quot;;</code> conversion of literals may be a help 
-rather than a hinderance.</p>
-
 <h3>Proposed resolution</h3>
+
+<p dir="ltr">Because type <code>unsigned char</code> is distinct from type <code>
+char</code>, it can be hijacked as the UTF-8 encoded character type. The 
+proof-of-concept implementation does this and it has been problem free.</p>
+
+<h4 dir="ltr">C++ committee:</h4>
 
 <blockquote>
 
-<pre>namespace boost
-{
-  typedef unsigned char  char8;   // or perhaps char8_t
-}</pre>
+<p dir="ltr">Option 1:&nbsp; Add a new character type <code>char8_t</code> 
+specified to have UTF-8 encoding.</p>
+
+<p>Option 2:&nbsp; Add a global namespace <code>typedef unsigned char char8_t;</code> 
+to standard library headers dealing with characters.</p>
 
 </blockquote>
 
-<h2>Issue 2: Missing string type</h2>
+<h4>Boost:</h4>
+
+<blockquote>
+
+<p>Assuming <code>boost::u16_t</code> and <code>boost::u32_t</code> are the 
+Boost types for <code>char16_t</code> and <code>char32_t</code>, add:</p>
+
+  <blockquote>
+    <pre>namespace boost
+{
+  <code>typedef unsigned char  u8_t;
+}</code></pre>
+  </blockquote>
+</blockquote>
+
+<h2>Issue 2: Missing UTF-8 string type</h2>
 
 <p dir="ltr">There is no string type that specifies UTF-8 encoding. Without such 
 a type, neither template arguments nor function overloads have a way to specify 
@@ -146,7 +187,7 @@ encoding conversion pioneered by John Maddock in boost/regex/pending/unicode_ite
 <hr>
 <p>© Copyright Beman Dawes 2011</p>
 <p>Revised 
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->26 July, 2011<!--webbot bot="Timestamp" endspan i-checksum="21082" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->04 August, 2011<!--webbot bot="Timestamp" endspan i-checksum="34380" --></p>
 <p>&nbsp;</p>
 
 </body>
