@@ -772,7 +772,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
        u32_t c = *m_iterator;
        //cout << "*** c is " << hex << c << '\n';
        //cout << "    to_slice[c >> 7] << 7 is "
-       //  << unsigned int(interop::detail::to_slice[c >> 7] << 7) << '\n';
+       //  << unsigned int(interop::detail::slice_index[c >> 7] << 7) << '\n';
        return static_cast<char>(interop::detail::to_char
          [
            (interop::detail::slice_index[c >> 7] << 7) | (c & 0x7f)

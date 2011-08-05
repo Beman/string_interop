@@ -1,6 +1,14 @@
+//  libs/interop/tools/table_generator.cpp  --------------------------------------------//
+
+//  Copyright Beman Dawes 2011
+
+//  Distributed under the Boost Software License, Version 1.0.
+//  See http://www.boost.org/LICENSE_1_0.txt
+
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <cassert>
 
 using namespace std;
 
@@ -45,7 +53,9 @@ int main()
       long v2 = strtol(str.c_str()+7, &endptr, 16);
 
       wide_char[v1] = v2;
-      narrow_char[v2] = v1;
+
+      assert(v1 <= 0xFF);
+      narrow_char[v2] = unsigned char(v1);
 
       //cout << hex << v1 << " " << v2 << '\n';
     }
@@ -81,7 +91,7 @@ int main()
   for (int i = 0; i < n_slices; ++i)
   {
     // find out if the slice is active
-    bool slice_active = false;
+    bool slice_active = !i ? true : false;   // character '\0' must be active
     for (int j = 0; j < chars_per_slice; ++j)
     {
       if (narrow_char[i * chars_per_slice + j])
@@ -98,7 +108,9 @@ int main()
       // for each character in the slice
       for (int j = 0; j < chars_per_slice; ++j)
       {
-        if (narrow_char[i * chars_per_slice + j])
+        if (active_slices == 1 && j == 0)
+          cout << "0x00";  // character '\0' must be itself
+        else if (narrow_char[i * chars_per_slice + j])
           cout << "0x" << unsigned int(narrow_char[i * chars_per_slice + j]);
         else
           cout << "'?'";
