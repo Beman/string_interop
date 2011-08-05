@@ -90,7 +90,10 @@ namespace detail
   {
   public:
     explicit converting_iterator(BaseIterator it)
-      : from_utf32_iterator<to_utf32_iterator<BaseIterator, From>, To>(it) {cout << "primary\n";}
+      : from_utf32_iterator<to_utf32_iterator<BaseIterator, From>, To>(it)
+    {
+      //cout << "primary\n";
+    }
   };
 
   //  case of From already u32_t
@@ -100,7 +103,10 @@ namespace detail
   {
   public:
     explicit converting_iterator(BaseIterator it)
-      : from_utf32_iterator<BaseIterator, To>(it) {cout << "From is u32_t\n";}
+      : from_utf32_iterator<BaseIterator, To>(it)
+    {
+      //cout << "From is u32_t\n";
+    }
   };
 
   //  case of To already u32_t
@@ -110,7 +116,10 @@ namespace detail
   {
   public:
     explicit converting_iterator(BaseIterator it)
-      : to_utf32_iterator<BaseIterator,From>(it) {cout << "To is u32_t\n";}
+      : to_utf32_iterator<BaseIterator,From>(it)
+    {
+      //cout << "To is u32_t\n";
+    }
   };
 
   //  case of From and To are the same type 
@@ -245,7 +254,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      to_utf32_iterator(BaseIterator b) : m_position(b)
      {
         m_value = pending_read;
-        cout << "utf-8 to utf-32\n";
+        //cout << "utf-8 to utf-32\n";
      }
      //
      // Checked constructor:
@@ -372,7 +381,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      to_utf32_iterator(BaseIterator b) : m_position(b)
      {
         m_value = pending_read;
-        cout << "utf-16 to utf-32\n";
+        //cout << "utf-16 to utf-32\n";
      }
      //
      // Range checked version:
@@ -515,7 +524,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         m_values[2] = 0;
         m_values[3] = 0;
         m_values[4] = 0;
-         cout << "utf-8 from utf-32\n";
+        // cout << "utf-8 from utf-32\n";
     }
   private:
 
@@ -640,7 +649,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         m_values[0] = 0;
         m_values[1] = 0;
         m_values[2] = 0;
-         cout << "utf-16 from utf-32\n";
+        // cout << "utf-16 from utf-32\n";
     }
   private:
 
@@ -743,7 +752,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      to_utf32_iterator() : m_iterator() {}
      to_utf32_iterator(BaseIterator b) : m_iterator(b)
      {
-        cout << "char to utf-32\n";
+        //cout << "char to utf-32\n";
      }
   };
 
@@ -791,7 +800,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      from_utf32_iterator() : m_iterator() {}
      from_utf32_iterator(BaseIterator b) : m_iterator(b)
      {
-        cout << "char from utf-32\n";
+        //cout << "char from utf-32\n";
      }
   };
 
@@ -822,7 +831,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      from_utf32_iterator() : m_iterator() {}
      from_utf32_iterator(BaseIterator b) : m_iterator(b)
      {
-        cout << "char from utf-32\n";
+        //cout << "char from utf-32\n";
      }
   };
 
@@ -908,7 +917,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      from_utf32_iterator() : m_iterator() {}
      from_utf32_iterator(BaseIterator b) : m_iterator(b)
      {
-        cout << "wchar_t from utf-32\n";
+        //cout << "wchar_t from utf-32\n";
      }
   };
 
