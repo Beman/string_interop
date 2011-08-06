@@ -5,6 +5,8 @@
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
 
+#include <iostream>
+using std::cout;
 #if !defined(BOOST_XOP)
 # include <string>
   using std::wstring;
@@ -12,11 +14,10 @@
 # include <boost/interop/string.hpp>
   using boost::xop::wstring;
 #endif
-#include <iostream>
 
 int main()
 {
-  std::cout << "Sweet dreams!\n";
+  cout << "Sweet dreams!\n";
   wstring wstr(L"\u00A1Dulces sue\u00F1os!\n");
-  std::cout << wstr;
+  cout << wstr;
 }
