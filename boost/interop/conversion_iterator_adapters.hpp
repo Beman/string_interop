@@ -36,87 +36,129 @@ namespace detail
   extern const unsigned char to_char[];
   extern const boost::uint8_t slice_index[];
 }
-}
+
+//  TODO:
+
+//  *  Change tags to input iterator, remove decrement() from imps
 
 //--------------------------------------------------------------------------------------//
-//  For n encodings, it is desirable to provide 2n adapters rather than n squared       //
-//  adapters. This is achieved by conceptually converting to UTF-32 and from UTF-32 as  //
-//  an intermediate encoding, and then composing a converting_iterator from one         //
-//  to_utf32_iterator and one from_utf32_iterator. For efficiency, specializations of   //
-//  converting_iterator can provide direct conversion without an intermedate UTF32 step.//
+
+//  For n encodings, it is desirable to provide 2n adapters rather than n squared
+//  adapters. This is achieved conceptually by converting to and from UTF-32 as
+//  an intermediate encoding, and then composing a converting_iterator from one
+//  to_utf32_iterator and one from_utf32_iterator. For efficiency, specializations of
+//  converting_iterator can provide direct conversion without an intermedate UTF32 step.
+
 //--------------------------------------------------------------------------------------//
 
-//-------------------------------  to_utf32_iterator  ---------------------------------//
+//---------------------------  end function object templates  --------------------------//
 
-  template <class BaseIterator, class T>  // primary template
-  class to_utf32_iterator;           // partial specializations must be provided
+//  to_utf32_iterators need to know when the end of the sequence is reached. There are
+//  several approaches to determine this; by half-open range, by size, and by
+//  null-termination. Function objects allow the end to be efficiently determined, and
+//  to do so without adding members that are only needed for specific approaches.
 
-  template <class BaseIterator>
-  class to_utf32_iterator<BaseIterator, u8_t>;
+class by_null
+{
+public:
+  template <class InputIterator>
+  bool operator()(InputIterator itr) const
+  {
+    return *itr ==
+      static_cast<typename std::iterator_traits<InputIterator>::value_type>(0);
+  }
+};
 
-  template <class BaseIterator>
-  class to_utf32_iterator<BaseIterator, u16_t>;
+template <class InputIterator>
+class by_range
+{
+  InputIterator m_end;
+public:
+  by_range(InputIterator itr) : m_end(itr) {}
+  bool operator()(InputIterator itr) const { return itr == m_end; }
+};
 
-  template <class BaseIterator>
-  class to_utf32_iterator<BaseIterator, char>;
+class by_size
+{
+  mutable std::size_t m_size;
+public:
+  by_size(std::size_t n) : m_size(n) {}
+  template <class InputIterator>
+  bool operator()(InputIterator) const
+  { 
+    return itr == m_end;
+  }
+};
 
-  template <class BaseIterator>
-  class to_utf32_iterator<BaseIterator, wchar_t>;
+//-------------------------------  to_utf32_iterator  ----------------------------------//
 
+  template <class InputIterator, class T>  // primary template
+  class to_utf32_iterator;                 // partial specializations must be provided
 
+  template <class InputIterator>
+  class to_utf32_iterator<InputIterator, u8_t>;
+
+  template <class InputIterator>
+  class to_utf32_iterator<InputIterator, u16_t>;
+
+  template <class InputIterator>
+  class to_utf32_iterator<InputIterator, char>;
+
+  template <class InputIterator>
+  class to_utf32_iterator<InputIterator, wchar_t>;
 
 //------------------------------  from_utf32_iterator  --------------------------------//
 
-  template <class BaseIterator, class T>  // primary template
-  class from_utf32_iterator;         // partial specializations must be provided
+  template <class InputIterator, class T>  // primary template
+  class from_utf32_iterator;              // partial specializations *must* be provided
 
-  template <class BaseIterator>
-  class from_utf32_iterator<BaseIterator, u8_t>;
+  template <class InputIterator>
+  class from_utf32_iterator<InputIterator, u8_t>;
 
-  template <class BaseIterator>
-  class from_utf32_iterator<BaseIterator, u16_t>;
+  template <class InputIterator>
+  class from_utf32_iterator<InputIterator, u16_t>;
   
-  template <class BaseIterator>
-  class from_utf32_iterator<BaseIterator, char>;
+  template <class InputIterator>
+  class from_utf32_iterator<InputIterator, char>;
 
-  template <class BaseIterator>
-  class from_utf32_iterator<BaseIterator, wchar_t>;
+  template <class InputIterator>
+  class from_utf32_iterator<InputIterator, wchar_t>;
 
 //-------------------------------  converting_iterator  --------------------------------//
 
-  template <class BaseIterator, class From, class To>  // primary template
+  template <class InputIterator, class From, class To>  // primary template
   class converting_iterator                   // partial specializations *may* be provided
-    : public from_utf32_iterator<to_utf32_iterator<BaseIterator, From>, To>
+    : public from_utf32_iterator<to_utf32_iterator<InputIterator, From>, To>
   {
   public:
-    explicit converting_iterator(BaseIterator it)
-      : from_utf32_iterator<to_utf32_iterator<BaseIterator, From>, To>(it)
+    explicit converting_iterator(InputIterator it)
+      : from_utf32_iterator<to_utf32_iterator<InputIterator, From>, To>(it)
     {
       //cout << "primary\n";
     }
   };
 
   //  case of From already u32_t
-  template <class BaseIterator, class To>
-  class converting_iterator<BaseIterator, u32_t, To>                
-    : public from_utf32_iterator<BaseIterator, To>
+  template <class InputIterator, class To>
+  class converting_iterator<InputIterator, u32_t, To>                
+    : public from_utf32_iterator<InputIterator, To>
   {
   public:
-    explicit converting_iterator(BaseIterator it)
-      : from_utf32_iterator<BaseIterator, To>(it)
+    explicit converting_iterator(InputIterator it)
+      : from_utf32_iterator<InputIterator, To>(it)
     {
       //cout << "From is u32_t\n";
     }
   };
 
   //  case of To already u32_t
-  template <class BaseIterator, class From>
-  class converting_iterator<BaseIterator, From, u32_t>                
-    : public to_utf32_iterator<BaseIterator, From>
+  template <class InputIterator, class From>
+  class converting_iterator<InputIterator, From, u32_t>                
+    : public to_utf32_iterator<InputIterator, From>
   {
   public:
-    explicit converting_iterator(BaseIterator it)
-      : to_utf32_iterator<BaseIterator,From>(it)
+    explicit converting_iterator(InputIterator it)
+      : to_utf32_iterator<InputIterator,From>(it)
     {
       //cout << "To is u32_t\n";
     }
@@ -125,15 +167,15 @@ namespace detail
   //  case of From and To are the same type 
 
   //  Can this be made to work?
-  //template <class BaseIterator, class T>
-  //class converting_iterator<BaseIterator, T, T>                
+  //template <class InputIterator, class T>
+  //class converting_iterator<InputIterator, T, T>                
   //{
   //public:
-  //  explicit converting_iterator(BaseIterator it) {cout << "Bingo!\n";}
+  //  explicit converting_iterator(InputIterator it) {cout << "Bingo!\n";}
   //};
 
 //--------------------------------------------------------------------------------------//
-//                                  implementation                                      //
+//                                  implementation                                      
 //--------------------------------------------------------------------------------------//
 
 //------------------------------------  helpers  ---------------------------------------//
@@ -198,17 +240,17 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 //---------------------------  <u8_t> to_utf32_iterator  ------------------------------//
 
-  template <class BaseIterator>
-  class to_utf32_iterator<BaseIterator, u8_t>
-   : public boost::iterator_facade<to_utf32_iterator<BaseIterator, u8_t>, u32_t,
-       std::bidirectional_iterator_tag, const u32_t>
+  template <class InputIterator>
+  class to_utf32_iterator<InputIterator, u8_t>
+   : public boost::iterator_facade<to_utf32_iterator<InputIterator, u8_t>, u32_t,
+       std::input_iterator_tag, const u32_t>
   {
-     typedef boost::iterator_facade<to_utf32_iterator<BaseIterator, u8_t>, u32_t,
-       std::bidirectional_iterator_tag, const u32_t> base_type;
+     typedef boost::iterator_facade<to_utf32_iterator<InputIterator, u8_t>, u32_t,
+       std::input_iterator_tag, const u32_t> base_type;
      // special values for pending iterator reads:
      BOOST_STATIC_CONSTANT(u32_t, pending_read = 0xffffffffu);
 
-     typedef typename std::iterator_traits<BaseIterator>::value_type base_value_type;
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
@@ -232,17 +274,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         std::advance(m_position, c);
         m_value = pending_read;
      }
-     void decrement()
-     {
-        // Keep backtracking until we don't have a trailing character:
-        unsigned count = 0;
-        while((*--m_position & 0xC0u) == 0x80u) ++count;
-        // now check that the sequence was valid:
-        if(count != detail::utf8_trailing_byte_count(*m_position))
-           invalid_sequence();
-        m_value = pending_read;
-     }
-     BaseIterator base()const
+     InputIterator base()const
      {
         return m_position;
      }
@@ -251,39 +283,10 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      {
         m_value = pending_read;
      }
-     to_utf32_iterator(BaseIterator b) : m_position(b)
+     to_utf32_iterator(InputIterator b) : m_position(b)
      {
         m_value = pending_read;
         //cout << "utf-8 to utf-32\n";
-     }
-     //
-     // Checked constructor:
-     //
-     to_utf32_iterator(BaseIterator b, BaseIterator start, BaseIterator end) : m_position(b)
-     {
-        m_value = pending_read;
-        //
-        // We must not start with a continuation character, or end with a 
-        // truncated UTF-8 sequence otherwise we run the risk of going past
-        // the start/end of the underlying sequence:
-        //
-        if(start != end)
-        {
-           unsigned char v = *start;
-           if((v & 0xC0u) == 0x80u)
-              invalid_sequence();
-           if((b != start) && (b != end) && ((*b & 0xC0u) == 0x80u))
-              invalid_sequence();
-           BaseIterator pos = end;
-           do
-           {
-              v = *--pos;
-           }
-           while((start != pos) && ((v & 0xC0u) == 0x80u));
-           std::ptrdiff_t extra = detail::utf8_byte_count(v);
-           if(std::distance(pos, end) < extra)
-              invalid_sequence();
-        }
      }
   private:
      static void invalid_sequence()
@@ -300,7 +303,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         // see how many extra byts we have:
         unsigned extra = detail::utf8_trailing_byte_count(*m_position);
         // extract the extra bits, 6 from each extra byte:
-        BaseIterator next(m_position);
+        InputIterator next(m_position);
         for(unsigned c = 0; c < extra; ++c)
         {
            ++next;
@@ -321,23 +324,23 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         if(m_value > static_cast<u32_t>(0x10FFFFu))
            invalid_sequence();
      }
-     BaseIterator m_position;
+     InputIterator m_position;
      mutable u32_t m_value;
   };
 
 //---------------------------  <u16_t> to_utf32_iterator  -----------------------------//
 
-  template <class BaseIterator>
-  class to_utf32_iterator<BaseIterator, u16_t>
-   : public boost::iterator_facade<to_utf32_iterator<BaseIterator, u16_t>, u32_t,
-      std::bidirectional_iterator_tag, const u32_t>
+  template <class InputIterator>
+  class to_utf32_iterator<InputIterator, u16_t>
+   : public boost::iterator_facade<to_utf32_iterator<InputIterator, u16_t>, u32_t,
+      std::input_iterator_tag, const u32_t>
   {
-     typedef boost::iterator_facade<to_utf32_iterator<BaseIterator, u16_t>, u32_t,
-       std::bidirectional_iterator_tag, const u32_t> base_type;
+     typedef boost::iterator_facade<to_utf32_iterator<InputIterator, u16_t>, u32_t,
+       std::input_iterator_tag, const u32_t> base_type;
      // special values for pending iterator reads:
      BOOST_STATIC_CONSTANT(u32_t, pending_read = 0xffffffffu);
 
-     typedef typename std::iterator_traits<BaseIterator>::value_type base_value_type;
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
@@ -361,15 +364,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         ++m_position;
         m_value = pending_read;
      }
-     void decrement()
-     {
-        --m_position;
-        // if we have a low surrogate then go back one more:
-        if(detail::is_low_surrogate(*m_position)) 
-           --m_position;
-        m_value = pending_read;
-     }
-     BaseIterator base()const
+     InputIterator base()const
      {
         return m_position;
      }
@@ -378,38 +373,10 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      {
         m_value = pending_read;
      }
-     to_utf32_iterator(BaseIterator b) : m_position(b)
+     to_utf32_iterator(InputIterator b) : m_position(b)
      {
         m_value = pending_read;
         //cout << "utf-16 to utf-32\n";
-     }
-     //
-     // Range checked version:
-     //
-     to_utf32_iterator(BaseIterator b, BaseIterator start, BaseIterator end) : m_position(b)
-     {
-        m_value = pending_read;
-        //
-        // The range must not start with a low surrogate, or end in a high surrogate,
-        // otherwise we run the risk of running outside the underlying input range.
-        // Likewise b must not be located at a low surrogate.
-        //
-        boost::uint16_t val;
-        if(start != end)
-        {
-           if((b != start) && (b != end))
-           {
-              val = *b;
-              if(detail::is_surrogate(val) && ((val & 0xFC00u) == 0xDC00u))
-                 invalid_code_point(val);
-           }
-           val = *start;
-           if(detail::is_surrogate(val) && ((val & 0xFC00u) == 0xDC00u))
-              invalid_code_point(val);
-           val = *--end;
-           if(detail::is_high_surrogate(val))
-              invalid_code_point(val);
-        }
      }
   private:
      static void invalid_code_point(::boost::uint16_t val)
@@ -426,7 +393,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         if(detail::is_high_surrogate(*m_position))
         {
            // precondition; next value must have be a low-surrogate:
-           BaseIterator next(m_position);
+           InputIterator next(m_position);
            ::boost::uint16_t t = *++next;
            if((t & 0xFC00u) != 0xDC00u)
               invalid_code_point(t);
@@ -437,19 +404,19 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         if(detail::is_surrogate(m_value))
            invalid_code_point(static_cast< ::boost::uint16_t>(m_value));
      }
-     BaseIterator m_position;
+     InputIterator m_position;
      mutable u32_t m_value;
   };
 
 //--------------------------  <u8_t> from_utf32_iterator  -----------------------------//
 
-  template <class BaseIterator>
-  class from_utf32_iterator<BaseIterator, u8_t>
-   : public boost::iterator_facade<from_utf32_iterator<BaseIterator, u8_t>, u8_t, std::bidirectional_iterator_tag, const u8_t>
+  template <class InputIterator>
+  class from_utf32_iterator<InputIterator, u8_t>
+   : public boost::iterator_facade<from_utf32_iterator<InputIterator, u8_t>, u8_t, std::input_iterator_tag, const u8_t>
   {
-     typedef boost::iterator_facade<from_utf32_iterator<BaseIterator, u8_t>, u8_t, std::bidirectional_iterator_tag, const u8_t> base_type;
+     typedef boost::iterator_facade<from_utf32_iterator<InputIterator, u8_t>, u8_t, std::input_iterator_tag, const u8_t> base_type;
    
-     typedef typename std::iterator_traits<BaseIterator>::value_type base_value_type;
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
      BOOST_STATIC_ASSERT(sizeof(u8_t)*CHAR_BIT == 8);
@@ -491,20 +458,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
            ++m_position;
         }
      }
-     void decrement()
-     {
-        if((m_current & 3) == 0)
-        {
-           --m_position;
-           extract_current();
-           m_current = 3;
-           while(m_current && (m_values[m_current] == 0))
-              --m_current;
-        }
-        else
-           --m_current;
-     }
-     BaseIterator base()const
+     InputIterator base()const
      {
         return m_position;
      }
@@ -517,7 +471,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         m_values[3] = 0;
         m_values[4] = 0;
      }
-     from_utf32_iterator(BaseIterator b) : m_position(b), m_current(4)
+     from_utf32_iterator(InputIterator b) : m_position(b), m_current(4)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -563,22 +517,22 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         }
         m_current= 0;
      }
-     BaseIterator m_position;
+     InputIterator m_position;
      mutable u8_t m_values[5];
      mutable unsigned m_current;
   };
 
 //--------------------------  <u16_t> from_utf32_iterator  ----------------------------//
 
-  template <class BaseIterator>
-  class from_utf32_iterator<BaseIterator, u16_t>
-   : public boost::iterator_facade<from_utf32_iterator<BaseIterator, u16_t>,
-      u16_t, std::bidirectional_iterator_tag, const u16_t>
+  template <class InputIterator>
+  class from_utf32_iterator<InputIterator, u16_t>
+   : public boost::iterator_facade<from_utf32_iterator<InputIterator, u16_t>,
+      u16_t, std::input_iterator_tag, const u16_t>
   {
-     typedef boost::iterator_facade<from_utf32_iterator<BaseIterator, u16_t>,
-       u16_t, std::bidirectional_iterator_tag, const u16_t> base_type;
+     typedef boost::iterator_facade<from_utf32_iterator<InputIterator, u16_t>,
+       u16_t, std::input_iterator_tag, const u16_t> base_type;
 
-     typedef typename std::iterator_traits<BaseIterator>::value_type base_value_type;
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
      BOOST_STATIC_ASSERT(sizeof(u16_t)*CHAR_BIT == 16);
@@ -619,21 +573,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
            ++m_position;
         }
      }
-     void decrement()
-     {
-        if(m_current != 1)
-        {
-           // decrementing an iterator always leads to a valid position:
-           --m_position;
-           extract_current();
-           m_current = m_values[1] ? 1 : 0;
-        }
-        else
-        {
-           m_current = 0;
-        }
-     }
-     BaseIterator base()const
+     InputIterator base()const
      {
         return m_position;
      }
@@ -644,7 +584,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         m_values[1] = 0;
         m_values[2] = 0;
      }
-     from_utf32_iterator(BaseIterator b) : m_position(b), m_current(2)
+     from_utf32_iterator(InputIterator b) : m_position(b), m_current(2)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -679,7 +619,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
               detail::invalid_utf32_code_point(*m_position);
         }
      }
-     BaseIterator m_position;
+     InputIterator m_position;
      mutable u16_t m_values[3];
      mutable unsigned m_current;
   };
@@ -697,8 +637,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
   Presumably that information comes from global state information. Details to be worked out.
 
-  For this proof-of-concept, the code assumes encoding is Windows codepage 1252; see
-  http://www.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP1252.TXT. The error
+  For this proof-of-concept, the code just uses the tables linked in. The error
   action for UTF-32 is replacement character '�' (U+FFFD), and for char it is the '?'
   character U+003F
 
@@ -720,20 +659,20 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 //----------------------------  <char> to_utf32_iterator  ------------------------------//
 
-  template <class BaseIterator>
-  class to_utf32_iterator<BaseIterator, char>
-   : public boost::iterator_facade<to_utf32_iterator<BaseIterator, char>, u32_t,
-       std::bidirectional_iterator_tag, const u32_t>
+  template <class InputIterator>
+  class to_utf32_iterator<InputIterator, char>
+   : public boost::iterator_facade<to_utf32_iterator<InputIterator, char>, u32_t,
+       std::input_iterator_tag, const u32_t>
   {
-     typedef boost::iterator_facade<to_utf32_iterator<BaseIterator, char>, u32_t,
-       std::bidirectional_iterator_tag, const u32_t> base_type;
+     typedef boost::iterator_facade<to_utf32_iterator<InputIterator, char>, u32_t,
+       std::input_iterator_tag, const u32_t> base_type;
 
-     typedef typename std::iterator_traits<BaseIterator>::value_type base_value_type;
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
 
-     BaseIterator m_iterator;
+     InputIterator m_iterator;
 
   public:
      u32_t dereference() const
@@ -746,11 +685,10 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
        return m_iterator == that.m_iterator;
      }
      void increment()  { ++m_iterator; }
-     void decrement()  { --m_iterator; }
 
      // construct:
      to_utf32_iterator() : m_iterator() {}
-     to_utf32_iterator(BaseIterator b) : m_iterator(b)
+     to_utf32_iterator(InputIterator b) : m_iterator(b)
      {
         //cout << "char to utf-32\n";
      }
@@ -760,20 +698,20 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 #if defined(BOOST_WINDOWS_API)
 
-  template <class BaseIterator>
-  class from_utf32_iterator<BaseIterator, char>
-   : public boost::iterator_facade<from_utf32_iterator<BaseIterator, char>,
-       char, std::bidirectional_iterator_tag, const char>
+  template <class InputIterator>
+  class from_utf32_iterator<InputIterator, char>
+   : public boost::iterator_facade<from_utf32_iterator<InputIterator, char>,
+       char, std::input_iterator_tag, const char>
   {
-     typedef boost::iterator_facade<from_utf32_iterator<BaseIterator, char>,
-       char, std::bidirectional_iterator_tag, const char> base_type;
+     typedef boost::iterator_facade<from_utf32_iterator<InputIterator, char>,
+       char, std::input_iterator_tag, const char> base_type;
    
-     typedef typename std::iterator_traits<BaseIterator>::value_type base_value_type;
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
      BOOST_STATIC_ASSERT(sizeof(char)*CHAR_BIT == 8);
 
-     BaseIterator m_iterator;
+     InputIterator m_iterator;
 
   public:
      char dereference() const
@@ -794,11 +732,10 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
 
      void increment()  { ++m_iterator; }
-     void decrement()  { --m_iterator; }
 
      // construct:
      from_utf32_iterator() : m_iterator() {}
-     from_utf32_iterator(BaseIterator b) : m_iterator(b)
+     from_utf32_iterator(InputIterator b) : m_iterator(b)
      {
         //cout << "char from utf-32\n";
      }
@@ -806,12 +743,12 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
  # elif defined(BOOST_POSIX_API)  // POSIX; assumes char is UTF-8
 
-  template <class BaseIterator>
-  class from_utf32_iterator<BaseIterator, char>
-   : public boost::iterator_facade<from_utf32_iterator<BaseIterator, char>,
-       char, std::bidirectional_iterator_tag, const char>
+  template <class InputIterator>
+  class from_utf32_iterator<InputIterator, char>
+   : public boost::iterator_facade<from_utf32_iterator<InputIterator, char>,
+       char, std::input_iterator_tag, const char>
   {
-     from_utf32_iterator<BaseIterator, u8_t>  m_iterator;
+     from_utf32_iterator<InputIterator, u8_t>  m_iterator;
 
   public:
      char dereference() const
@@ -825,11 +762,10 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
 
      void increment()  { ++m_iterator; }
-     void decrement()  { --m_iterator; }
 
      // construct:
      from_utf32_iterator() : m_iterator() {}
-     from_utf32_iterator(BaseIterator b) : m_iterator(b)
+     from_utf32_iterator(InputIterator b) : m_iterator(b)
      {
         //cout << "char from utf-32\n";
      }
@@ -847,14 +783,14 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
   namespace detail
   {
-    template <class BaseIterator, class To>
+    template <class InputIterator, class To>
     class static_cast_iterator
-      : public boost::iterator_facade<static_cast_iterator<BaseIterator, To>,
-         To, std::bidirectional_iterator_tag, const To> 
+      : public boost::iterator_facade<static_cast_iterator<InputIterator, To>,
+         To, std::input_iterator_tag, const To> 
     {
-      BaseIterator m_iterator;
+      InputIterator m_iterator;
     public:
-      static_cast_iterator(BaseIterator itr) : m_iterator(itr) {}
+      static_cast_iterator(InputIterator itr) : m_iterator(itr) {}
 
       To dereference() const {return static_cast<To>(*m_iterator);}
 
@@ -863,19 +799,18 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
          return m_iterator == that.m_iterator;
       }
       void increment()  { ++m_iterator; }
-      void decrement()  { --m_iterator; }
     };
   }
 
-  template <class BaseIterator>
-  class to_utf32_iterator<BaseIterator, wchar_t>
+  template <class InputIterator>
+  class to_utf32_iterator<InputIterator, wchar_t>
     : public to_utf32_iterator<
-    detail::static_cast_iterator<BaseIterator, u16_t>, u16_t>
+    detail::static_cast_iterator<InputIterator, u16_t>, u16_t>
   {
   public:
-    to_utf32_iterator(BaseIterator itr)
+    to_utf32_iterator(InputIterator itr)
       : to_utf32_iterator<
-         detail::static_cast_iterator<BaseIterator, u16_t>, u16_t>(itr) {}
+         detail::static_cast_iterator<InputIterator, u16_t>, u16_t>(itr) {}
   };
 
 # elif defined(BOOST_POSIX_API)  // POSIX; assumes wchar_t is UTF-32
@@ -892,12 +827,12 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
   BOOST_STATIC_ASSERT(sizeof(wchar_t)*CHAR_BIT == 16);
 
-  template <class BaseIterator>
-  class from_utf32_iterator<BaseIterator, wchar_t>
-   : public boost::iterator_facade<from_utf32_iterator<BaseIterator, wchar_t>,
-       wchar_t, std::bidirectional_iterator_tag, const wchar_t>
+  template <class InputIterator>
+  class from_utf32_iterator<InputIterator, wchar_t>
+   : public boost::iterator_facade<from_utf32_iterator<InputIterator, wchar_t>,
+       wchar_t, std::input_iterator_tag, const wchar_t>
   {
-     from_utf32_iterator<BaseIterator, u16_t>  m_iterator;
+     from_utf32_iterator<InputIterator, u16_t>  m_iterator;
 
   public:
      wchar_t dereference() const
@@ -911,11 +846,10 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
 
      void increment()  { ++m_iterator; }
-     void decrement()  { --m_iterator; }
 
      // construct:
      from_utf32_iterator() : m_iterator() {}
-     from_utf32_iterator(BaseIterator b) : m_iterator(b)
+     from_utf32_iterator(InputIterator b) : m_iterator(b)
      {
         //cout << "wchar_t from utf-32\n";
      }
@@ -929,6 +863,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 #   error Sorry, not implemented for other than 16 or 32 bit wchar_t
 # endif
 
-}
+}  // namespace interop
+
+}  // namespace boost
 
 #endif  // BOOST_INTEROP_CONVERSION_ITERATOR_ADAPTERS_HPP

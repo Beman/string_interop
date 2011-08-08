@@ -12,4 +12,11 @@
 
 #  define BOOST_INTEROP_THROW(e) throw e
 
+//  For internal use only
+#ifdef BOOST_XOP_DEBUGGING_LOG
+#  define BOOST_XOP_LOG(MSG) std::cout << (MSG) << std::endl
+#else
+#  define BOOST_XOP_LOG(MSG) std::cout << (MSG) << std::endl
+#endif
+
 #endif  // BOOST_INTEROP_CONFIG_HPP

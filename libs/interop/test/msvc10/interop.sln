@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "table_generator", "table_ge
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sweet_dreams", "sweet_dreams\sweet_dreams.vcxproj", "{FA47D64B-55E1-4AA6-A28D-3FA23A96F9C8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "iterator_adapter_unit_test", "iterator_adapter_unit_test\iterator_adapter_unit_test.vcxproj", "{A6A1E9D3-1C05-41EF-BF4B-F0732354321E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -31,6 +33,10 @@ Global
 		{FA47D64B-55E1-4AA6-A28D-3FA23A96F9C8}.Debug|Win32.Build.0 = Debug|Win32
 		{FA47D64B-55E1-4AA6-A28D-3FA23A96F9C8}.Release|Win32.ActiveCfg = Release|Win32
 		{FA47D64B-55E1-4AA6-A28D-3FA23A96F9C8}.Release|Win32.Build.0 = Release|Win32
+		{A6A1E9D3-1C05-41EF-BF4B-F0732354321E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A6A1E9D3-1C05-41EF-BF4B-F0732354321E}.Debug|Win32.Build.0 = Debug|Win32
+		{A6A1E9D3-1C05-41EF-BF4B-F0732354321E}.Release|Win32.ActiveCfg = Release|Win32
+		{A6A1E9D3-1C05-41EF-BF4B-F0732354321E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
