@@ -185,10 +185,26 @@ encoding conversion pioneered by John Maddock in boost/regex/pending/unicode_ite
     char16_t, and char32_t complete conversion adaptors.</li>
   </ul>
 </blockquote>
+<h2>Issue 6: String type interoperability requires an excessive number of 
+overloads</h2>
+<p>Overloads or specializations are required for:</p>
+<blockquote>
+  <ul>
+    <li>Other instances of the same type.</li>
+    <li>Single characters.</li>
+    <li>Single iterators to terminated strings.</li>
+    <li>Single iterators to strings whose size is determined by a size argument.</li>
+    <li>Iterator ranges.</li>
+    <li>Further variations on the above, with additional arguments for position 
+    or repeat count.</li>
+  </ul>
+</blockquote>
+<p>Each of these then have to be repeated in template form for interoperability 
+with other string types.</p>
 <hr>
 <p>© Copyright Beman Dawes 2011</p>
 <p>Revised 
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->05 August, 2011<!--webbot bot="Timestamp" endspan i-checksum="34382" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->08 August, 2011<!--webbot bot="Timestamp" endspan i-checksum="34388" --></p>
 <p>&nbsp;</p>
 
 </body>
