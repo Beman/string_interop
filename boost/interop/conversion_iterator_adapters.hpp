@@ -92,25 +92,29 @@ public:
 
 //-------------------------------  to_utf32_iterator  ----------------------------------//
 
-  template <class InputIterator, class T>  // primary template
-  class to_utf32_iterator;                 // partial specializations must be provided
+  // primary template; partial specializations *must* be provided
+  template <class InputIterator, class T, class EndFuncObj>  
+  class to_utf32_iterator; 
 
-  template <class InputIterator>
-  class to_utf32_iterator<InputIterator, u8_t>;
+  template <class InputIterator, class EndFuncObj>
+  class to_utf32_iterator<InputIterator, u8_t, EndFuncObj>;
 
-  template <class InputIterator>
-  class to_utf32_iterator<InputIterator, u16_t>;
+  template <class InputIterator, class EndFuncObj>
+  class to_utf32_iterator<InputIterator, u16_t, EndFuncObj>;
 
-  template <class InputIterator>
-  class to_utf32_iterator<InputIterator, char>;
+  template <class InputIterator, class EndFuncObj>
+  class to_utf32_iterator<InputIterator, char, EndFuncObj>;
 
-  template <class InputIterator>
-  class to_utf32_iterator<InputIterator, wchar_t>;
+  template <class InputIterator, class EndFuncObj>
+  class to_utf32_iterator<InputIterator, wchar_t, EndFuncObj>;
 
 //------------------------------  from_utf32_iterator  --------------------------------//
+//
+//  These iterators always identify the end by termination value
 
-  template <class InputIterator, class T>  // primary template
-  class from_utf32_iterator;              // partial specializations *must* be provided
+  // primary template; partial specializations *must* be provided
+  template <class InputIterator, class T>  
+  class from_utf32_iterator; 
 
   template <class InputIterator>
   class from_utf32_iterator<InputIterator, u8_t>;
@@ -126,53 +130,47 @@ public:
 
 //-------------------------------  converting_iterator  --------------------------------//
 
-  template <class InputIterator, class From, class To>  // primary template
-  class converting_iterator                   // partial specializations *may* be provided
-    : public from_utf32_iterator<to_utf32_iterator<InputIterator, From>, To>
+  // primary template; partial specializations *may* be provided
+  template <class InputIterator, class From, class EndFuncObj, class To>  
+  class converting_iterator
+    : public from_utf32_iterator<to_utf32_iterator
+        <InputIterator, From, EndFuncObj>, To>
   {
   public:
     explicit converting_iterator(InputIterator it)
-      : from_utf32_iterator<to_utf32_iterator<InputIterator, From>, To>(it)
+      : from_utf32_iterator<to_utf32_iterator<InputIterator, From, EndFuncObj>, To>(it)
     {
-      //cout << "primary\n";
+      BOOST_INTEROP_LOG("converting_iterator primary template\n");
     }
   };
 
   //  case of From already u32_t
   template <class InputIterator, class To>
-  class converting_iterator<InputIterator, u32_t, To>                
+  class converting_iterator<InputIterator, u32_t, class EndFuncObj, To>                
     : public from_utf32_iterator<InputIterator, To>
   {
   public:
     explicit converting_iterator(InputIterator it)
       : from_utf32_iterator<InputIterator, To>(it)
     {
-      //cout << "From is u32_t\n";
+      BOOST_INTEROP_LOG("converting_iterator; From already u32_t\n");
     }
   };
 
   //  case of To already u32_t
   template <class InputIterator, class From>
-  class converting_iterator<InputIterator, From, u32_t>                
-    : public to_utf32_iterator<InputIterator, From>
+  class converting_iterator<InputIterator, From, class EndFuncObj, u32_t>                
+    : public to_utf32_iterator<InputIterator, From, class EndFuncObj>
   {
   public:
     explicit converting_iterator(InputIterator it)
-      : to_utf32_iterator<InputIterator,From>(it)
+      : to_utf32_iterator<InputIterator,From,EndFuncObj>(it)
     {
-      //cout << "To is u32_t\n";
+      BOOST_INTEROP_LOG("converting_iterator; To already u32_t\n");
     }
   };
 
-  //  case of From and To are the same type 
-
-  //  Can this be made to work?
-  //template <class InputIterator, class T>
-  //class converting_iterator<InputIterator, T, T>                
-  //{
-  //public:
-  //  explicit converting_iterator(InputIterator it) {cout << "Bingo!\n";}
-  //};
+  //  case of From and To are already the value_type 
 
 //--------------------------------------------------------------------------------------//
 //                                  implementation                                      
