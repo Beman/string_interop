@@ -38,16 +38,38 @@ namespace
     //iterator_by_terminator<I, F, T> itr_t;
     //iterator_by_size<I, F, T> itr_s;
 
-//    iterator_by_range<I, F, T> itr_r2(itr, itr); 
-    iterator_by_terminator<I, F, T> itr_t2(itr);
-//    iterator_by_size<I, F, T> itr_s2(itr, std::size_t(0));
+    converting_iterator<I, F, by_null, T> itr_t2(itr);
+
+    cout << "\"";
+    for (;*itr_t2;)
+    {
+      cout << static_cast<char>(*itr_t2);
+      ++itr_t2;
+    }
+    cout << "\"\n";
+
+    converting_iterator<I, F, by_size, T> itr_s2(itr, 2U);
+    cout << "\"";
+    for (;*itr_s2;)
+    {
+      cout << static_cast<char>(*itr_s2);
+      ++itr_s2;
+    }
+    cout << "\"\n";
+
+    converting_iterator<I, F, by_range, T> itr_r2(itr, itr+1); 
+    cout << "\"";
+    for (;*itr_r2;)
+    {
+      cout << static_cast<char>(*itr_r2);
+      ++itr_r2;
+    }
+    cout << "\"\n";
   }
 
   void constructor_test()
   {
     cout << "constructor test..." << endl;
-
-
 
 //    construct_conversion_iterators<const char*, char, char>();
 //    construct_conversion_iterators<const char*, char, wchar_t>();
