@@ -78,8 +78,8 @@ int cpp_main(int, char*[])
   cout << "-----------------  testing with char...  -----------------\n";
   generate_1(std::string("Meow"));
 
-  //cout << "-----------------  testing with wchar_t...  -----------------\n";
-  //generate_1(std::wstring(L"Meow"));
+  cout << "-----------------  testing with wchar_t...  -----------------\n";
+  generate_1(std::wstring(L"Meow"));
 
   cout << "-----------------  testing with u8_t...  -----------------\n";
   u8_t u8src[] = { 'M', 'e', 'o', 'w', 0 };
