@@ -43,6 +43,11 @@ namespace detail
 
   *  specialize converting_iterator for case of From and To are already the value_type
 
+  *  John's code in <u8_t> from_iterator has been modified enough that it needs a
+     complete test of its own.
+     See Markus Kuhn's http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt as a
+     possible test file.
+
 */
 
 //--------------------------------------------------------------------------------------//
@@ -291,14 +296,15 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
 
+     mutable InputIterator m_position;    // points to first byte of next input character
+     mutable u32_t m_value;               // the current value
+
   public:
      typename base_type::reference
-        dereference()const
+        dereference() const
      {
         if(m_value == pending_read)
            extract_current();
-        if (is_end(m_position))
-          return 0;
         return m_value;
      }
      bool equal(const from_iterator& that)const
@@ -307,9 +313,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
      void increment()
      {
-        // skip high surrogate first if there is one:
-        unsigned c = detail::utf8_byte_count(*m_position);
-        std::advance(m_position, c);
+        BOOST_ASSERT_MSG(m_value, "Attempt to increment past the end");
         m_value = pending_read;
      }
 
@@ -329,8 +333,13 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         std::out_of_range e("Invalid UTF-8 sequence encountered while trying to encode UTF-32 character");
         BOOST_INTEROP_THROW(e);
      }
-     void extract_current()const
+     void extract_current() const
      {
+        if (is_end(m_position))
+        {
+          m_value = 0;
+          return;
+        }
         m_value = static_cast<u32_t>(static_cast< ::boost::uint8_t>(*m_position));
         // we must not have a continuation character:
         if((m_value & 0xC0u) == 0x80u)
@@ -338,13 +347,17 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         // see how many extra byts we have:
         unsigned extra = detail::utf8_trailing_byte_count(*m_position);
         // extract the extra bits, 6 from each extra byte:
-        InputIterator next(m_position);
         for(unsigned c = 0; c < extra; ++c)
         {
-           ++next;
+           ++m_position;
+           advance();
+           if (is_end(m_position))
+             invalid_sequence();
            m_value <<= 6;
-           m_value += static_cast<boost::uint8_t>(*next) & 0x3Fu;
+           m_value += static_cast<boost::uint8_t>(*m_position) & 0x3Fu;
         }
+        ++m_position;
+        advance();
         // we now need to remove a few of the leftmost bits, but how many depends
         // upon how many extra bytes we've extracted:
         static const boost::uint32_t masks[4] = 
@@ -359,8 +372,6 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         if(m_value > static_cast<u32_t>(0x10FFFFu))
            invalid_sequence();
      }
-     InputIterator m_position;
-     mutable u32_t m_value;
   };
 
 //------------------------------  <u16_t> from_iterator  -------------------------------//
@@ -835,22 +846,28 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
   namespace detail
   {
-    template <class InputIterator, class To>
+    template <class InputIterator, class To, template<class> class EndPolicy>
     class static_cast_iterator
-      : public boost::iterator_facade<static_cast_iterator<InputIterator, To>,
-         To, std::input_iterator_tag, const To> 
+      : public boost::iterator_facade<static_cast_iterator<InputIterator, To, EndPolicy>,
+          To, std::input_iterator_tag, const To>,
+        public EndPolicy<InputIterator> 
     {
       InputIterator m_iterator;
     public:
       static_cast_iterator(InputIterator itr) : m_iterator(itr) {}
 
-      To dereference() const {return static_cast<To>(*m_iterator);}
+      To dereference() const
+      {
+        if (is_end(m_iterator))
+          return 0;
+        return static_cast<To>(*m_iterator);
+      }
 
       bool equal(const static_cast_iterator& that) const
       {
          return m_iterator == that.m_iterator;
       }
-      void increment()  { ++m_iterator; }
+      void increment()  { ++m_iterator; advance(); }
 
     };
   }
@@ -858,12 +875,13 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
   template <class InputIterator, template<class> class EndPolicy>
   class from_iterator<InputIterator, wchar_t, EndPolicy>
     : public from_iterator<
-    detail::static_cast_iterator<InputIterator, u16_t>, u16_t, EndPolicy>
+        detail::static_cast_iterator<InputIterator, u16_t, EndPolicy>, u16_t, EndPolicy>
   {
   public:
     from_iterator(InputIterator itr)
       : from_iterator<
-         detail::static_cast_iterator<InputIterator, u16_t>, u16_t, EndPolicy>(itr) {}
+         detail::static_cast_iterator<InputIterator, u16_t, EndPolicy>,
+         u16_t, EndPolicy>(itr) {}
   };
 
 # elif defined(BOOST_POSIX_API)  // POSIX; assumes wchar_t is UTF-32
