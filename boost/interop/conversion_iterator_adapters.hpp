@@ -152,25 +152,25 @@ public:
       : from_utf32_iterator<to_utf32_iterator<InputIterator, From, EndPolicy>, To>(begin)
     // Requires: EndPolicy requires no initialization
     {
-      BOOST_XOP_LOG("converting_iterator primary template, by_null\n");
+      BOOST_XOP_LOG("converting_iterator primary template, by_null");
     }
     converting_iterator(InputIterator begin, InputIterator end)
       : from_utf32_iterator<to_utf32_iterator<InputIterator, From, EndPolicy>, To>(begin)
     // Requires: EndPolicy requires end iterator initialization
     {
-      BOOST_XOP_LOG("converting_iterator primary template, by range\n");
+      BOOST_XOP_LOG("converting_iterator primary template, by range");
       base().end(end);
     }
     converting_iterator(InputIterator begin, std::size_t sz)
       : from_utf32_iterator<to_utf32_iterator<InputIterator, From, EndPolicy>, To>(begin)
     // Requires: EndPolicy requires size initialization
     {
-      BOOST_XOP_LOG("converting_iterator primary template, by size\n");
+      BOOST_XOP_LOG("converting_iterator primary template, by size");
       base().size(sz);
     }
   };
 
-  ////  case of From already u32_t
+  ////  case of From is u32_t
   //template <class InputIterator, class To>
   //class converting_iterator<InputIterator, u32_t, template<class> class EndPolicy, To>                
   //  : public from_utf32_iterator<InputIterator, To>
@@ -179,22 +179,34 @@ public:
   //  explicit converting_iterator(InputIterator it)
   //    : from_utf32_iterator<InputIterator, To>(it)
   //  {
-  //    BOOST_INTEROP_LOG("converting_iterator; From already u32_t\n");
+  //    BOOST_XOP_LOG("converting_iterator; From already u32_t\n");
   //  }
   //};
 
-  ////  case of To already u32_t
-  //template <class InputIterator, class From>
-  //class converting_iterator<InputIterator, From, template<class> class EndPolicy, u32_t>                
-  //  : public to_utf32_iterator<InputIterator, From, template<class> class EndPolicy>
-  //{
-  //public:
-  //  explicit converting_iterator(InputIterator it)
-  //    : to_utf32_iterator<InputIterator,From,EndPolicy>(it)
-  //  {
-  //    BOOST_INTEROP_LOG("converting_iterator; To already u32_t\n");
-  //  }
-  //};
+  //  case of To is u32_t
+  template <class InputIterator, class From, template<class> class EndPolicy>
+  class converting_iterator<InputIterator, From, EndPolicy, u32_t>                
+    : public to_utf32_iterator<InputIterator, From, EndPolicy>
+  {
+  public:
+    explicit converting_iterator(InputIterator begin)
+      : to_utf32_iterator<InputIterator,From,EndPolicy>(begin)
+    {
+      BOOST_XOP_LOG("converting_iterator; To is u32_t, by null");
+    }
+    converting_iterator(InputIterator begin, InputIterator end)
+      : to_utf32_iterator<InputIterator,From,EndPolicy>(begin)
+    {
+      BOOST_XOP_LOG("converting_iterator; To is u32_t, by range");
+      this->end(end);
+    }
+    converting_iterator(InputIterator begin, std::size_t sz)
+      : to_utf32_iterator<InputIterator,From,EndPolicy>(begin)
+    {
+      BOOST_XOP_LOG("converting_iterator; To is u32_t, by size");
+      this->size(sz);
+    }
+  };
 
   ////  case of From and To are already the value_type 
 
@@ -285,6 +297,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      {
         if(m_value == pending_read)
            extract_current();
+        if (is_end(m_position))
+          return 0;
         return m_value;
      }
      bool equal(const to_utf32_iterator& that)const
@@ -298,10 +312,9 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         std::advance(m_position, c);
         m_value = pending_read;
      }
-     InputIterator base() const
-     {
-        return m_position;
-     }
+
+     InputIterator& base() { return m_position; }
+
      // construct:
      to_utf32_iterator() : m_position()
      {
@@ -310,7 +323,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      to_utf32_iterator(InputIterator b) : m_position(b)
      {
         m_value = pending_read;
-        //cout << "utf-8 to utf-32\n";
+        BOOST_XOP_LOG("utf-8 to utf-32");
      }
   private:
      static void invalid_sequence()
@@ -371,8 +384,10 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
   public:
      typename base_type::reference
-        dereference()const
+     dereference()const
      {
+        if (is_end(m_position))
+          return 0;
         if(m_value == pending_read)
            extract_current();
         return m_value;
@@ -388,10 +403,9 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         ++m_position;
         m_value = pending_read;
      }
-     InputIterator base()const
-     {
-        return m_position;
-     }
+
+     InputIterator& base() { return m_position; }
+
      // construct:
      to_utf32_iterator() : m_position()
      {
@@ -400,7 +414,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      to_utf32_iterator(InputIterator b) : m_position(b)
      {
         m_value = pending_read;
-        //cout << "utf-16 to utf-32\n";
+        BOOST_XOP_LOG("utf-16 to utf-32");
      }
   private:
      static void invalid_code_point(::boost::uint16_t val)
@@ -436,9 +450,11 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
   template <class InputIterator>
   class from_utf32_iterator<InputIterator, u8_t>
-   : public boost::iterator_facade<from_utf32_iterator<InputIterator, u8_t>, u8_t, std::input_iterator_tag, const u8_t>
+   : public boost::iterator_facade<from_utf32_iterator<InputIterator, u8_t>,
+       u8_t, std::input_iterator_tag, const u8_t>
   {
-     typedef boost::iterator_facade<from_utf32_iterator<InputIterator, u8_t>, u8_t, std::input_iterator_tag, const u8_t> base_type;
+     typedef boost::iterator_facade<from_utf32_iterator<InputIterator, u8_t>,
+       u8_t, std::input_iterator_tag, const u8_t> base_type;
    
      typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
@@ -446,7 +462,6 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      BOOST_STATIC_ASSERT(sizeof(u8_t)*CHAR_BIT == 8);
 
   public:
-     InputIterator& base() {return m_position;}
 
      typename base_type::reference
      dereference()const
@@ -484,6 +499,9 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
            ++m_position;
         }
      }
+
+     InputIterator& base() { return m_position; }
+
      // construct:
      from_utf32_iterator() : m_position(), m_current(0)
      {
@@ -500,7 +518,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         m_values[2] = 0;
         m_values[3] = 0;
         m_values[4] = 0;
-        BOOST_XOP_LOG("utf-8 from utf-32\n");
+        BOOST_XOP_LOG("utf-8 from utf-32");
     }
   private:
 
@@ -560,7 +578,6 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      BOOST_STATIC_ASSERT(sizeof(u16_t)*CHAR_BIT == 16);
 
   public:
-     InputIterator& base() {return m_position;}
 
      typename base_type::reference
      dereference()const
@@ -598,6 +615,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         }
      }
 
+     InputIterator& base() {return m_position;}
+
      // construct:
      from_utf32_iterator() : m_position(), m_current(0)
      {
@@ -610,7 +629,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         m_values[0] = 0;
         m_values[1] = 0;
         m_values[2] = 0;
-        // cout << "utf-16 from utf-32\n";
+        BOOST_XOP_LOG("utf-16 from utf-32");
     }
   private:
 
@@ -714,11 +733,13 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
        advance();
      }
 
+     InputIterator& base() { return m_iterator; }
+
      // construct:
      to_utf32_iterator() : m_iterator() {}
      to_utf32_iterator(InputIterator b) : m_iterator(b)
      {
-       BOOST_XOP_LOG("char to utf-32\n");
+       BOOST_XOP_LOG("char to utf-32");
      }
   };
 
@@ -742,8 +763,6 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      InputIterator m_iterator;
 
   public:
-     InputIterator& base() {return m_iterator;}
-
      char dereference() const
      {
        u32_t c = *m_iterator;
@@ -763,11 +782,13 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
      void increment()  { ++m_iterator; }
 
+     InputIterator& base() {return m_iterator;}
+
      // construct:
      from_utf32_iterator() : m_iterator() {}
      from_utf32_iterator(InputIterator b) : m_iterator(b)
      {
-        //cout << "char from utf-32\n";
+       BOOST_XOP_LOG("char from utf-32");
      }
   };
 
@@ -781,8 +802,6 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      from_utf32_iterator<InputIterator, u8_t>  m_iterator;
 
   public:
-     InputIterator& base() {return m_iterator;}
-
      char dereference() const
      {
        return static_cast<char>(*m_iterator);
@@ -795,11 +814,13 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
      void increment()  { ++m_iterator; }
 
+     InputIterator& base() {return m_iterator;}
+
      // construct:
      from_utf32_iterator() : m_iterator() {}
      from_utf32_iterator(InputIterator b) : m_iterator(b)
      {
-        //cout << "char from utf-32\n";
+        BOOST_XOP_LOG("char from utf-32");
      }
   };
 
@@ -831,6 +852,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
          return m_iterator == that.m_iterator;
       }
       void increment()  { ++m_iterator; }
+
+      InputIterator& base() {return m_iterator;}
     };
   }
 
@@ -878,6 +901,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
 
      void increment()  { ++m_iterator; }
+
+     InputIterator base() { return m_iterator; }
 
      // construct:
      from_utf32_iterator() : m_iterator() {}
