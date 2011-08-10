@@ -386,10 +386,10 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      typename base_type::reference
      dereference()const
      {
-        if (is_end(m_position))
-          return 0;
         if(m_value == pending_read)
            extract_current();
+        if (is_end(m_position))
+          return 0;
         return m_value;
      }
      bool equal(const to_utf32_iterator& that)const
@@ -399,8 +399,13 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      void increment()
      {
         // skip high surrogate first if there is one:
-        if(detail::is_high_surrogate(*m_position)) ++m_position;
+        if(detail::is_high_surrogate(*m_position))
+        {
+          ++m_position;
+          advance();
+        }
         ++m_position;
+        advance();
         m_value = pending_read;
      }
 
