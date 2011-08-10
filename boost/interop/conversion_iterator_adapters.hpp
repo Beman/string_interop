@@ -313,8 +313,6 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         m_value = pending_read;
      }
 
-     InputIterator& base() { return m_position; }
-
      // construct:
      from_iterator() : m_position()
      {
@@ -408,8 +406,6 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         advance();
         m_value = pending_read;
      }
-
-     InputIterator& base() { return m_position; }
 
      // construct:
      from_iterator() : m_position()
@@ -738,8 +734,6 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
        advance();
      }
 
-     InputIterator& base() { return m_iterator; }
-
      // construct:
      from_iterator() : m_iterator() {}
      from_iterator(InputIterator b) : m_iterator(b)
@@ -858,7 +852,6 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
       }
       void increment()  { ++m_iterator; }
 
-      InputIterator& base() {return m_iterator;}
     };
   }
 
@@ -907,13 +900,13 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
      void increment()  { ++m_iterator; }
 
-     InputIterator base() { return m_iterator; }
+     InputIterator& base() {return m_iterator.base();}
 
      // construct:
      to_iterator() : m_iterator() {}
      to_iterator(InputIterator b) : m_iterator(b)
      {
-        //cout << "wchar_t from utf-32\n";
+       BOOST_XOP_LOG("wchar_t from utf-32");
      }
   };
 
