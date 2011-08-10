@@ -842,46 +842,50 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 #if defined(BOOST_WINDOWS_API)  // assume wchar_t is UTF-16
 
-  BOOST_STATIC_ASSERT(sizeof(wchar_t)*CHAR_BIT == 16);
-
-  namespace detail
+namespace detail
+{
+  template <class InputIterator>
+  class wide_to_u16
+    : public boost::iterator_facade<wide_to_u16<InputIterator>,
+       u16_t, std::input_iterator_tag, const u16_t>
   {
-    template <class InputIterator, class To, template<class> class EndPolicy>
-    class static_cast_iterator
-      : public boost::iterator_facade<static_cast_iterator<InputIterator, To, EndPolicy>,
-          To, std::input_iterator_tag, const To>,
-        public EndPolicy<InputIterator> 
-    {
-      InputIterator m_iterator;
-    public:
-      static_cast_iterator(InputIterator itr) : m_iterator(itr) {}
-
-      To dereference() const
-      {
-        if (is_end(m_iterator))
-          return 0;
-        return static_cast<To>(*m_iterator);
-      }
-
-      bool equal(const static_cast_iterator& that) const
-      {
-         return m_iterator == that.m_iterator;
-      }
-      void increment()  { ++m_iterator; advance(); }
-
-    };
-  }
+    InputIterator m_itr;
+  public:
+    wide_to_u16() {}
+    explicit wide_to_u16(InputIterator itr) : m_itr(itr) {}
+    u16_t dereference() const {return u16_t(*m_itr);}
+    bool equal(const wide_to_u16& that) const {return m_itr == that.m_itr;}
+    void increment() {++m_itr;}
+  };
+}
+  BOOST_STATIC_ASSERT(sizeof(wchar_t)*CHAR_BIT == 16);
 
   template <class InputIterator, template<class> class EndPolicy>
   class from_iterator<InputIterator, wchar_t, EndPolicy>
-    : public from_iterator<
-        detail::static_cast_iterator<InputIterator, u16_t, EndPolicy>, u16_t, EndPolicy>
+   : public boost::iterator_facade<from_iterator<InputIterator, wchar_t, EndPolicy>,
+       u32_t, std::input_iterator_tag, const u32_t>
   {
+     typedef boost::iterator_facade<from_iterator<InputIterator, wchar_t, EndPolicy>,
+       u32_t, std::input_iterator_tag, const u32_t> base_type;
+
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
+
+     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
+     BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
+
+     from_iterator<detail::wide_to_u16<InputIterator>, u16_t, EndPolicy> m_iterator;
+
   public:
-    from_iterator(InputIterator itr)
-      : from_iterator<
-         detail::static_cast_iterator<InputIterator, u16_t, EndPolicy>,
-         u16_t, EndPolicy>(itr) {}
+     from_iterator() : m_iterator() {}
+     from_iterator(InputIterator b) : m_iterator(detail::wide_to_u16<InputIterator>(b))
+     {
+       BOOST_XOP_LOG("wchar_t to utf-32");
+     }
+     u32_t dereference() const { return *m_iterator; }
+     bool equal(const from_iterator& that) const {return m_iterator == that.m_iterator;}
+     void increment() { ++m_iterator; }
+     void size(std::size_t sz) { m_iterator.size(sz); }
+     void end(InputIterator e) { m_iterator.end(detail::wide_to_u16<InputIterator>(e)); }
   };
 
 # elif defined(BOOST_POSIX_API)  // POSIX; assumes wchar_t is UTF-32
