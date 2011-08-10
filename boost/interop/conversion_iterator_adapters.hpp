@@ -145,6 +145,11 @@ public:
   template <class InputIterator>
   class to_iterator<InputIterator, wchar_t>;
 
+//---------------------------------  policy_iterator  ----------------------------------//
+
+  template <class InputIterator, template<class> class EndPolicy>
+  class policy_iterator;
+
 //-------------------------------  converting_iterator  --------------------------------//
 
   // primary template; partial specializations *may* be provided
@@ -213,7 +218,32 @@ public:
     }
   };
 
-  ////  case of From and To are already the value_type 
+  //  case of value_type/To/From are all the same type 
+  template <class InputIterator, template<class> class EndPolicy>
+  class converting_iterator<InputIterator,
+    typename std::iterator_traits<InputIterator>::value_type, EndPolicy,
+    typename std::iterator_traits<InputIterator>::value_type>                
+    : public policy_iterator<InputIterator, EndPolicy>
+  {
+  public:
+    explicit converting_iterator(InputIterator begin)
+      : policy_iterator<InputIterator,EndPolicy>(begin)
+    {
+      BOOST_XOP_LOG("converting_iterator; value_type/To/From the same, by null");
+    }
+    converting_iterator(InputIterator begin, InputIterator end)
+      : policy_iterator<InputIterator,EndPolicy>(begin)
+    {
+      BOOST_XOP_LOG("converting_iterator; value_type/To/From the same, by range");
+      this->end(end);
+    }
+    converting_iterator(InputIterator begin, std::size_t sz)
+      : policy_iterator<InputIterator,EndPolicy>(begin)
+    {
+      BOOST_XOP_LOG("converting_iterator; value_type/To/From the same, by size");
+      this->size(sz);
+    }
+  };
 
 //--------------------------------------------------------------------------------------//
 //                                  implementation                                      
@@ -714,7 +744,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
   template <class InputIterator, template<class> class EndPolicy>
   class from_iterator<InputIterator, char, EndPolicy>
    : public boost::iterator_facade<from_iterator<InputIterator, char, EndPolicy>,
-       u32_t, std::input_iterator_tag, const u32_t>, public EndPolicy<InputIterator>
+       u32_t, std::input_iterator_tag, const u32_t>,
+     public EndPolicy<InputIterator>
   {
      typedef boost::iterator_facade<from_iterator<InputIterator, char, EndPolicy>,
        u32_t, std::input_iterator_tag, const u32_t> base_type;
@@ -939,6 +970,36 @@ namespace detail
 # else
 #   error Sorry, not implemented for other than 16 or 32 bit wchar_t
 # endif
+
+//---------------------------------  policy_iterator  ----------------------------------//
+
+  template <class InputIterator, template<class> class EndPolicy>
+  class policy_iterator
+    : public boost::iterator_facade<policy_iterator<InputIterator, EndPolicy>,
+        typename std::iterator_traits<InputIterator>::value_type,
+        std::input_iterator_tag,
+        const typename std::iterator_traits<InputIterator>::value_type>,
+      public EndPolicy<InputIterator>
+
+  {
+    InputIterator m_itr;
+  public:
+    policy_iterator() {}
+    explicit policy_iterator(InputIterator itr) : m_itr(itr) {}
+    value_type dereference() const
+    {
+      if (is_end(m_itr))
+        return 0;
+      return *m_itr;
+    }
+    bool equal(const policy_iterator& that) const {return m_itr == that.m_itr;}
+    void increment()
+    {
+      BOOST_ASSERT_MSG(!is_end(m_itr), "Attempt to increment past end");
+      ++m_itr;
+      advance();
+    }
+  };
 
 }  // namespace interop
 
