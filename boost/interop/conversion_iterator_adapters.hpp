@@ -120,6 +120,9 @@ public:
   class from_iterator<InputIterator, u16_t, EndPolicy>;
 
   template <class InputIterator, template<class> class EndPolicy>
+  class from_iterator<InputIterator, u32_t, EndPolicy>;
+
+  template <class InputIterator, template<class> class EndPolicy>
   class from_iterator<InputIterator, char, EndPolicy>;
 
   template <class InputIterator, template<class> class EndPolicy>
@@ -138,6 +141,9 @@ public:
 
   template <class InputIterator>
   class to_iterator<InputIterator, u16_t>;
+
+  template <class InputIterator>
+  class to_iterator<InputIterator, u32_t>;
   
   template <class InputIterator>
   class to_iterator<InputIterator, char>;
@@ -160,20 +166,20 @@ public:
   public:
     explicit converting_iterator(InputIterator begin)
       : to_iterator<from_iterator<InputIterator, From, EndPolicy>, To>(begin)
-    // Requires: EndPolicy requires no initialization
+    // Requires: An EndPolicy that requires no initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by_null");
     }
     converting_iterator(InputIterator begin, InputIterator end)
       : to_iterator<from_iterator<InputIterator, From, EndPolicy>, To>(begin)
-    // Requires: EndPolicy requires end iterator initialization
+    // Requires: An EndPolicy that supplies end iterator initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by range");
       base().end(end);
     }
     converting_iterator(InputIterator begin, std::size_t sz)
       : to_iterator<from_iterator<InputIterator, From, EndPolicy>, To>(begin)
-    // Requires: EndPolicy requires size initialization
+    // Requires: An EndPolicy that supplies size initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by size");
       base().size(sz);
@@ -181,69 +187,90 @@ public:
   };
 
   ////  case of From is u32_t
-  //template <class InputIterator, class To>
-  //class converting_iterator<InputIterator, u32_t, template<class> class EndPolicy, To>                
-  //  : public to_iterator<InputIterator, To>
+  //template <class InputIterator, class To, template<class> class EndPolicy>
+  //class converting_iterator<InputIterator, u32_t, EndPolicy, To>                
+  //  : public to_iterator<policy_iterator<InputIterator, EndPolicy>, To>
   //{
   //public:
-  //  explicit converting_iterator(InputIterator it)
-  //    : to_iterator<InputIterator, To>(it)
+  //  explicit converting_iterator(InputIterator begin)
+  //    : to_iterator<policy_iterator<InputIterator, EndPolicy>, To>(begin)
+  //  // Requires: An EndPolicy that requires no initialization
   //  {
-  //    BOOST_XOP_LOG("converting_iterator; From already u32_t\n");
+  //    BOOST_XOP_LOG("converting_iterator; From is u32_t, by_null");
+  //  }
+  //  converting_iterator(InputIterator begin, InputIterator end)
+  //    : to_iterator<policy_iterator<InputIterator, EndPolicy>, To>(begin)
+  //  // Requires: An EndPolicy that supplies end iterator initialization
+  //  {
+  //    BOOST_XOP_LOG("converting_iterator; From is u32_t, by range");
+  //    base().end(end);
+  //  }
+  //  converting_iterator(InputIterator begin, std::size_t sz)
+  //    : to_iterator<policy_iterator<InputIterator, EndPolicy>, To>(begin)
+  //  // Requires: An EndPolicy that supplies size initialization
+  //  {
+  //    BOOST_XOP_LOG("converting_iterato; From is u32_t, by size");
+  //    base().size(sz);
   //  }
   //};
 
-  //  case of To is u32_t
-  template <class InputIterator, class From, template<class> class EndPolicy>
-  class converting_iterator<InputIterator, From, EndPolicy, u32_t>                
-    : public from_iterator<InputIterator, From, EndPolicy>
-  {
-  public:
-    explicit converting_iterator(InputIterator begin)
-      : from_iterator<InputIterator,From,EndPolicy>(begin)
-    {
-      BOOST_XOP_LOG("converting_iterator; To is u32_t, by null");
-    }
-    converting_iterator(InputIterator begin, InputIterator end)
-      : from_iterator<InputIterator,From,EndPolicy>(begin)
-    {
-      BOOST_XOP_LOG("converting_iterator; To is u32_t, by range");
-      this->end(end);
-    }
-    converting_iterator(InputIterator begin, std::size_t sz)
-      : from_iterator<InputIterator,From,EndPolicy>(begin)
-    {
-      BOOST_XOP_LOG("converting_iterator; To is u32_t, by size");
-      this->size(sz);
-    }
-  };
+  ////  case of To is u32_t
+  //template <class InputIterator, class From, template<class> class EndPolicy>
+  //class converting_iterator<InputIterator, From, EndPolicy, u32_t>                
+  //  : public from_iterator<InputIterator, From, EndPolicy>
+  //{
+  //public:
+  //  explicit converting_iterator(InputIterator begin)
+  //    : from_iterator<InputIterator,From,EndPolicy>(begin)
+  //  // Requires: An EndPolicy that requires no initialization
+  //  {
+  //    BOOST_XOP_LOG("converting_iterator; To is u32_t, by null");
+  //  }
+  //  converting_iterator(InputIterator begin, InputIterator end)
+  //    : from_iterator<InputIterator,From,EndPolicy>(begin)
+  //  // Requires: An EndPolicy that supplies end iterator initialization
+  //  {
+  //    BOOST_XOP_LOG("converting_iterator; To is u32_t, by range");
+  //    this->end(end);
+  //  }
+  //  converting_iterator(InputIterator begin, std::size_t sz)
+  //    : from_iterator<InputIterator,From,EndPolicy>(begin)
+  //  // Requires: An EndPolicy that supplies size initialization
+  //  {
+  //    BOOST_XOP_LOG("converting_iterator; To is u32_t, by size");
+  //    this->size(sz);
+  //  }
+  //};
 
-  //  case of value_type/To/From are all the same type 
-  template <class InputIterator, template<class> class EndPolicy>
-  class converting_iterator<InputIterator,
-    typename std::iterator_traits<InputIterator>::value_type, EndPolicy,
-    typename std::iterator_traits<InputIterator>::value_type>                
-    : public policy_iterator<InputIterator, EndPolicy>
-  {
-  public:
-    explicit converting_iterator(InputIterator begin)
-      : policy_iterator<InputIterator,EndPolicy>(begin)
-    {
-      BOOST_XOP_LOG("converting_iterator; value_type/To/From the same, by null");
-    }
-    converting_iterator(InputIterator begin, InputIterator end)
-      : policy_iterator<InputIterator,EndPolicy>(begin)
-    {
-      BOOST_XOP_LOG("converting_iterator; value_type/To/From the same, by range");
-      this->end(end);
-    }
-    converting_iterator(InputIterator begin, std::size_t sz)
-      : policy_iterator<InputIterator,EndPolicy>(begin)
-    {
-      BOOST_XOP_LOG("converting_iterator; value_type/To/From the same, by size");
-      this->size(sz);
-    }
-  };
+  ////  case of value_type/To/From are all the same type 
+  //template <class InputIterator, template<class> class EndPolicy>
+  //class converting_iterator<InputIterator,
+  //  typename std::iterator_traits<InputIterator>::value_type, EndPolicy,
+  //  typename std::iterator_traits<InputIterator>::value_type>                
+  //  : public policy_iterator<InputIterator, EndPolicy>
+  //{
+  //public:
+  //  explicit converting_iterator(InputIterator begin)
+  //    : policy_iterator<InputIterator,EndPolicy>(begin)
+  //  // Requires: An EndPolicy that requires no initialization
+  //  {
+  //    BOOST_XOP_LOG("converting_iterator; value_type/To/From the same, by null");
+  //  }
+  //  converting_iterator(InputIterator begin, InputIterator end)
+  //    : policy_iterator<InputIterator,EndPolicy>(begin)
+  //  // Requires: An EndPolicy that supplies end iterator initialization
+  //  {
+  //    BOOST_XOP_LOG("converting_iterator; value_type/To/From the same, by range");
+  //    this->end(end);
+  //  }
+  //  converting_iterator(InputIterator begin, std::size_t sz)
+  //    : policy_iterator<InputIterator,EndPolicy>(begin)
+  //  // Requires: An EndPolicy that supplies size initialization
+  //  {
+  //    BOOST_XOP_LOG("converting_iterator; value_type/To/From the same, by size");
+  //    this->size(sz);
+  //  }
+  //};
 
 //--------------------------------------------------------------------------------------//
 //                                  implementation                                      
@@ -314,7 +341,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
   template <class InputIterator, template<class> class EndPolicy>
   class from_iterator<InputIterator, u8_t, EndPolicy>
    : public boost::iterator_facade<from_iterator<InputIterator, u8_t, EndPolicy>,
-       u32_t, std::input_iterator_tag, const u32_t>, public EndPolicy<InputIterator>
+       u32_t, std::input_iterator_tag, const u32_t>,
+     public EndPolicy<InputIterator>
   {
      typedef boost::iterator_facade<from_iterator<InputIterator, u8_t, EndPolicy>,
        u32_t, std::input_iterator_tag, const u32_t> base_type;
@@ -409,7 +437,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
   template <class InputIterator, template<class> class EndPolicy>
   class from_iterator<InputIterator, u16_t, EndPolicy>
    : public boost::iterator_facade<from_iterator<InputIterator, u16_t, EndPolicy>,
-       u32_t, std::input_iterator_tag, const u32_t>, public EndPolicy<InputIterator>
+       u32_t, std::input_iterator_tag, const u32_t>,
+     public EndPolicy<InputIterator>
   {
      typedef boost::iterator_facade<from_iterator<InputIterator, u16_t, EndPolicy>,
        u32_t, std::input_iterator_tag, const u32_t> base_type;
@@ -486,6 +515,37 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
      InputIterator m_position;
      mutable u32_t m_value;
+  };
+
+//-------------------------------  <u32_t> from_iterator  ------------------------------//
+
+  template <class InputIterator, template<class> class EndPolicy>
+  class from_iterator<InputIterator, u32_t, EndPolicy>
+    : public boost::iterator_facade<from_iterator<InputIterator, u32_t, EndPolicy>,
+        u32_t, std::input_iterator_tag, const u32_t>,
+      public EndPolicy<InputIterator>
+
+  {
+    InputIterator m_itr;
+  public:
+    from_iterator() {}
+    from_iterator(InputIterator itr) : m_itr(itr)
+    {
+        BOOST_XOP_LOG("utf-32 to utf-32");
+    }
+    u32_t dereference() const
+    {
+      if (is_end(m_itr))
+        return 0;
+      return *m_itr;
+    }
+    bool equal(const from_iterator& that) const {return m_itr == that.m_itr;}
+    void increment()
+    {
+      BOOST_ASSERT_MSG(!is_end(m_itr), "Attempt to increment past end");
+      ++m_itr;
+      advance();
+    }
   };
 
 //-------------------------------  <u8_t> to_iterator  ---------------------------------//
@@ -704,6 +764,26 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      InputIterator m_position;
      mutable u16_t m_values[3];
      mutable unsigned m_current;
+  };
+
+//-------------------------------  <u32_t> to_iterator  --------------------------------//
+
+  template <class InputIterator>
+  class to_iterator<InputIterator, u32_t>
+   : public boost::iterator_facade<to_iterator<InputIterator, u32_t>,
+      u32_t, std::input_iterator_tag, const u32_t>
+  {
+    InputIterator m_itr;
+  public:
+    to_iterator() {}
+    to_iterator(InputIterator itr) : m_itr(itr)
+    {
+      BOOST_XOP_LOG("utf-32 from utf-32");
+    }
+    u32_t dereference() const { return *m_itr; }
+    bool equal(const to_iterator& that) const {return m_itr == that.m_itr;}
+    void increment() { ++m_itr; }
+    InputIterator& base() {return m_itr;}
   };
 
 //  /***************************************************************************************
