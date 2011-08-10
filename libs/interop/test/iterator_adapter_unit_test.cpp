@@ -89,9 +89,9 @@ int cpp_main(int, char*[])
   u16_t u16src[] = { 'M', 'e', 'o', 'w', 0 };
   generate_1(std::basic_string<u16_t>(u16src));
 
-  //cout << "-----------------  testing with u32_t...  -----------------\n";
-  //u32_t u32src[] = { 'M', 'e', 'o', 'w', 0 };
-  //generate_1(std::basic_string<u32_t>(u32src));
+  cout << "-----------------  testing with u32_t...  -----------------\n";
+  u32_t u32src[] = { 'M', 'e', 'o', 'w', 0 };
+  generate_1(std::basic_string<u32_t>(u32src));
 
 
   return ::boost::report_errors();
