@@ -28,7 +28,7 @@
 
 namespace boost
 {
-namespace interop
+namespace xop
 {
 namespace detail
 {
@@ -841,7 +841,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
        if (is_end(m_iterator))
          return 0;
        unsigned char c = static_cast<unsigned char>(*m_iterator);
-       return static_cast<u32_t>(interop::detail::to_utf16[c]);
+       return static_cast<u32_t>(xop::detail::to_utf16[c]);
      }
      bool equal(const from_iterator& that) const
      {
@@ -887,10 +887,10 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
        u32_t c = *m_iterator;
        //cout << "*** c is " << hex << c << '\n';
        //cout << "    to_slice[c >> 7] << 7 is "
-       //  << unsigned int(interop::detail::slice_index[c >> 7] << 7) << '\n';
-       return static_cast<char>(interop::detail::to_char
+       //  << unsigned int(xop::detail::slice_index[c >> 7] << 7) << '\n';
+       return static_cast<char>(xop::detail::to_char
          [
-           (interop::detail::slice_index[c >> 7] << 7) | (c & 0x7f)
+           (xop::detail::slice_index[c >> 7] << 7) | (c & 0x7f)
          ]);
      }
 
@@ -1079,7 +1079,7 @@ namespace detail
     }
   };
 
-}  // namespace interop
+}  // namespace xop
 
 }  // namespace boost
 

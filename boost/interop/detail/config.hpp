@@ -16,7 +16,14 @@
 #ifdef BOOST_XOP_DEBUGGING_LOG
 #  define BOOST_XOP_LOG(MSG) std::cout << (MSG) << std::endl
 #else
-#  define BOOST_XOP_LOG(MSG) std::cout << (MSG) << std::endl
+#  define BOOST_XOP_LOG(MSG)
+#endif
+
+//  For internal use only
+#ifdef BOOST_XOP_STRING_DEBUGGING_LOG
+#  define BOOST_XOP_STRING_LOG(MSG) std::cout << (MSG) << std::endl
+#else
+#  define BOOST_XOP_STRING_LOG(MSG)
 #endif
 
 #endif  // BOOST_INTEROP_CONFIG_HPP

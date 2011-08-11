@@ -13,7 +13,7 @@
 
 using std::cout; using std::endl; using std::hex;
 
-using namespace boost::interop;
+using namespace boost::xop;
 using boost::u8_t;
 using boost::u16_t;
 using boost::u32_t;
