@@ -41,8 +41,6 @@ namespace detail
 
   *  by_null should do the character_traits eof dance
 
-  *  specialize converting_iterator for case of From and To are already the value_type
-
   *  John's code in <u8_t> from_iterator has been modified enough that it needs a
      complete test of its own.
      See Markus Kuhn's http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt as a
@@ -52,8 +50,8 @@ namespace detail
 
 //--------------------------------------------------------------------------------------//
 
-//  For n encodings, it is desirable to provide 2n adapters rather than n squared
-//  adapters. This is achieved conceptually by converting to and from UTF-32 as
+//  For n encodings, it is desirable to provide 2n rather than n squared adapters.
+//  This is achieved conceptually by converting to and from UTF-32 as
 //  an intermediate encoding, and then composing a converting_iterator from one
 //  from_iterator and one to_iterator. For efficiency, specializations of
 //  converting_iterator can provide direct conversion without an intermedate UTF32 step.
