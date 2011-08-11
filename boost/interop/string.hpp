@@ -11,6 +11,7 @@
 #include <boost/interop/string_0x.hpp>
 #include <boost/type_traits/integral_constant.hpp>
 #include <boost/interop/conversion_iterator_adapters.hpp>
+#include <boost/interop/detail/is_iterator.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/decay.hpp>
 #include <ostream>
@@ -51,10 +52,14 @@ typedef basic_string<u32_t>    u32string;  // u32_t with UTF-32 encoding
 
 template<class T> class is_character            : public boost::false_type {};
 template<class T> class is_character_container  : public boost::false_type {};
-template<class T> class is_character_iterator   : public boost::false_type {};
   
 //--------------------------------------------------------------------------------------//
+//
 //                              basic_string definition
+//
+//  Many functions simply forward to append(), which has numerous overloads to provide
+//  much of the core functionality.
+//  
 //--------------------------------------------------------------------------------------//
   
 template<class charT, class traits, class Allocator >
@@ -94,158 +99,277 @@ public:
 
   template <class Iterator>
   basic_string(Iterator itr,
-    typename enable_if<is_character_iterator<Iterator> >::type* dummy = 0)
+    typename enable_if<is_iterator<Iterator> >::type* dummy = 0)
       : std::basic_string<charT,traits,Allocator>() { append(itr); }
 
 //  append  ------------------------------------------------------------------------//
 
-  basic_string& append(const charT* it)
-  { 
-    cout << "append(const charT*)\n";
-    std::basic_string<charT,traits,Allocator>::append(it);
-    return *this;
-  }
+  //  signatures given in the order they appear in the standard [string.modifiers]
 
-  // needed as an artifact of the over aggressive template <class NTCSIterator>
-  basic_string& append(charT* it)
-  { 
-    cout << "append(charT*)\n";
-    std::basic_string<charT,traits,Allocator>::append(it);
-    return *this;
-  } 
-
-  template <class NTCSIterator>
-  typename boost::disable_if<is_character_container
-    <typename boost::decay<NTCSIterator>::type>,
-    basic_string&>::type     
-  append(NTCSIterator it)
+  basic_string&  operator+=(const basic_string& str)
   {
-    converting_iterator<NTCSIterator,
-      typename std::iterator_traits<NTCSIterator>::value_type,
-      typename std::basic_string<charT,traits,Allocator>::value_type>
-        converting_it(it);
-    for (;;)
-    {
-      typename std::basic_string<charT,traits,Allocator>::value_type
-        c = *converting_it;
-      if (!c)
-        break;
-      push_back(c);
-      ++converting_it;
-    }
+    BOOST_XOP_STRING_LOG("operator+=(const basic_string&)");
+    return append(str);
+  }
+  basic_string&  operator+=(const charT* s)
+  {
+    BOOST_XOP_STRING_LOG("operator+=(const charT*)");
+    return append(s);
+  }
+  basic_string&  operator+=(charT c)
+  {
+    BOOST_XOP_STRING_LOG("operator+=(charT)");
+    push_back(c);
     return *this;
   }
-
-  template <class Container>
-  typename boost::enable_if<is_character_container
-    <typename boost::decay<Container>::type>,
-    basic_string&>::type     
-  append(const Container& ctr)
-  {
-    typedef
-      converting_iterator<typename Container::const_iterator,
-        typename Container::value_type,
-        typename std::basic_string<charT,traits,Allocator>::value_type>
-      iterator_adapter_type;
-    return append(iterator_adapter_type(ctr.cbegin()),
-      iterator_adapter_type(ctr.cend()));
+//basic_string&  operator+=(initializer_list<charT>);
+  basic_string&  append(const basic_string& str)
+  { 
+    BOOST_XOP_STRING_LOG("append(const basic_string&)");
+    std::basic_string<charT,traits,Allocator>::append(str);
+    return *this;
   }
-
+  basic_string&  append(const basic_string& str, size_type pos, size_type n)
+  { 
+    BOOST_XOP_STRING_LOG("append(const basic_string& str, size_type pos, size_type n)");
+    std::basic_string<charT,traits,Allocator>::append(str, pos, n);
+    return *this;
+  }
+  basic_string&  append(const charT* s, size_type n)
+  { 
+    BOOST_XOP_STRING_LOG("append(const charT* s, size_type n)");
+    std::basic_string<charT,traits,Allocator>::append(s, n);
+    return *this;
+  }
+  basic_string&  append(const charT* s)
+  { 
+    BOOST_XOP_STRING_LOG("append(const charT*)");
+    std::basic_string<charT,traits,Allocator>::append(s);
+    return *this;
+  }
+  basic_string&  append(size_type n, charT c)
+  { 
+    BOOST_XOP_STRING_LOG("append(size_type n, charT c)");
+    std::basic_string<charT,traits,Allocator>::append(n, c);
+    return *this;
+  }
   template <class InputIterator>
-  basic_string& append(InputIterator first, InputIterator last)
+    typename boost::enable_if<is_same<
+      typename std::iterator_traits<InputIterator>::value_type, value_type>,
+  basic_string&>::type  append(InputIterator first, InputIterator last)
   {
+    BOOST_XOP_STRING_LOG("InputIterator first, InputIterator last; value_type)");
     std::basic_string<charT,traits,Allocator>::append(first, last);
     return *this;
   }
+//basic_string&  append(initializer_list<charT>);
 
-  // copy assign  --------------------------------------------------------------------//
+  //  interoperability signatures
 
-  basic_string& operator=(const basic_string& str)
+  template<class Ctr>
+    typename boost::enable_if<is_character_container<Ctr>,
+  basic_string&>::type append(const Ctr& ctr)
   {
-    std::basic_string<charT,traits,Allocator>::assign(str);
-    return *this;
-  }
-  //basic_string& operator=(basic_string&& str) noexcept;
-  basic_string& operator=(const charT* s)
-  {
-    std::basic_string<charT,traits,Allocator>::assign(s);
-    return *this;
-  }
-  basic_string& operator=(charT* s)
-  {
-    std::basic_string<charT,traits,Allocator>::assign(s);
-    return *this;
-  }
-
-  template <class NTCSIterator>
-  typename boost::disable_if<is_character_container
-    <typename boost::decay<NTCSIterator>::type>,
-    basic_string&>::type     
-  operator=(NTCSIterator it)
-  {
-    std::basic_string<charT,traits,Allocator>::clear();
-    return append(it);
-  }
-
-  template <class Container>
-  typename boost::enable_if<is_character_container
-    <typename boost::decay<Container>::type>,
-    basic_string&>::type     
-  operator=(const Container& ctr)
-  {
-    std::basic_string<charT,traits,Allocator>::clear();
-    return append(ctr);
-  }
-
-  //basic_string& operator=(charT c);
-  //basic_string& operator=(initializer_list<charT>);
-
-  // assign  -------------------------------------------------------------------------//
-
-  basic_string& assign(const basic_string& str)
-  {
-    std::basic_string<charT,traits,Allocator>::assign(str);
-    return *this;
-  }
-  //basic_string& assign(basic_string&& str) noexcept;
-  //basic_string& assign(const basic_string& str, size_type pos, size_type n);
-  //basic_string& assign(const charT* s, size_type n);
-  basic_string& assign(const charT* s)
-  {
-    std::basic_string<charT,traits,Allocator>::assign(s);
+    BOOST_XOP_STRING_LOG("const Ctr& ctr)");
+    converting_iterator<typename Ctr::const_iterator,
+      typename Ctr::value_type, by_range,
+      typename std::basic_string<charT,traits,Allocator>::value_type>
+        itr(ctr.cbegin(), ctr.cend());
+    for (; *itr != static_cast<value_type>(0); ++itr)
+      push_back(*itr);
     return *this;
   }
 
-  basic_string& assign(charT* s)
-  {
-    std::basic_string<charT,traits,Allocator>::assign(s);
-    return *this;
-  }
-
-  template <class NTCSIterator>
-  typename boost::disable_if<is_character_container
-    <typename boost::decay<NTCSIterator>::type>,
-    basic_string&>::type     
-  assign(NTCSIterator it)
-  {
-    std::basic_string<charT,traits,Allocator>::clear();
-    return append(it);
-  }
-
-  template <class Container>
-  typename boost::enable_if<is_character_container
-    <typename boost::decay<Container>::type>,
-    basic_string&>::type     
-  assign(const Container& ctr)
-  {
-    std::basic_string<charT,traits,Allocator>::clear();
-    return append(ctr);
-  }
-  //basic_string& assign(size_type n, charT c);
   template<class InputIterator>
-    basic_string& assign(InputIterator first, InputIterator last);
-  //basic_string& assign(initializer_list<charT>);
+    typename boost::enable_if<::boost::is_iterator<InputIterator>,
+  basic_string&>::type append(InputIterator s)
+  {
+    BOOST_XOP_STRING_LOG("InputIterator s)");
+    converting_iterator<InputIterator,
+      typename std::iterator_traits<InputIterator>::value_type, by_null,
+      typename std::basic_string<charT,traits,Allocator>::value_type>
+        itr(s);
+    for (; *itr != static_cast<value_type>(0); ++itr)
+      push_back(*itr);
+    return *this;
+  }
 
+  template<class InputIterator>
+    typename boost::enable_if<::boost::is_iterator<InputIterator>,
+  basic_string&>::type append(InputIterator s, size_type n)
+  {
+    BOOST_XOP_STRING_LOG("InputIterator s, size_type n)");
+    converting_iterator<InputIterator,
+      typename std::iterator_traits<InputIterator>::value_type, by_size,
+      typename std::basic_string<charT,traits,Allocator>::value_type>
+        itr(s, n);
+    for (; *itr != static_cast<value_type>(0); ++itr)
+      push_back(*itr);
+    return *this;
+  }
+
+  template<class Char>
+    typename boost::enable_if<is_character<Char>,
+  basic_string&>::type append(Char chr)
+  {
+    BOOST_XOP_STRING_LOG("Char chr)");
+    converting_iterator<typename Ctr::const_iterator,
+      typename Ctr::value_type, by_size,
+      typename std::basic_string<charT,traits,Allocator>::value_type>
+        itr(&chr, 1);
+    // one input character can produce several output characters; example UTF-32->UTF-8
+    for (; *itr != static_cast<value_type>(0); ++itr)
+      push_back(*itr);
+    return *this;
+  }
+
+  template <class InputIterator>
+    typename boost::disable_if<is_same<
+      typename std::iterator_traits<InputIterator>::value_type, value_type>,
+  basic_string&>::type  append(InputIterator first, InputIterator last)
+  {
+    BOOST_XOP_STRING_LOG("InputIterator first, InputIterator last; not value_type)");
+    converting_iterator<typename Ctr::const_iterator,
+      typename Ctr::value_type, by_range,
+      typename std::basic_string<charT,traits,Allocator>::value_type>
+        itr(first, last);
+    for (; *itr != static_cast<value_type>(0); ++itr)
+      push_back(*itr);
+    return *this;
+  }
+
+
+  //template <class NTCSIterator>
+  //typename boost::disable_if<is_character_container
+  //  <typename boost::decay<NTCSIterator>::type>,
+  //  basic_string&>::type     
+  //append(NTCSIterator it)
+  //{
+  //  converting_iterator<NTCSIterator,
+  //    typename std::iterator_traits<NTCSIterator>::value_type,
+  //    typename std::basic_string<charT,traits,Allocator>::value_type>
+  //      converting_it(it);
+  //  for (;;)
+  //  {
+  //    typename std::basic_string<charT,traits,Allocator>::value_type
+  //      c = *converting_it;
+  //    if (!c)
+  //      break;
+  //    push_back(c);
+  //    ++converting_it;
+  //  }
+  //  return *this;
+  //}
+
+  //template <class Container>
+  //typename boost::enable_if<is_character_container
+  //  <typename boost::decay<Container>::type>,
+  //  basic_string&>::type     
+  //append(const Container& ctr)
+  //{
+  //  typedef
+  //    converting_iterator<typename Container::const_iterator,
+  //      typename Container::value_type,
+  //      typename std::basic_string<charT,traits,Allocator>::value_type>
+  //    iterator_adapter_type;
+  //  return append(iterator_adapter_type(ctr.cbegin()),
+  //    iterator_adapter_type(ctr.cend()));
+  //}
+
+  //template <class InputIterator>
+  //basic_string& append(InputIterator first, InputIterator last)
+  //{
+  //  std::basic_string<charT,traits,Allocator>::append(first, last);
+  //  return *this;
+  //}
+
+  //// copy assign  --------------------------------------------------------------------//
+
+  //basic_string& operator=(const basic_string& str)
+  //{
+  //  std::basic_string<charT,traits,Allocator>::assign(str);
+  //  return *this;
+  //}
+  ////basic_string& operator=(basic_string&& str) noexcept;
+  //basic_string& operator=(const charT* s)
+  //{
+  //  std::basic_string<charT,traits,Allocator>::assign(s);
+  //  return *this;
+  //}
+  //basic_string& operator=(charT* s)
+  //{
+  //  std::basic_string<charT,traits,Allocator>::assign(s);
+  //  return *this;
+  //}
+
+  //template <class NTCSIterator>
+  //typename boost::disable_if<is_character_container
+  //  <typename boost::decay<NTCSIterator>::type>,
+  //  basic_string&>::type     
+  //operator=(NTCSIterator it)
+  //{
+  //  std::basic_string<charT,traits,Allocator>::clear();
+  //  return append(it);
+  //}
+
+  //template <class Container>
+  //typename boost::enable_if<is_character_container
+  //  <typename boost::decay<Container>::type>,
+  //  basic_string&>::type     
+  //operator=(const Container& ctr)
+  //{
+  //  std::basic_string<charT,traits,Allocator>::clear();
+  //  return append(ctr);
+  //}
+
+  ////basic_string& operator=(charT c);
+  ////basic_string& operator=(initializer_list<charT>);
+
+  //// assign  -------------------------------------------------------------------------//
+
+  //basic_string& assign(const basic_string& str)
+  //{
+  //  std::basic_string<charT,traits,Allocator>::assign(str);
+  //  return *this;
+  //}
+  ////basic_string& assign(basic_string&& str) noexcept;
+  ////basic_string& assign(const basic_string& str, size_type pos, size_type n);
+  ////basic_string& assign(const charT* s, size_type n);
+  //basic_string& assign(const charT* s)
+  //{
+  //  std::basic_string<charT,traits,Allocator>::assign(s);
+  //  return *this;
+  //}
+
+  //basic_string& assign(charT* s)
+  //{
+  //  std::basic_string<charT,traits,Allocator>::assign(s);
+  //  return *this;
+  //}
+
+  //template <class NTCSIterator>
+  //typename boost::disable_if<is_character_container
+  //  <typename boost::decay<NTCSIterator>::type>,
+  //  basic_string&>::type     
+  //assign(NTCSIterator it)
+  //{
+  //  std::basic_string<charT,traits,Allocator>::clear();
+  //  return append(it);
+  //}
+
+  //template <class Container>
+  //typename boost::enable_if<is_character_container
+  //  <typename boost::decay<Container>::type>,
+  //  basic_string&>::type     
+  //assign(const Container& ctr)
+  //{
+  //  std::basic_string<charT,traits,Allocator>::clear();
+  //  return append(ctr);
+  //}
+  ////basic_string& assign(size_type n, charT c);
+  //template<class InputIterator>
+  //  basic_string& assign(InputIterator first, InputIterator last);
+  ////basic_string& assign(initializer_list<charT>);
 
 };  // basic_string
 
@@ -253,44 +377,44 @@ public:
 //                               stream inserters
 //--------------------------------------------------------------------------------------//
 
-template <class Ostream, class NTCSIterator>
-typename boost::enable_if<is_character_iterator<NTCSIterator>,
-  Ostream&>::type
-operator<<(Ostream& os, NTCSIterator iterator)
-{
-  cout << "NTCSIterator stream inserter\n";
-  converting_iterator< NTCSIterator,
-    typename std::iterator_traits<NTCSIterator>::value_type,
-    typename Ostream::char_type> itr(iterator);
-  for (;;)
-  {
-    typename Ostream::char_type c = *itr;
-    if (!c)
-      break;
-    os << c;
-    ++itr;
-  }
-  return os;
-}
-
-template <class Ostream, class T>
-typename boost::enable_if<is_character_container<T>,
-  Ostream&>::type
-operator<<(Ostream& os, const T& container)
-{
-  converting_iterator<const typename T::value_type*,
-    typename T::value_type,
-    typename Ostream::char_type> itr(container.c_str());
-  for (;;)
-  {
-    typename Ostream::char_type c = *itr;
-    if (!c)
-      break;
-    os << c;
-    ++itr;
-  }
-  return os;
-}
+//template <class Ostream, class NTCSIterator>
+//typename boost::enable_if<is_character_iterator<NTCSIterator>,
+//  Ostream&>::type
+//operator<<(Ostream& os, NTCSIterator iterator)
+//{
+//  cout << "NTCSIterator stream inserter\n";
+//  converting_iterator< NTCSIterator,
+//    typename std::iterator_traits<NTCSIterator>::value_type,
+//    typename Ostream::char_type> itr(iterator);
+//  for (;;)
+//  {
+//    typename Ostream::char_type c = *itr;
+//    if (!c)
+//      break;
+//    os << c;
+//    ++itr;
+//  }
+//  return os;
+//}
+//
+//template <class Ostream, class T>
+//typename boost::enable_if<is_character_container<T>,
+//  Ostream&>::type
+//operator<<(Ostream& os, const T& container)
+//{
+//  converting_iterator<const typename T::value_type*,
+//    typename T::value_type,
+//    typename Ostream::char_type> itr(container.c_str());
+//  for (;;)
+//  {
+//    typename Ostream::char_type c = *itr;
+//    if (!c)
+//      break;
+//    os << c;
+//    ++itr;
+//  }
+//  return os;
+//}
 
 //--------------------------------------------------------------------------------------//
 //                       interoperability trait specializations
@@ -315,31 +439,6 @@ template<> class is_character_container<boost::xop::u8string>  : public boost::t
 template<> class is_character_container<boost::xop::u16string> : public boost::true_type {}; 
 template<> class is_character_container<boost::xop::u32string> : public boost::true_type {};
 
-//-----------------------------  is_character_iterator  --------------------------------//
-
-template<> class is_character_iterator<char*>         : public boost::true_type {}; 
-template<> class is_character_iterator<wchar_t*>      : public boost::true_type {}; 
-template<> class is_character_iterator<boost::u8_t*>  : public boost::true_type {}; 
-template<> class is_character_iterator<boost::u16_t*> : public boost::true_type {}; 
-template<> class is_character_iterator<boost::u32_t*> : public boost::true_type {};
-
-template<> class is_character_iterator<const char*>         : public boost::true_type {}; 
-template<> class is_character_iterator<const wchar_t*>      : public boost::true_type {}; 
-template<> class is_character_iterator<const boost::u8_t*>  : public boost::true_type {}; 
-template<> class is_character_iterator<const boost::u16_t*> : public boost::true_type {}; 
-template<> class is_character_iterator<const boost::u32_t*> : public boost::true_type {};
-
-template<> class is_character_iterator<boost::xop::string::iterator>    : public boost::true_type {}; 
-template<> class is_character_iterator<boost::xop::wstring::iterator>   : public boost::true_type {}; 
-template<> class is_character_iterator<boost::xop::u8string::iterator>  : public boost::true_type {}; 
-template<> class is_character_iterator<boost::xop::u16string::iterator> : public boost::true_type {}; 
-template<> class is_character_iterator<boost::xop::u32string::iterator> : public boost::true_type {};
-
-template<> class is_character_iterator<boost::xop::string::const_iterator>    : public boost::true_type {}; 
-template<> class is_character_iterator<boost::xop::wstring::const_iterator>   : public boost::true_type {}; 
-template<> class is_character_iterator<boost::xop::u8string::const_iterator>  : public boost::true_type {}; 
-template<> class is_character_iterator<boost::xop::u16string::const_iterator> : public boost::true_type {}; 
-template<> class is_character_iterator<boost::xop::u32string::const_iterator> : public boost::true_type {};
 }  // namespace xop
 }  // namespace boost
 
