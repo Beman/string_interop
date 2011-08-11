@@ -39,7 +39,10 @@ struct is_iterator_impl
         (::boost::type_traits::ice_or< 
             ::boost::is_pointer<T>::value,
             ::boost::detail::has_iterator_category<T>::value
-        >::value)); 
+        >::value));
+//  It would markedly reduce the chance of accidental conformance if it was
+//  required that T::iterator_category was convertible to std::input_iterator_tag
+//  or std::output_iterator_tag.
 };
 
 } // namespace detail
