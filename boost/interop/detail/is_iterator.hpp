@@ -1,6 +1,6 @@
 //  boost/type_traits/is_iterator.hpp
 
-//  (C) Copyright Beman Dawes 2011
+//  (C) Copyright Beman Dawes and Howard Hinnant 2011
 //  (C) Copyright Steve Cleary, Beman Dawes, Howard Hinnant & John Maddock 2000.
 
 //  Distributed under the Boost Software License, Version 1.0.
@@ -22,7 +22,6 @@ namespace boost {
 
 namespace detail {
 
-//  Thanks to Howard Hinnant for inventing has_iterator_category
 template <class T>
 class has_iterator_category
 {
