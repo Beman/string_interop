@@ -33,118 +33,94 @@ namespace
   }
 
 
-  //template <class String, class To>
-  //void generate_2(const String& str)
-  //{
-  //  converting_iterator<const typename String::value_type*,
-  //    typename String::value_type,
-  //    by_null, To>  itr1(str.c_str());
-
-  //  test(itr1, str.size());
-
-  //  converting_iterator<const typename String::value_type*,
-  //    typename String::value_type,
-  //    by_size, To>  itr2(str.c_str(), str.size()-1);
-
-  //  test(itr2, str.size()-1);
-
-  //  converting_iterator<typename String::const_iterator,
-  //    typename String::value_type,
-  //    by_range, To>  itr3(str.begin(), str.end()-2);
-
-  //  test(itr3, str.size()-2);
-  //}
-
-  //template <class String>
-  //void generate_1(const String& str)
-  //{
-  //  // each target type
-  //  generate_2<String, char>(str);
-  //  generate_2<String, wchar_t>(str);
-  //  generate_2<String, u8_t>(str);
-  //  generate_2<String, u16_t>(str);
-  //  generate_2<String, u32_t>(str);
-  //}
-
-
-
-
   struct xappend
   {
     template <class T, class U>
-    void operator()(T& str, U arg) const
-    {
-      cout << "        xappend str.append(arg)" << std::endl;
-      str.append(arg);
-      cout << "        done" << std::endl;
-    }
+    void operator()(T& str, U u) const {str.append(u);}
+    template <class T, class U, class V>
+    void operator()(T& str, U u, V v) const {str.append(u, v);}
+    template <class T, class U, class V, class W>
+    void operator()(T& str, U u, V v, W w) const {str.append(u, v, w);}
   };
+
   struct xassign
   {
     template <class T, class U> 
     void operator()(T& str, U arg) const { str = arg; }
   };
 
-  template <class T, class U, class Func>
-  void test(const T& obj, U x, const Func& func)
-  // obj must be a xop::basic_string, x is an argument to be applied to a
-  // copy of obj by func, and expected is the expected result
+  template <class T, class U, class Func> // T must be a xop::basic_string
+  void test(const T& obj, U u, const Func& func)
+  // u is an argument to be applied to a
+  // copy of obj by func
+  {
+    T tmp;
+    // use copy in case construct, cctor, copy assign don't work right yet
+    std::copy(obj.begin(), obj.end(), std::back_inserter(tmp));
+    func(tmp, u);
+    std::basic_string<typename T::value_type> xop_result
+      (tmp.c_str<std::basic_string<typename T::value_type> >());
+
+     std::basic_string<typename T::value_type> std_result
+      (obj.c_str<std::basic_string<typename T::value_type> >());
+    func(std_result, u);
+
+    BOOST_TEST_EQ(xop_result == std_result); 
+  }
+
+  template <class T, class U, class V, class Func>
+  void test(const T& obj, U u, V v, const Func& func)
+  // obj must be a xop::basic_string, u and v are arguments to be applied to a
+  // copy of obj by func
   {
     T xop_result;
     std::copy(obj.begin(), obj.end(), std::back_inserter(xop_result));
-    func(xop_result, x);
+    func(xop_result, u, v);
     std::basic_string<typename T::value_type> result(xop_result.c_str());
 
     // perform the function on std::basic_string arguments, and then
     // use that result as the expected result.
     std::basic_string<typename T::value_type> expected = obj;
-    xop::basic_string<typename T::value_type> tmp = x;  // convert if needed
-    std::basic_string<typename T::value_type> argument = tmp;
-    func(expected, argument);
-    BOOST_TEST_EQ(result, expected); 
+    //xop::basic_string<typename T::value_type> tmp = u;  // convert if needed
+    //std::basic_string<typename T::value_type> argument = tmp;
+    func(expected, u, v);
+    BOOST_TEST(result == expected); 
   }
 
-  template <class T, class U, class Func>
-  void call_test(const T& obj, const U& arg)
-  {
-    cout << "      argument is object\n";
-    test(obj, arg, Func());
-    cout << "      done" << std::endl;
-    //cout << "      argument is object.c_str()...\n";
-    //test(obj, arg.c_str(), Func());
-    //cout << "      done" << std::endl;
-  }
+  //template <class T, class U, class Func>
+  //void call_test(const T& obj, const U& arg)
+  //{
+  //  test(obj, arg, Func());
+  //  test(obj, arg.c_str(), Func());
 
-  template <class T, class U>
-  void generate2(const T& obj, const U& arg)
+  //  test(obj, 3, arg[0], Func());
+  //}
+
+  template <class T, class U> // T must be a xop::basic_string
+                              // U must be a std::basic_string
+  void generate2(const T& obj, const U& arg, const)
   {
-    cout << "    operation append\n";
-    call_test<T, U, xappend>(obj, arg);
-    cout << "    done" << std::endl;
+//    call_test<T, U, xappend>(obj, arg);
 //    call_test<T, U, xassign>(obj, arg);
+
+    test(obj, arg, xappend());
+    test(obj, arg.c_str(), xappend());
+    test(obj, 2, arg.c_str(), xappend());
+
   }
 
-  template <class T>
+  template <class T>  // T must be a xop::basic_string
   void generate1(const T& obj)
   {
     u8_t  u8src[]  = { 'M', 'e', 'o', 'w', 0 };
     u16_t u16src[] = { 'M', 'e', 'o', 'w', 0 };
     u32_t u32src[] = { 'M', 'e', 'o', 'w', 0 };
 
-    //cout << "  argument souce xop::string...\n";
-    //generate2(obj, xop::string("Meow"));
-    cout << "  argument source xop::wstring\n";
-    generate2(obj, xop::wstring(L"Meow"));
-    cout << "  done" << std::endl;
-    //generate2(obj, xop::u8string(u8src));
-    //generate2(obj, xop::u16string(u16src));
-    //generate2(obj, xop::u32string(u32src));
-
-    //generate2(obj, std::string("Meow"));
-    //generate2(obj, std::wstring(L"Meow"));
-    //generate2(obj, std::u8string(u8src));
-    //generate2(obj, std::u16string(u16src));
-    //generate2(obj, std::u32string(u32src));
+    generate2(obj, std::string("Meow"));
+    generate2(obj, std::wstring(L"Meow"));
+    generate2(obj, std::basic_string<u8_t>string(u8src));
+    generate2(obj, std::u16string(u16src));
+    generate2(obj, std::u32string(u32src));
   }
 
 
@@ -154,9 +130,24 @@ int cpp_main(int, char*[])
 {
   cout << "smoke test...\n" << hex;
 
-  cout << "test with xop::string object\n";
-  generate1(xop::string("Pipsqueek")); 
-  cout << "done" << std::endl;
+  u8_t  u8src[]  = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
+  u16_t u16src[] = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
+  u32_t u32src[] = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
+
+  cout << "----------------  test with xop::string object  ----------------\n";
+  generate1(xop::string("Pipsqueek"));
+
+  cout << "----------------  test with xop::wstring object  ----------------\n";
+  generate1(xop::wstring(L"Pipsqueek"));
+
+  cout << "----------------  test with xop::u8string object  ----------------\n";
+  generate1(xop::u8string(u8src)); 
+
+  cout << "----------------  test with xop::u16string object  ----------------\n";
+  generate1(xop::u16string(u16src)); 
+
+  cout << "----------------  test with xop::u32string object  ----------------\n";
+  generate1(xop::u32string(u32src)); 
 
   return ::boost::report_errors();
 }
