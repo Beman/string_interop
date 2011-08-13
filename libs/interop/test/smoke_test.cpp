@@ -10,8 +10,10 @@ using std::cout; using std::endl; using std::hex;
 #include <boost/interop/string.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
+#include <algorithm>
+#include <iterator>
 
-using namespace boost::xop;
+using namespace boost;
 using boost::u8_t;
 using boost::u16_t;
 using boost::u32_t;
@@ -29,188 +31,132 @@ namespace
     }
     cout << '\n';
   }
-}
+
+
+  //template <class String, class To>
+  //void generate_2(const String& str)
+  //{
+  //  converting_iterator<const typename String::value_type*,
+  //    typename String::value_type,
+  //    by_null, To>  itr1(str.c_str());
+
+  //  test(itr1, str.size());
+
+  //  converting_iterator<const typename String::value_type*,
+  //    typename String::value_type,
+  //    by_size, To>  itr2(str.c_str(), str.size()-1);
+
+  //  test(itr2, str.size()-1);
+
+  //  converting_iterator<typename String::const_iterator,
+  //    typename String::value_type,
+  //    by_range, To>  itr3(str.begin(), str.end()-2);
+
+  //  test(itr3, str.size()-2);
+  //}
+
+  //template <class String>
+  //void generate_1(const String& str)
+  //{
+  //  // each target type
+  //  generate_2<String, char>(str);
+  //  generate_2<String, wchar_t>(str);
+  //  generate_2<String, u8_t>(str);
+  //  generate_2<String, u16_t>(str);
+  //  generate_2<String, u32_t>(str);
+  //}
+
+
+
+
+  struct xappend
+  {
+    template <class T, class U>
+    void operator()(T& str, U arg) const
+    {
+      cout << "        xappend str.append(arg)" << std::endl;
+      str.append(arg);
+      cout << "        done" << std::endl;
+    }
+  };
+  struct xassign
+  {
+    template <class T, class U> 
+    void operator()(T& str, U arg) const { str = arg; }
+  };
+
+  template <class T, class U, class Func>
+  void test(const T& obj, U x, const Func& func)
+  // obj must be a xop::basic_string, x is an argument to be applied to a
+  // copy of obj by func, and expected is the expected result
+  {
+    T xop_result;
+    std::copy(obj.begin(), obj.end(), std::back_inserter(xop_result));
+    func(xop_result, x);
+    std::basic_string<typename T::value_type> result(xop_result.c_str());
+
+    // perform the function on std::basic_string arguments, and then
+    // use that result as the expected result.
+    std::basic_string<typename T::value_type> expected = obj;
+    xop::basic_string<typename T::value_type> tmp = x;  // convert if needed
+    std::basic_string<typename T::value_type> argument = tmp;
+    func(expected, argument);
+    BOOST_TEST_EQ(result, expected); 
+  }
+
+  template <class T, class U, class Func>
+  void call_test(const T& obj, const U& arg)
+  {
+    cout << "      argument is object\n";
+    test(obj, arg, Func());
+    cout << "      done" << std::endl;
+    //cout << "      argument is object.c_str()...\n";
+    //test(obj, arg.c_str(), Func());
+    //cout << "      done" << std::endl;
+  }
+
+  template <class T, class U>
+  void generate2(const T& obj, const U& arg)
+  {
+    cout << "    operation append\n";
+    call_test<T, U, xappend>(obj, arg);
+    cout << "    done" << std::endl;
+//    call_test<T, U, xassign>(obj, arg);
+  }
+
+  template <class T>
+  void generate1(const T& obj)
+  {
+    u8_t  u8src[]  = { 'M', 'e', 'o', 'w', 0 };
+    u16_t u16src[] = { 'M', 'e', 'o', 'w', 0 };
+    u32_t u32src[] = { 'M', 'e', 'o', 'w', 0 };
+
+    //cout << "  argument souce xop::string...\n";
+    //generate2(obj, xop::string("Meow"));
+    cout << "  argument source xop::wstring\n";
+    generate2(obj, xop::wstring(L"Meow"));
+    cout << "  done" << std::endl;
+    //generate2(obj, xop::u8string(u8src));
+    //generate2(obj, xop::u16string(u16src));
+    //generate2(obj, xop::u32string(u32src));
+
+    //generate2(obj, std::string("Meow"));
+    //generate2(obj, std::wstring(L"Meow"));
+    //generate2(obj, std::u8string(u8src));
+    //generate2(obj, std::u16string(u16src));
+    //generate2(obj, std::u32string(u32src));
+  }
+
+
+}  // unnamed namespace
 
 int cpp_main(int, char*[])
 {
   cout << "smoke test...\n" << hex;
 
-  string ysi(L"foo");   
-  wstring ysiw("foo");  
-  u8string ysiu8("foo"); 
-  u16string ysiu16("foo");
-  u32string ysiu32("foo");
+  cout << "test with xop::string object\n";
+  generate1(xop::string("Pipsqueek")); 
+  cout << "done" << std::endl;
 
-  string xsi(ysiu32);   
-  wstring xsiw(xsi);  
-  u8string xsiu8(xsi); 
-  u16string xsiu16(xsi);
-  u32string xsiu32(xsi);
-
-//  cout << xsi << ", " << xsiw << ", " << xsiu8 << ", " << xsiu16 << ", " << xsiu32 << '\n';
-
-  string si;   
-  wstring siw;  
-  u8string siu8; 
-  u16string siu16;
-  u32string siu32;
-
-  si.append("si");
-  BOOST_TEST_EQ(si.size(), 2U);
-  siw.append(L"siw");
-  BOOST_TEST_EQ(siw.size(), 3U);
-  u8_t csu8[] = {'s', 'i', 'u', '8', '\0'};
-  siu8.append(csu8);
-  BOOST_TEST_EQ(siu8.size(), 4U);
-  u16_t csu16[] = {'s', 'i', 'u', '1', '6', '\0'};
-  siu16.append(csu16);
-  BOOST_TEST_EQ(siu16.size(), 5U);
-  u32_t csu32[] = {'s', 'i', 'u', '3', '2', '\0'};
-  siu32.append(csu32);
-  BOOST_TEST_EQ(siu32.size(), 5U);
-
-//  const u8_t* p = siu8.c_str();
-////  siu32.append(p);
-//
-//
-//  u8string s8;
-//  u16string s16;
-//  u32string s32;
-//
-//  u32_t U024B62[] = { 0x024B62, 0x0 };  // see http://en.wikipedia.org/wiki/Utf-8
-//  s32.append(U024B62);
-//  BOOST_TEST_EQ(s32.size(), 1U);
-//  s8.append(s32.c_str());
-//  BOOST_TEST_EQ(s8.size(), 4U);
-//
-//  cout << hex << int(s8[0]) << ' ' << int(s8[1]) << ' '
-//       << int(s8[2]) << ' ' << int(s8[3]) << '\n';
-//
-//  BOOST_TEST(s8[0] == 0xF0);
-//  BOOST_TEST(s8[1] == 0xA4);
-//  BOOST_TEST(s8[2] == 0xAD);
-//  BOOST_TEST(s8[3] == 0xA2);
-//
-//  //  probe each of the combinations we have codecs for
-//
-//  u8string t8;
-//  u16string t16;
-//  u32string t32;
-//
-//  s8.clear();
-//  s16.clear();
-//  s32.clear();
-//  s8.push_back('8');
-//  dump(s8);
-//  BOOST_TEST_EQ(s8.size(), 1U);
-//  s16.push_back('u');
-//  dump(s16);
-//  BOOST_TEST_EQ(s16.size(), 1U);
-//  s32.push_back('U');
-//  dump(s32);
-//  BOOST_TEST_EQ(s32.size(), 1U);
-//
-//  cout << "\nUTF-8 <-- UTF-8\n";
-//  t8.append(s8.c_str());
-//  dump(t8);
-//  BOOST_TEST_EQ(t8.size(), 1U);
-//
-//  cout << "\nUTF-8 <-- UTF-16\n";
-//  t8.append(s16.c_str());
-//  dump(t8);
-//  BOOST_TEST_EQ(t8.size(), 2U);
-//
-//  cout << "\nUTF-8 <-- UTF-32\n";
-//  t8.append(s32.c_str());
-//  dump(t8);
-//  BOOST_TEST_EQ(t8.size(), 3U);
-//
-//  cout << "\nUTF-16 <-- UTF-8\n";
-//  t16.append(s8.c_str());
-//  dump(t16);
-//  BOOST_TEST_EQ(t16.size(), 1U);
-//
-//  cout << "\nUTF-16 <-- UTF-16\n";
-//  t16.append(s16.c_str());
-//  dump(t16);
-//  BOOST_TEST_EQ(t16.size(), 2U);
-//
-//  cout << "\nUTF-16 <-- UTF-32\n";
-//  t16.append(s32.c_str());
-//  dump(t16);
-//  BOOST_TEST_EQ(t16.size(), 3U);
-//
-//  cout << "\nUTF-32 <-- UTF-8\n";
-//  t32.append(s8.c_str());
-//  dump(t32);
-//  BOOST_TEST_EQ(t32.size(), 1U);
-//
-//  cout << "\nUTF-32 <-- UTF-16\n";
-//  t32.append(s16.c_str());
-//  dump(t32);
-//  BOOST_TEST_EQ(t32.size(), 2U);
-//
-//  cout << "\nUTF-32 <-- UTF-32\n";
-//  t32.append(s32.c_str());
-//  dump(t32);
-//  BOOST_TEST_EQ(t32.size(), 3U);
-//
-//  //  initial char tests
-//
-// 
-//  string tc;
-//  tc.append("\x80 Euro");
-//  dump(tc);
-//  BOOST_TEST_EQ(tc.size(), 6U);
-//
-//  cout << "\nUTF-32 <-- char\n";
-//  t32.clear();
-//  t32.append(tc.c_str());
-//  dump(t32);
-//  cout << hex << t32[0] << '\n';
-//  BOOST_TEST_EQ(t32.size(), 6U);
-//
-//  cout << "\nchar <-- UTF-32\n";
-//  tc.clear();
-//  tc.append(t32.c_str());
-//  dump(tc);
-//  cout << hex << tc[0] << '\n';
-//  BOOST_TEST_EQ(tc.size(), 6U);
-//
-//  wstring twc;
-//  twc.append(L"\x20AC Euro");
-//  cout << "\nUTF-32 <-- wchar_t\n";
-//  t32.clear();
-//  t32.append(twc.c_str());
-//  dump(t32);
-//  cout << hex << t32[0] << '\n';
-//  BOOST_TEST_EQ(t32.size(), 6U);
-//
-//  cout << "\nwchar_t <-- UTF-32\n";
-//  twc.clear();
-//  twc.append(t32.c_str());
-//  dump(twc);
-//  cout << hex << twc[0] << '\n';
-//  BOOST_TEST_EQ(twc.size(), 6U);
-//
-//  // stream inserter
-//
-//  cout << "stream inserter tests\n";
-//
-//  s32.clear();
-//  // Windows codepage 437 has these:
-//  s32.push_back(u32_t(0x221E));  // U+221E : INFINITY
-//  s32.push_back(u32_t(0x2261));  // U+2261 : IDENTICAL TO
-//
-//  // Windows codepage 1252 has these:
-//  s32.push_back(u32_t(0xA9));    // U+00A9 : COPYRIGHT SIGN
-//  s32.push_back(u32_t(0x20AC));  // U+20AC : EURO SIGN
-//
-//  cout << is_character_container<decltype(s32)>::value << " for is_character_container\n";
-//
-//  cout << s32 << " via container\n";
-//
-//  cout << s32.c_str() << " via container.c_str()\n";
-//
   return ::boost::report_errors();
 }
