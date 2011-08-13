@@ -352,8 +352,10 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
 
-     mutable InputIterator m_position;    // points to first byte of next input character
-     mutable u32_t m_value;               // the current value
+     // UTF-8 is a multi-character encoding, so invariants are a bit different than for
+     // single character encodings:
+     mutable InputIterator  m_position;    // points to the next input character
+     mutable u32_t          m_value;       // the current value, which may be read_pending
 
   public:
      typename base_type::reference
@@ -393,7 +395,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      {
         if (is_end(m_position))
         {
-          m_value = 0;
+          m_value = 0U;
           return;
         }
         m_value = static_cast<u32_t>(static_cast< ::boost::uint8_t>(*m_position));
@@ -412,8 +414,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
            m_value <<= 6;
            m_value += static_cast<boost::uint8_t>(*m_position) & 0x3Fu;
         }
-        ++m_position;
-        advance();
+        ++m_position;  // satisfy the invariant that m_position
+        advance();     //   points to next input character
         // we now need to remove a few of the leftmost bits, but how many depends
         // upon how many extra bytes we've extracted:
         static const boost::uint32_t masks[4] = 
@@ -448,14 +450,17 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
 
+     // UTF-16 is a multi-character encoding, so invariants are a bit different than for
+     // single character encodings:
+     mutable InputIterator  m_position;  // points to first byte of next input character
+     mutable u32_t          m_value;     // the current value, which may be read_pending
+
   public:
      typename base_type::reference
      dereference()const
      {
         if(m_value == pending_read)
            extract_current();
-        if (is_end(m_position))
-          return 0;
         return m_value;
      }
      bool equal(const from_iterator& that)const
@@ -464,14 +469,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
      void increment()
      {
-        // skip high surrogate first if there is one:
-        if(detail::is_high_surrogate(*m_position))
-        {
-          ++m_position;
-          advance();
-        }
-        ++m_position;
-        advance();
+        BOOST_ASSERT_MSG(m_value, "Attempt to increment past the end");
         m_value = pending_read;
      }
 
@@ -489,30 +487,46 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      static void invalid_code_point(::boost::uint16_t val)
      {
         std::stringstream ss;
-        ss << "Misplaced UTF-16 surrogate U+" << std::showbase << std::hex << val << " encountered while trying to encode UTF-32 sequence";
+        ss << "Misplaced UTF-16 surrogate U+" << std::showbase << std::hex << val
+           << " encountered while trying to encode UTF-32 sequence";
         std::out_of_range e(ss.str());
+        BOOST_INTEROP_THROW(e);
+     }
+     static void invalid_sequence()
+     {
+        std::out_of_range e("Invalid UTF-16 sequence encountered while trying to encode UTF-32 character");
         BOOST_INTEROP_THROW(e);
      }
      void extract_current()const
      {
+        if (is_end(m_position))
+        {
+          m_value = 0U;
+          return;
+        }
         m_value = static_cast<u32_t>(static_cast< ::boost::uint16_t>(*m_position));
         // if the last value is a high surrogate then adjust m_position and m_value as needed:
         if(detail::is_high_surrogate(*m_position))
         {
            // precondition; next value must have be a low-surrogate:
-           InputIterator next(m_position);
-           ::boost::uint16_t t = *++next;
+           ++m_position;
+           advance();
+           if (is_end(m_position))
+             invalid_sequence();
+           ::boost::uint16_t t = *m_position;
            if((t & 0xFC00u) != 0xDC00u)
               invalid_code_point(t);
            m_value = (m_value - detail::high_surrogate_base) << 10;
-           m_value |= (static_cast<u32_t>(static_cast< ::boost::uint16_t>(t)) & detail::ten_bit_mask);
+           m_value |= (static_cast<u32_t>(static_cast< ::boost::uint16_t>(t))
+             & detail::ten_bit_mask);
         }
+        ++m_position;  // satisfy the invariant that m_position
+        advance();     //   points to next input character
+
         // postcondition; result must not be a surrogate:
         if(detail::is_surrogate(m_value))
            invalid_code_point(static_cast< ::boost::uint16_t>(m_value));
      }
-     InputIterator m_position;
-     mutable u32_t m_value;
   };
 
 //-------------------------------  <u32_t> from_iterator  ------------------------------//
