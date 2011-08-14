@@ -152,6 +152,10 @@ namespace
     for (auto itr = tmp.c_str<typename U::value_type>(); *itr; ++itr)
       actual.push_back(*itr);
     BOOST_TEST(actual == expected);
+
+    for (auto itr = tmp.c_str<char>(); *itr; ++itr)
+      cout << *itr;
+    cout << '\n';
   }
 
   template<class T>
@@ -259,7 +263,7 @@ int cpp_main(int, char*[])
 
   misc_functions_test();  // subsequent tests rely on these functions
   constructor_test();
-  //append_test();
+  append_test();
 
   //cout << "----------------  test with xop::string object  ----------------\n";
   //generate1(xop::string("Pipsqueek"));
