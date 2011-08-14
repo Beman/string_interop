@@ -153,17 +153,17 @@ namespace
       actual.push_back(*itr);
     BOOST_TEST(actual == expected);
 
-    //string_type x4(expected);
-    //actual.clear();
-    //for (auto itr = x4.c_str<U>(); *itr; ++itr)
-    //  actual.push_back(*itr);
-    //BOOST_TEST(actual == expected);
+    string_type x4(expected);
+    actual.clear();
+    for (auto itr = x4.c_str<U>(); *itr; ++itr)
+      actual.push_back(*itr);
+    BOOST_TEST(actual == expected);
 
-    //string_type x5(expected.begin(), expected.end());
-    //actual.clear();
-    //for (auto itr = x5.c_str<U>(); *itr; ++itr)
-    //  actual.push_back(*itr);
-    //BOOST_TEST(actual == expected);
+    string_type x5(expected.begin(), expected.end());
+    actual.clear();
+    for (auto itr = x5.c_str<U>(); *itr; ++itr)
+      actual.push_back(*itr);
+    BOOST_TEST(actual == expected);
 
   }
 
