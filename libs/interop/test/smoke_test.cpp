@@ -147,11 +147,11 @@ namespace
       actual.push_back(*itr);
     BOOST_TEST(actual == expected);
 
-    //string_type x3(x2);
-    //actual.clear();
-    //for (auto itr = x3.c_str<U>(); *itr; ++itr)
-    //  actual.push_back(*itr);
-    //BOOST_TEST(actual == expected);
+    string_type x3(x2);
+    actual.clear();
+    for (auto itr = x3.c_str<U>(); *itr; ++itr)
+      actual.push_back(*itr);
+    BOOST_TEST(actual == expected);
 
     //string_type x4(expected);
     //actual.clear();
