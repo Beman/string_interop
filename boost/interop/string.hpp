@@ -103,7 +103,21 @@ public:
     typename enable_if<is_iterator<Iterator> >::type* dummy = 0)
       : std::basic_string<charT,traits,Allocator>() { append(itr); }
 
-//  append  ------------------------------------------------------------------------//
+  //  c_str()  -------------------------------------------------------------------------//
+  //
+  //  having c_str() in place early in the development process simplifies testing
+   
+  const charT* c_str() const {return std::basic_string<charT,traits,Allocator>::c_str();}
+
+  template <class T>
+  converting_iterator<const_iterator, value_type, by_range, T>
+  c_str() const
+  {
+    return converting_iterator<const_iterator,
+      value_type, by_range, T>(begin(), end());
+  }
+
+  //  append()  ------------------------------------------------------------------------//
 
   //  signatures given in the order they appear in the standard [string.modifiers]
 
@@ -239,50 +253,6 @@ public:
     return *this;
   }
 
-
-  //template <class NTCSIterator>
-  //typename boost::disable_if<is_character_container
-  //  <typename boost::decay<NTCSIterator>::type>,
-  //  basic_string&>::type     
-  //append(NTCSIterator it)
-  //{
-  //  converting_iterator<NTCSIterator,
-  //    typename std::iterator_traits<NTCSIterator>::value_type,
-  //    typename std::basic_string<charT,traits,Allocator>::value_type>
-  //      converting_it(it);
-  //  for (;;)
-  //  {
-  //    typename std::basic_string<charT,traits,Allocator>::value_type
-  //      c = *converting_it;
-  //    if (!c)
-  //      break;
-  //    push_back(c);
-  //    ++converting_it;
-  //  }
-  //  return *this;
-  //}
-
-  //template <class Container>
-  //typename boost::enable_if<is_character_container
-  //  <typename boost::decay<Container>::type>,
-  //  basic_string&>::type     
-  //append(const Container& ctr)
-  //{
-  //  typedef
-  //    converting_iterator<typename Container::const_iterator,
-  //      typename Container::value_type,
-  //      typename std::basic_string<charT,traits,Allocator>::value_type>
-  //    iterator_adapter_type;
-  //  return append(iterator_adapter_type(ctr.cbegin()),
-  //    iterator_adapter_type(ctr.cend()));
-  //}
-
-  //template <class InputIterator>
-  //basic_string& append(InputIterator first, InputIterator last)
-  //{
-  //  std::basic_string<charT,traits,Allocator>::append(first, last);
-  //  return *this;
-  //}
 
   //// copy assign  --------------------------------------------------------------------//
 
