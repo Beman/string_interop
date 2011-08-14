@@ -68,7 +68,8 @@ class basic_string : public std::basic_string<charT,traits,Allocator>
 public:
 
   //  C++11 constructors
-  explicit basic_string(const Allocator& a = Allocator())
+  basic_string() {}
+  explicit basic_string(const Allocator& a)
     : std::basic_string<charT,traits,Allocator>(a) {}
   basic_string(const basic_string& str)
     : std::basic_string<charT,traits,Allocator>(str) {}
@@ -93,9 +94,39 @@ public:
 
   //  interoperability constructors
 
-  template <class Source>
-  basic_string(Source src)
-    : std::basic_string<charT,traits,Allocator>() { append(src); }
+  // dispatching to append(src) is causing an infinite recursion warning, and then
+  // infinite recursion at runtime, in VC++ 2010. My problem or theirs? 
+  //template <class Source>
+  //basic_string(Source src)
+  //{ 
+  //  append(src);
+  //}
+
+  template<class Ctr>
+  basic_string(const Ctr& ctr, typename boost::enable_if<is_character_container<Ctr>,
+  void*>::type=0)
+  {
+    BOOST_XOP_STRING_LOG("   construct       const Ctr& ctr");
+    converting_iterator<typename Ctr::const_iterator,
+      typename Ctr::value_type, by_range,
+      typename std::basic_string<charT,traits,Allocator>::value_type>
+        itr(ctr.cbegin(), ctr.cend());
+    for (; *itr != static_cast<value_type>(0); ++itr)
+      push_back(*itr);
+  }
+
+  template<class InputIterator>
+  basic_string(InputIterator s,
+    typename boost::enable_if<::boost::is_iterator<InputIterator>, void*>::type=0)
+  {
+    BOOST_XOP_STRING_LOG("    construct      InputIterator s");
+    converting_iterator<InputIterator,
+      typename std::iterator_traits<InputIterator>::value_type, by_null,
+      typename std::basic_string<charT,traits,Allocator>::value_type>
+        itr(s);
+    for (; *itr != static_cast<value_type>(0); ++itr)
+      push_back(*itr);
+  }
 
   //  c_str()  -------------------------------------------------------------------------//
   //
@@ -162,90 +193,90 @@ public:
     std::basic_string<charT,traits,Allocator>::append(n, c);
     return *this;
   }
-  template <class InputIterator>
-    typename boost::enable_if<is_same<
-      typename std::iterator_traits<InputIterator>::value_type, value_type>,
-  basic_string&>::type  append(InputIterator first, InputIterator last)
-  {
-    BOOST_XOP_STRING_LOG("          InputIterator first, InputIterator last; value_type");
-    std::basic_string<charT,traits,Allocator>::append(first, last);
-    return *this;
-  }
+  //template <class InputIterator>
+  //  typename boost::enable_if<is_same<
+  //    typename std::iterator_traits<InputIterator>::value_type, value_type>,
+  //basic_string&>::type  append(InputIterator first, InputIterator last)
+  //{
+  //  BOOST_XOP_STRING_LOG("          InputIterator first, InputIterator last; value_type");
+  //  std::basic_string<charT,traits,Allocator>::append(first, last);
+  //  return *this;
+  //}
 //basic_string&  append(initializer_list<charT>);
 
   //  interoperability signatures
 
-  template<class Ctr>
-    typename boost::enable_if<is_character_container<Ctr>,
-  basic_string&>::type append(const Ctr& ctr)
-  {
-    BOOST_XOP_STRING_LOG("          const Ctr& ctr");
-    converting_iterator<typename Ctr::const_iterator,
-      typename Ctr::value_type, by_range,
-      typename std::basic_string<charT,traits,Allocator>::value_type>
-        itr(ctr.cbegin(), ctr.cend());
-    for (; *itr != static_cast<value_type>(0); ++itr)
-      push_back(*itr);
-    return *this;
-  }
+  //template<class Ctr>
+  //  typename boost::enable_if<is_character_container<Ctr>,
+  //basic_string&>::type append(const Ctr& ctr)
+  //{
+  //  BOOST_XOP_STRING_LOG("          const Ctr& ctr");
+  //  converting_iterator<typename Ctr::const_iterator,
+  //    typename Ctr::value_type, by_range,
+  //    typename std::basic_string<charT,traits,Allocator>::value_type>
+  //      itr(ctr.cbegin(), ctr.cend());
+  //  for (; *itr != static_cast<value_type>(0); ++itr)
+  //    push_back(*itr);
+  //  return *this;
+  //}
 
-  template<class InputIterator>
-    typename boost::enable_if<::boost::is_iterator<InputIterator>,
-  basic_string&>::type append(InputIterator s)
-  {
-    BOOST_XOP_STRING_LOG("          InputIterator s");
-    converting_iterator<InputIterator,
-      typename std::iterator_traits<InputIterator>::value_type, by_null,
-      typename std::basic_string<charT,traits,Allocator>::value_type>
-        itr(s);
-    for (; *itr != static_cast<value_type>(0); ++itr)
-      push_back(*itr);
-    return *this;
-  }
+  //template<class InputIterator>
+  //  typename boost::enable_if<::boost::is_iterator<InputIterator>,
+  //basic_string&>::type append(InputIterator s)
+  //{
+  //  BOOST_XOP_STRING_LOG("          InputIterator s");
+  //  converting_iterator<InputIterator,
+  //    typename std::iterator_traits<InputIterator>::value_type, by_null,
+  //    typename std::basic_string<charT,traits,Allocator>::value_type>
+  //      itr(s);
+  //  for (; *itr != static_cast<value_type>(0); ++itr)
+  //    push_back(*itr);
+  //  return *this;
+  //}
 
-  template<class InputIterator>
-    typename boost::enable_if<::boost::is_iterator<InputIterator>,
-  basic_string&>::type append(InputIterator s, size_type n)
-  {
-    BOOST_XOP_STRING_LOG("          InputIterator s, size_type n");
-    converting_iterator<InputIterator,
-      typename std::iterator_traits<InputIterator>::value_type, by_size,
-      typename std::basic_string<charT,traits,Allocator>::value_type>
-        itr(s, n);
-    for (; *itr != static_cast<value_type>(0); ++itr)
-      push_back(*itr);
-    return *this;
-  }
+  //template<class InputIterator>
+  //  typename boost::enable_if<::boost::is_iterator<InputIterator>,
+  //basic_string&>::type append(InputIterator s, size_type n)
+  //{
+  //  BOOST_XOP_STRING_LOG("          InputIterator s, size_type n");
+  //  converting_iterator<InputIterator,
+  //    typename std::iterator_traits<InputIterator>::value_type, by_size,
+  //    typename std::basic_string<charT,traits,Allocator>::value_type>
+  //      itr(s, n);
+  //  for (; *itr != static_cast<value_type>(0); ++itr)
+  //    push_back(*itr);
+  //  return *this;
+  //}
 
-  template<class Char>
-    typename boost::enable_if<is_character<Char>,
-  basic_string&>::type append(Char chr)
-  {
-    BOOST_XOP_STRING_LOG("          Char chr");
-    converting_iterator<typename Ctr::const_iterator,
-      typename Ctr::value_type, by_size,
-      typename std::basic_string<charT,traits,Allocator>::value_type>
-        itr(&chr, 1);
-    // one input character can produce several output characters; example UTF-32->UTF-8
-    for (; *itr != static_cast<value_type>(0); ++itr)
-      push_back(*itr);
-    return *this;
-  }
+  //template<class Char>
+  //  typename boost::enable_if<is_character<Char>,
+  //basic_string&>::type append(Char chr)
+  //{
+  //  BOOST_XOP_STRING_LOG("          Char chr");
+  //  converting_iterator<typename Ctr::const_iterator,
+  //    typename Ctr::value_type, by_size,
+  //    typename std::basic_string<charT,traits,Allocator>::value_type>
+  //      itr(&chr, 1);
+  //  // one input character can produce several output characters; example UTF-32->UTF-8
+  //  for (; *itr != static_cast<value_type>(0); ++itr)
+  //    push_back(*itr);
+  //  return *this;
+  //}
 
-  template <class InputIterator>
-    typename boost::disable_if<is_same<
-      typename std::iterator_traits<InputIterator>::value_type, value_type>,
-  basic_string&>::type  append(InputIterator first, InputIterator last)
-  {
-    BOOST_XOP_STRING_LOG("          InputIterator first, InputIterator last; not value_type");
-    converting_iterator<typename Ctr::const_iterator,
-      typename Ctr::value_type, by_range,
-      typename std::basic_string<charT,traits,Allocator>::value_type>
-        itr(first, last);
-    for (; *itr != static_cast<value_type>(0); ++itr)
-      push_back(*itr);
-    return *this;
-  }
+  //template <class InputIterator>
+  //  typename boost::disable_if<is_same<
+  //    typename std::iterator_traits<InputIterator>::value_type, value_type>,
+  //basic_string&>::type  append(InputIterator first, InputIterator last)
+  //{
+  //  BOOST_XOP_STRING_LOG("          InputIterator first, InputIterator last; not value_type");
+  //  converting_iterator<typename Ctr::const_iterator,
+  //    typename Ctr::value_type, by_range,
+  //    typename std::basic_string<charT,traits,Allocator>::value_type>
+  //      itr(first, last);
+  //  for (; *itr != static_cast<value_type>(0); ++itr)
+  //    push_back(*itr);
+  //  return *this;
+  //}
 
 
   //// copy assign  --------------------------------------------------------------------//
@@ -397,6 +428,13 @@ template<> class is_character<boost::u16_t> : public boost::true_type {};
 template<> class is_character<boost::u32_t> : public boost::true_type {};
 
 //-----------------------------  is_character_container  -------------------------------//
+
+template<> class is_character_container<std::string>    : public boost::true_type {}; 
+template<> class is_character_container<std::wstring>   : public boost::true_type {}; 
+template<> class is_character_container<std::basic_string<u8_t> >
+                                                        : public boost::true_type {}; 
+template<> class is_character_container<std::u16string> : public boost::true_type {}; 
+template<> class is_character_container<std::u32string> : public boost::true_type {};
 
 template<> class is_character_container<boost::xop::string>    : public boost::true_type {}; 
 template<> class is_character_container<boost::xop::wstring>   : public boost::true_type {}; 
