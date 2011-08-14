@@ -125,16 +125,65 @@ namespace
 //  }
 //
 
-  char     char_array[]  = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
-  wchar_t  wchar_array[] = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
-  u8_t     u8_array[]    = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
-  u16_t    u16_array[]   = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
-  u32_t    u32_array[]   = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
+  char     pipsqueek[]  = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
+  wchar_t  wpipsqueek[] = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
+  u8_t     u8pipsqueek[]    = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
+  u16_t    u16pipsqueek[]   = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
+  u32_t    u32pipsqueek[]   = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
+
+  char     meow[]  = { 'M', 'e', 'o', 'w', 0 };
+  wchar_t  wmeow[] = { 'M', 'e', 'o', 'w', 0 };
+  u8_t     u8meow[]    = { 'M', 'e', 'o', 'w', 0 };
+  u16_t    u16meow[]   = { 'M', 'e', 'o', 'w', 0 };
+  u32_t    u32meow[]   = { 'M', 'e', 'o', 'w', 0 };
+
+  template <class T, class U>  // T must be xop:basic_string
+                               // U may be xop:basic_string or std::basic_string
+  void append_test2(const T& t, const U& u)
+  {
+    std::basic_string<typename U::value_type> expected;
+    for (auto itr = t.c_str<typename U::value_type>(); *itr; ++itr)
+      expected.push_back(*itr);
+    expected.append(u.c_str());
+
+    T tmp(t);
+    tmp.append(u);
+    std::basic_string<typename U::value_type> actual;
+    for (auto itr = tmp.c_str<typename U::value_type>(); *itr; ++itr)
+      actual.push_back(*itr);
+    BOOST_TEST(actual == expected);
+  }
+
+  template<class T>
+  void append_test1(const T& t)
+  {
+    append_test2(t, xop::string(meow));
+    append_test2(t, xop::wstring(wmeow));
+    append_test2(t, xop::u8string(u8meow));
+    append_test2(t, xop::u16string(u16meow));
+    append_test2(t, xop::u32string(u32meow));
+    append_test2(t, std::string(meow));
+    append_test2(t, std::wstring(wmeow));
+    append_test2(t, boost::u8string(u8meow));
+    append_test2(t, boost::u16string(u16meow));
+    append_test2(t, boost::u32string(u32meow));
+  }
+
+  void append_test()
+  {
+    cout << "appends test...\n";
+
+    append_test1(xop::string(pipsqueek));
+    append_test1(xop::wstring(wpipsqueek));
+    append_test1(xop::u8string(u8pipsqueek));
+    append_test1(xop::u16string(u16pipsqueek));
+    append_test1(xop::u32string(u32pipsqueek));
+  }
 
   template <class T, class U>
-  void constructor_test2(const U* s)
+  void constructor_test2(const U& s)
   {
-    std::basic_string<U> expected(s);
+    std::basic_string<typename U::value_type> expected(s.c_str());
 
     typedef xop::basic_string<T> string_type;
 
@@ -142,33 +191,33 @@ namespace
     BOOST_TEST_EQ(x1.size(), 0U);
 
     string_type x2(s);
-    std::basic_string<U> actual;
-    for (auto itr = x2.c_str<U>(); *itr; ++itr)
+    std::basic_string<typename U::value_type> actual;
+    for (auto itr = x2.c_str<typename U::value_type>(); *itr; ++itr)
       actual.push_back(*itr);
     BOOST_TEST(actual == expected);
 
     string_type x3(x2);
     actual.clear();
-    for (auto itr = x3.c_str<U>(); *itr; ++itr)
+    for (auto itr = x3.c_str<typename U::value_type>(); *itr; ++itr)
       actual.push_back(*itr);
     BOOST_TEST(actual == expected);
 
     string_type x4(expected);
     actual.clear();
-    for (auto itr = x4.c_str<U>(); *itr; ++itr)
+    for (auto itr = x4.c_str<typename U::value_type>(); *itr; ++itr)
       actual.push_back(*itr);
     BOOST_TEST(actual == expected);
 
     string_type x5(expected.begin(), expected.end());
     actual.clear();
-    for (auto itr = x5.c_str<U>(); *itr; ++itr)
+    for (auto itr = x5.c_str<typename U::value_type>(); *itr; ++itr)
       actual.push_back(*itr);
     BOOST_TEST(actual == expected);
 
   }
 
   template<class U>
-  void constructor_test1(const U* u)
+  void constructor_test1(const U& u)
   {
     constructor_test2<char>(u);
     constructor_test2<wchar_t>(u);
@@ -181,11 +230,11 @@ namespace
   {
     cout << "constructors test...\n";
 
-    constructor_test1(char_array);
-    constructor_test1(wchar_array);
-    constructor_test1(u8_array);
-    constructor_test1(u16_array);
-    constructor_test1(u32_array);
+    constructor_test1(xop::string(pipsqueek));
+    constructor_test1(xop::wstring(wpipsqueek));
+    constructor_test1(xop::u8string(u8pipsqueek));
+    constructor_test1(xop::u16string(u16pipsqueek));
+    constructor_test1(xop::u32string(u32pipsqueek));
   }
 
   void misc_functions_test()
@@ -210,6 +259,7 @@ int cpp_main(int, char*[])
 
   misc_functions_test();  // subsequent tests rely on these functions
   constructor_test();
+  //append_test();
 
   //cout << "----------------  test with xop::string object  ----------------\n";
   //generate1(xop::string("Pipsqueek"));
