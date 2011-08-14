@@ -139,6 +139,86 @@ namespace
 
   template <class T, class U>  // T must be xop:basic_string
                                // U may be xop:basic_string or std::basic_string
+  void assign_test2(const T& t, const U& u)
+  {
+    std::basic_string<typename U::value_type> expected;
+    for (auto itr = t.c_str<typename U::value_type>(); *itr; ++itr)
+      expected.push_back(*itr);
+    expected.assign(u.c_str());
+
+    T tmp(t);
+    tmp.assign(u);
+    std::basic_string<typename U::value_type> actual;
+    for (auto itr = tmp.c_str<typename U::value_type>(); *itr; ++itr)
+      actual.push_back(*itr);
+    BOOST_TEST(actual == expected);
+
+    for (auto itr = tmp.c_str<char>(); *itr; ++itr)
+      cout << *itr;
+    cout << '\n';
+ 
+    T tmp2(t);
+    tmp2.assign(u.c_str());
+    std::basic_string<typename U::value_type> actual2;
+    for (auto itr = tmp2.c_str<typename U::value_type>(); *itr; ++itr)
+      actual2.push_back(*itr);
+    BOOST_TEST(actual2 == expected);
+
+    for (auto itr = tmp2.c_str<char>(); *itr; ++itr)
+      cout << *itr;
+    cout << '\n';
+
+    T tmp3(t);
+    tmp3 = u;
+    std::basic_string<typename U::value_type> actual3;
+    for (auto itr = tmp3.c_str<typename U::value_type>(); *itr; ++itr)
+      actual3.push_back(*itr);
+    BOOST_TEST(actual3 == expected);
+
+    for (auto itr = tmp3.c_str<char>(); *itr; ++itr)
+      cout << *itr;
+    cout << '\n';
+
+    T tmp4(t);
+    tmp4 = u.c_str();
+    std::basic_string<typename U::value_type> actual4;
+    for (auto itr = tmp4.c_str<typename U::value_type>(); *itr; ++itr)
+      actual4.push_back(*itr);
+    BOOST_TEST(actual4 == expected);
+
+    for (auto itr = tmp4.c_str<char>(); *itr; ++itr)
+      cout << *itr;
+    cout << '\n';
+  }
+
+  template<class T>
+  void assign_test1(const T& t)
+  {
+    assign_test2(t, xop::string(meow));
+    assign_test2(t, xop::wstring(wmeow));
+    assign_test2(t, xop::u8string(u8meow));
+    assign_test2(t, xop::u16string(u16meow));
+    assign_test2(t, xop::u32string(u32meow));
+    assign_test2(t, std::string(meow));
+    assign_test2(t, std::wstring(wmeow));
+    assign_test2(t, boost::u8string(u8meow));
+    assign_test2(t, boost::u16string(u16meow));
+    assign_test2(t, boost::u32string(u32meow));
+  }
+
+  void assign_test()
+  {
+    cout << "assigns test...\n";
+
+    assign_test1(xop::string(pipsqueek));
+    assign_test1(xop::wstring(wpipsqueek));
+    assign_test1(xop::u8string(u8pipsqueek));
+    assign_test1(xop::u16string(u16pipsqueek));
+    assign_test1(xop::u32string(u32pipsqueek));
+  }
+
+  template <class T, class U>  // T must be xop:basic_string
+                               // U may be xop:basic_string or std::basic_string
   void append_test2(const T& t, const U& u)
   {
     std::basic_string<typename U::value_type> expected;
@@ -154,6 +234,17 @@ namespace
     BOOST_TEST(actual == expected);
 
     for (auto itr = tmp.c_str<char>(); *itr; ++itr)
+      cout << *itr;
+    cout << '\n';
+
+    T tmp2(t);
+    tmp2.append(u.c_str());
+    std::basic_string<typename U::value_type> actual2;
+    for (auto itr = tmp2.c_str<typename U::value_type>(); *itr; ++itr)
+      actual2.push_back(*itr);
+    BOOST_TEST(actual2 == expected);
+
+    for (auto itr = tmp2.c_str<char>(); *itr; ++itr)
       cout << *itr;
     cout << '\n';
   }
@@ -264,6 +355,7 @@ int cpp_main(int, char*[])
   misc_functions_test();  // subsequent tests rely on these functions
   constructor_test();
   append_test();
+  assign_test();
 
   //cout << "----------------  test with xop::string object  ----------------\n";
   //generate1(xop::string("Pipsqueek"));
