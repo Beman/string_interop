@@ -91,17 +91,11 @@ public:
     : std::basic_string<charT,traits,Allocator>(str, a) {}
   // basic_string(basic_string&&, const Allocator&);
 
-  //  added constructors
-  template <class Container>
-  basic_string(const Container& ctr,
-    typename enable_if<is_character_container
-      <typename boost::decay<Container>::type> >::type* dummy = 0)
-        : std::basic_string<charT,traits,Allocator>() { append(ctr); }
+  //  interoperability constructors
 
-  template <class Iterator>
-  basic_string(Iterator itr,
-    typename enable_if<is_iterator<Iterator> >::type* dummy = 0)
-      : std::basic_string<charT,traits,Allocator>() { append(itr); }
+  template <class Source>
+  basic_string(Source src)
+    : std::basic_string<charT,traits,Allocator>() { append(src); }
 
   //  c_str()  -------------------------------------------------------------------------//
   //
