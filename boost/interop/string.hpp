@@ -404,42 +404,31 @@ public:
 //                               stream inserters
 //--------------------------------------------------------------------------------------//
 
-//template <class Ostream, class NTCSIterator>
-//typename boost::enable_if<is_character_iterator<NTCSIterator>,
-//  Ostream&>::type
-//operator<<(Ostream& os, NTCSIterator iterator)
-//{
-//  cout << "NTCSIterator stream inserter\n";
-//  converting_iterator< NTCSIterator,
-//    typename std::iterator_traits<NTCSIterator>::value_type,
-//    typename Ostream::char_type> itr(iterator);
-//  for (;;)
-//  {
-//    typename Ostream::char_type c = *itr;
-//    if (!c)
-//      break;
-//    os << c;
-//    ++itr;
-//  }
-//  return os;
-//}
+template <class Ostream, class Ctr>
+typename boost::enable_if<is_character_container<Ctr>,
+  Ostream&>::type
+operator<<(Ostream& os, const Ctr& ctr)
+{
+  converting_iterator<typename Ctr::const_iterator,
+    typename Ctr::value_type, by_range,
+    typename Ostream::char_type> itr(ctr.begin(), ctr.end());
+  for (; *itr; ++itr)
+    os << *itr;
+  return os;
+}
 //
-//template <class Ostream, class T>
-//typename boost::enable_if<is_character_container<T>,
+//template <class Ostream, class InputIterator>
+//typename boost::enable_if<::boost::is_iterator<InputIterator>,
 //  Ostream&>::type
-//operator<<(Ostream& os, const T& container)
+//operator<<(Ostream& os, InputIterator begin)
 //{
-//  converting_iterator<const typename T::value_type*,
-//    typename T::value_type,
-//    typename Ostream::char_type> itr(container.c_str());
-//  for (;;)
-//  {
-//    typename Ostream::char_type c = *itr;
-//    if (!c)
-//      break;
-//    os << c;
-//    ++itr;
-//  }
+//  cout << "InputIterator stream inserter\n";
+//  converting_iterator<InputIterator,
+//    typename std::iterator_traits<InputIterator>::value_type, by_null,
+//      typename Ostream::char_type>
+//    itr(begin);
+//  for (; *itr; ++itr)
+//    os << *itr;
 //  return os;
 //}
 

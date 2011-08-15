@@ -346,6 +346,17 @@ namespace
     BOOST_TEST_EQ(str, std::string("Meow\n"));
   }
 
+  void stream_inserter_test()
+  {
+    cout << "stream inserter test...\n";
+
+    cout << "Hello " << xop::string(pipsqueek) << '\n';
+    cout << "Hello " << xop::wstring(wpipsqueek) << '\n';
+    cout << "Hello " << xop::u8string(u8pipsqueek) << '\n';
+    cout << "Hello " << xop::u16string(u16pipsqueek) << '\n';
+    cout << "Hello " << xop::u32string(u32pipsqueek) << '\n';
+  }
+
 }  // unnamed namespace
 
 int cpp_main(int, char*[])
@@ -356,6 +367,7 @@ int cpp_main(int, char*[])
   constructor_test();
   append_test();
   assign_test();
+  stream_inserter_test();
 
   //cout << "----------------  test with xop::string object  ----------------\n";
   //generate1(xop::string("Pipsqueek"));
