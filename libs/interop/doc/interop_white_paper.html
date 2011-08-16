@@ -44,7 +44,7 @@ available at <span style="background-color: #FFFF00">...</span>.</p>
   <pre>#include &lt;iostream&gt;
 int main()
 {
-  std::cout &lt;&lt; U&quot;&#24744;&#22909;&#19990;&#30028;&quot;;   // error in C++0x!
+  std::cout &lt;&lt; U&quot;&#24744;&#22909;&#19990;&#30028;&quot;;   // error in C++03 and C++11!
 }</pre>
 </blockquote>
 <p>As long as the encoding of <code>char</code> supports &#24744;&#22909;&#19990;&#30028;, this code should 
@@ -170,6 +170,14 @@ std::wstring_convert, and other standard library conversion facilities:</p>
   <li>Complex, difficult to learn, and difficult to use std::codecvt interfaces.</li>
   <li>Intertwining of std::locale and code conversion, even when these 
   are implementation details that should be hidden from the application.</li>
+  <li>Difficult to control error actions. Choices should include:<ul>
+  <li>Throw exception.</li>
+  <li>Replace offending character with default character. </li>
+  <li>Replace offending character with specified character. Motivating example: 
+  Filesystem's need to use a replacement character that is acceptable to the 
+  Windows codepage. See Boost issue #5769.</li>
+  </ul>
+  </li>
   </ul>
 <h3>Proposed resolution</h3>
 <blockquote>
@@ -188,7 +196,7 @@ encoding conversion pioneered by John Maddock in boost/regex/pending/unicode_ite
 <hr>
 <p>© Copyright Beman Dawes 2011</p>
 <p>Revised 
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->07 August 2011<!--webbot bot="Timestamp" endspan i-checksum="31298" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->16 August 2011<!--webbot bot="Timestamp" endspan i-checksum="31297" --></p>
 <p>&nbsp;</p>
 
 </body>
