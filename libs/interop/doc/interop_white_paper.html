@@ -18,6 +18,22 @@
 
 <h2>Introduction</h2>
 
+<p>This paper explores reducing current frustrations programming Unicode aware 
+applications in C++11 via additions to Boost and to the C++11 standard 
+library aimed at reducing frustrations encountered when programming. There are two underlying assumptions:</p>
+
+<blockquote>
+
+<p>Breaking C++03 or C++11 compliant code is unacceptable.</p>
+
+<p>Limiting the scope of proposed additions to interoperability, encoding, and 
+conversion issues with existing standard library string types can markedly 
+reduce user frustration at a very reasonable cost.</p>
+
+</blockquote>
+
+<p>&nbsp;</p>
+
 <p>Unicode support can be decomposed into two levels:</p>
 <ul>
   <li>Level 1 deals only with character encoding. It corresponds roughly to 
@@ -38,21 +54,30 @@ available at <span style="background-color: #FFFF00">...</span>.</p>
 
 <h2>Motivating examples</h2>
 
-<h3>Asian &quot;Hello World&quot;</h3>
+<h3>&quot;Hello World&quot; using an Asian language should work</h3>
 
 <blockquote>
   <pre>#include &lt;iostream&gt;
 int main()
 {
-  std::cout &lt;&lt; U&quot;&#24744;&#22909;&#19990;&#30028;&quot;;   // error in C++03 and C++11!
+  std::cout &lt;&lt; U&quot;&#24744;&#22909;&#19990;&#30028;&quot;;   // error in C++11!
 }</pre>
 </blockquote>
-<p>As long as the encoding of <code>char</code> supports &#24744;&#22909;&#19990;&#30028;, this code should 
+<p>This code should 
 &quot;just work&quot;, even though the type of <code>U&quot;&#24744;&#22909;&#19990;&#30028;&quot;</code> is <code>const 
-char32_t*</code>, not <code>const char*</code>. In the proof-of-concept 
-implementation, running on Linux with <code>char</code> encoding of UTF-8, the 
-above example does compile after adding an additional #include, and execution 
-produces the expected &#24744;&#22909;&#19990;&#30028; output.</p>
+char32_t*</code>, not <code>const char*</code>, as long as the encoding of <code>char</code> 
+supports &#24744;&#22909;&#19990;&#30028;. </p>
+<p>It does &quot;just work&quot; with the proof-of-concept implementation of this 
+proposal. On Linux, with default <code>char</code> encoding of UTF-8,  execution 
+produces the expected &#24744;&#22909;&#19990;&#30028; output. On Windows, the 
+console doesn't support full UTF-8, so the output can be piped to a file or to a 
+program which does handle UTF-8 correctly.</p>
+
+<h3>String interoperability</h3>
+
+<h3>Standard algorithms and other functions taking iterator arguments</h3>
+<h3 dir="ltr">Functions taking const <i>character-type</i>* arguments</h3>
+<h3 dir="ltr">Functions taking const <i>string-type</i>&amp; arguments</h3>
 <h2>Issue 1: Missing UTF-8 character type</h2>
 
 <p>There is no built-in character type that specifies UTF-8 encoding. Without 
@@ -212,7 +237,7 @@ with other string types.</p>
 <hr>
 <p>© Copyright Beman Dawes 2011</p>
 <p>Revised 
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->16 August 2011<!--webbot bot="Timestamp" endspan i-checksum="31297" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->24 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32187" --></p>
 <p>&nbsp;</p>
 
 </body>
