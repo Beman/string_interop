@@ -14,51 +14,130 @@
 
 <body>
 
-<h1>Unicode White Paper&nbsp; <span style="background-color: #FFFF00">(DRAFT)</span></h1>
+<h1>String Interoperability White Paper&nbsp; <span style="background-color: #FFFF00">(DRAFT)</span></h1>
 
 <h2>Introduction</h2>
 
-<p>This paper explores reducing current frustrations programming Unicode aware 
-applications in C++11 via additions to Boost and to the C++11 standard 
-library aimed at reducing frustrations encountered when programming. There are two underlying assumptions:</p>
+<p>This paper proposes additions to ease use of the C++11 standard 
+library with string internationalization in general and Unicode strings in 
+particular.</p>
 
-<blockquote>
+<p>The proposal is for pure additions to Boost and the C++ standard library. No C++03 
+or C++11 compliant code is broken or otherwise affected by the additions.</p>
 
-<p>Breaking C++03 or C++11 compliant code is unacceptable.</p>
+<h3>Motivation</h3>
 
-<p>Limiting the scope of proposed additions to interoperability, encoding, and 
-conversion issues with existing standard library string types can markedly 
-reduce user frustration at a very reasonable cost.</p>
+<p>The motivation for the proposal was a series of frustrations encountered while 
+providing Unicode support for internationalization of GIS software and the 
+Boost Filesystem Library's class path.</p>
 
-</blockquote>
-
-<p>&nbsp;</p>
-
-<p>Unicode support can be decomposed into two levels:</p>
-<ul>
-  <li>Level 1 deals only with character encoding. It corresponds roughly to 
-  the Unicode support in C++0x.</li>
-  <li>Level 2 addresses the deeper characteristics of Unicode characters. See 
-  Mathias Gaunard's <a href="http://mathias.gaunard.com/unicode/doc/html/">
-  Unicode project</a> as an example of level two Unicode support.</li>
-</ul>
-
-<p>This white paper is concerned only with Level 1. Issues are identified and 
-solutions suggested. The solutions are intended to be suitable for Boost 
-initially, and the next C++ standard eventually.</p>
-
-<h3>Proof-of-concept implementation</h3>
-
-<p>A &quot;proof-of-concept&quot; implementation of the solutions presented here is 
-available at <span style="background-color: #FFFF00">...</span>.</p>
-
-<h2>Motivating examples</h2>
-
-<h3>&quot;Hello World&quot; using an Asian language should work</h3>
+<p>A &quot;Hello World&quot; program using Asian characters illustrates one of the 
+frustrations:</p>
 
 <blockquote>
   <pre>#include &lt;iostream&gt;
 int main()
+{
+  std::cout &lt;&lt; U&quot;&#24744;&#22909;&#19990;&#30028;&quot;;   // error in C++11!
+}</pre>
+</blockquote>
+
+<h3>Proof-of-concept implementation</h3>
+
+<p>A &quot;proof-of-concept&quot; implementation of the solutions presented here is 
+available at <a href="https://github.com/Beman/string-interoperability">
+https://github.com/Beman/string-interoperability</a>.</p>
+
+<h3>Technical inspiration</h3>
+
+<p>Peter Dimov inspired the idea of string interoperability by arguing that the 
+Boost Filesystem library should treat a path is a single 
+  type (i.e. not a template) regardless of the character size 
+  and encoding of the source and target strings.</p>
+
+<p>John Maddock's Unicode conversion iterators demonstrated an 
+  easier-to-use, more efficient, and STL friendlier way to perform character 
+type and encoding conversions as an alternative to standard library <code>
+codecvt</code> facets.</p>
+
+<p>C++11 provides the underlying language and library features that allow string 
+interoperability:</p>
+
+<ul>
+  <li><code>char16_t</code> and <code>char_32_t</code>&nbsp; provide Unicode 
+  character types and null-terminated characters strings with guaranteed 
+  encodings.</li>
+  <li><code>std::u16string</code> and <code>std::u32string</code> provide 
+  library support for Unicode character types and encodings.</li>
+  <li><code>u</code> and <code>U</code> character and string literals ease 
+  programming with Unicode character types and encodings.</li>
+</ul>
+
+<h3>Not addressed</h3>
+
+<p>The proposed additions deal with C++11 <code>std::basic_string</code> and 
+character types, and with their encodings. The deeper attributes of Unicode 
+characters are not addressed. See Mathias Gaunard's <a href="http://mathias.gaunard.com/unicode/doc/html/">
+  Unicode project</a> for an example of deeper Unicode support.</p>
+
+<h3>The cat is out of the bag</h3>
+
+<h3>String interoperability</h3>
+
+<h3>Standard algorithms and other functions taking iterator arguments</h3>
+<h3 dir="ltr">Functions taking const <i>character-type</i>* arguments</h3>
+<h3 dir="ltr">Functions taking const <i>string-type</i>&amp; arguments</h3>
+
+<h3 dir="ltr">Function templates taking character iterator arguments</h3>
+
+<h3 dir="ltr">Function templates taking const <i>string-type</i>&amp; arguments</h3>
+
+<h2>Frustration 1: A <code>basic_string</code> instantiation does not interoperate 
+with different <code>basic_string</code> instantiations</h2>
+
+<h3>Examples</h3>
+<blockquote>
+  <pre>u32string s32;
+s32 = &quot;foo&quot;;         // error!
+u16string s16(s32);  // error!
+wstring ws(s32.begin(), s32.end()); // error!</pre>
+  <pre>void f(const string&amp;);</pre>
+  <pre>f(s32);  //error!</pre>
+</blockquote>
+<p>The encoding of basic_string instantiations can be determined for 
+the types under discussion. It is either implicit in the string's value_type or 
+can be determined via the locale.&nbsp; See Boost.Filesystem V3 class path for 
+an example of how such interoperability might be achieved.</p>
+<p>Experience with Boost.Filesystem V3 class path has demonstrated 
+that string interoperability brings a considerable simplification and 
+improvement to internationalized applications, but that having to provide 
+interoperability without the resolution of the issues presented here is a 
+band-aid. It is being misused, too - users are passing around boost::filesystem::path objects simply to get string encoding interoperability!</p>
+<p>Note: interoperability will be easier to specify, implement, and 
+use if Issue 4 is resolved.</p>
+
+<h3>Proposed resolution</h3>
+
+<blockquote>
+
+<p>Boost resolution????: Provide namespace boost string classes that derived 
+from std::basic_string and add the additional functions necessary to provide as 
+much interoperability as possible without breaking existing code if substituted 
+for existing uses of std::basic_string.</p>
+
+<p>Standard library resolution????: Add additional std::basic_string function 
+overloadss 
+as necessary to provide as much interoperability as possible without breaking 
+existing code if substituted for existing uses of std::basic_string.</p>
+</blockquote>
+<h2>Frustration 2: A <code>basic_string</code> instantiation does not interoperate 
+with null-terminated character strings other than of its <code>value_type</code></h2>
+<h2>Frustration 3: A <code>basic_string</code> instantiation does not interoperate 
+with I/O streams other than of its <code>value_type</code></h2>
+<h3>Motivating example</h3>
+
+<blockquote>
+  <pre>int main()
 {
   std::cout &lt;&lt; U&quot;&#24744;&#22909;&#19990;&#30028;&quot;;   // error in C++11!
 }</pre>
@@ -73,12 +152,61 @@ produces the expected &#24744;&#22909;&#19990;&#30028; output. On Windows, the
 console doesn't support full UTF-8, so the output can be piped to a file or to a 
 program which does handle UTF-8 correctly.</p>
 
-<h3>String interoperability</h3>
-
-<h3>Standard algorithms and other functions taking iterator arguments</h3>
-<h3 dir="ltr">Functions taking const <i>character-type</i>* arguments</h3>
-<h3 dir="ltr">Functions taking const <i>string-type</i>&amp; arguments</h3>
-<h2>Issue 1: Missing UTF-8 character type</h2>
+<h2>Frustration 4: Conversion between character encodings is awkward</h2>
+<p>Concerns revolve around std::codecvt, std::locale, 
+std::wstring_convert, and other standard library conversion facilities:</p>
+<ul>
+  <li>Given <b><i>n</i></b> encodings, necessity of 
+  providing <b>n<sup>2</sup></b> codecvt facets rather than <b>2n</b> codecs. 
+  UTF-32 is the obvious choice for the common encoding to pass between codecs. 
+  This is existing practice in C libraries like ICU.</li>
+  <li>Interfaces don't work well with generic programming 
+  techniques.</li>
+  <li>Unnecessary creation of temporary strings, with 
+  attendant memory allocations/deallocations.</li>
+  <li>Complex, difficult to learn, and difficult to use std::codecvt interfaces.</li>
+  <li>Intertwining of std::locale and code conversion, even when these 
+  are implementation details that should be hidden from the application.</li>
+  <li>Difficult to control error actions. Choices should include:<ul>
+  <li>Throw exception.</li>
+  <li>Replace offending character with default character. </li>
+  <li>Replace offending character with specified character. Motivating example: 
+  Filesystem's need to use a replacement character that is acceptable to the 
+  Windows codepage. See Boost issue #5769.</li>
+  </ul>
+  </li>
+  </ul>
+<h3>Proposed resolution</h3>
+<blockquote>
+<p>Provide a boost library header inspired by the iterator adaptor approach to 
+encoding conversion pioneered by John Maddock in boost/regex/pending/unicode_iterator.hpp:</p>
+  <ul>
+    <li>from_<b><i>X</i></b> and to_<i><b>X</b></i> iterator adaptor codecs to 
+    and from UTF-32. Possibly implemented using ICU iterators for the less 
+    common encodings.</li>
+    <li>General composition support for combining a from_<b><i>X</i></b> and to_<b><i>X</i></b> 
+    into a complete conversion adaptor.</li>
+    <li>Specializations or overloads prepackaging the 25 char, wchar_t, char8_t, 
+    char16_t, and char32_t complete conversion adaptors.</li>
+  </ul>
+</blockquote>
+<h2>Frustration 5: String type interoperability requires an excessive number of 
+overloads</h2>
+<p>Overloads or specializations are required for:</p>
+<blockquote>
+  <ul>
+    <li>Other instances of the same type.</li>
+    <li>Single characters.</li>
+    <li>Single iterators to terminated strings.</li>
+    <li>Single iterators to strings whose size is determined by a size argument.</li>
+    <li>Iterator ranges.</li>
+    <li>Further variations on the above, with additional arguments for position 
+    or repeat count.</li>
+  </ul>
+</blockquote>
+<p>Each of these then have to be repeated in template form for interoperability 
+with other string types.</p>
+<h2>Frustration ?: Missing UTF-8 character type</h2>
 
 <p>There is no built-in character type that specifies UTF-8 encoding. Without 
 such a type, neither template arguments nor function overloads have a way to 
@@ -124,7 +252,7 @@ Boost types for <code>char16_t</code> and <code>char32_t</code>, add:</p>
   </blockquote>
 </blockquote>
 
-<h2>Issue 2: Missing UTF-8 string type</h2>
+<h2>Frustration ?: Missing UTF-8 string type</h2>
 
 <p dir="ltr">There is no string type that specifies UTF-8 encoding. Without such 
 a type, neither template arguments nor function overloads have a way to specify 
@@ -141,103 +269,10 @@ a narrow character string with UTF-8 encoding.</p>
 }</pre>
 </blockquote>
 
-<h2>Issue 3: String types do not interoperate with each other</h2>
-
-<p>This code does not currently compile:</p>
-<blockquote>
-  <pre>u32string s32;
-s32 = &quot;foo&quot;;         // error!
-u16string s16(s32);  // error!
-wstring ws(s32.begin(), s32.end()); // error!</pre>
-  <pre>void f(const string&amp;);</pre>
-  <pre>f(s32);  //error!</pre>
-</blockquote>
-<p>The encoding of basic_string instantiations can be determined for 
-the types under discussion. It is either implicit in the string's value_type or 
-can be determined via the locale.&nbsp; See Boost.Filesystem V3 class path for 
-an example of how such interoperability might be achieved.</p>
-<p>Experience with Boost.Filesystem V3 class path has demonstrated 
-that string interoperability brings a considerable simplification and 
-improvement to internationalized applications, but that having to provide 
-interoperability without the resolution of the issues presented here is a 
-band-aid. It is being misused, too - users are passing around boost::filesystem::path objects simply to get string encoding interoperability!</p>
-<p>Note: interoperability will be easier to specify, implement, and 
-use if Issue 4 is resolved.</p>
-
-<h3>Proposed resolution</h3>
-
-<blockquote>
-
-<p>Boost resolution????: Provide namespace boost string classes that derived 
-from std::basic_string and add the additional functions necessary to provide as 
-much interoperability as possible without breaking existing code if substituted 
-for existing uses of std::basic_string.</p>
-
-<p>Standard library resolution????: Add additional std::basic_string function 
-overloadss 
-as necessary to provide as much interoperability as possible without breaking 
-existing code if substituted for existing uses of std::basic_string.</p>
-</blockquote>
-<h2>Issue 4: String types do not interoperate with I/O stream types</h2>
-<p>See the motivating examples above.</p>
-<h2>Issue 5: Conversion between character encodings is awkward</h2>
-<p>Concerns revolve around std::codecvt, std::locale, 
-std::wstring_convert, and other standard library conversion facilities:</p>
-<ul>
-  <li>Given <b><i>n</i></b> encodings, necessity of 
-  providing <b>n<sup>2</sup></b> codecvt facets rather than <b>2n</b> codecs. 
-  UTF-32 is the obvious choice for the common encoding to pass between codecs. 
-  This is existing practice in C libraries like ICU.</li>
-  <li>Interfaces don't work well with generic programming 
-  techniques.</li>
-  <li>Unnecessary creation of temporary strings, with 
-  attendant memory allocations/deallocations.</li>
-  <li>Complex, difficult to learn, and difficult to use std::codecvt interfaces.</li>
-  <li>Intertwining of std::locale and code conversion, even when these 
-  are implementation details that should be hidden from the application.</li>
-  <li>Difficult to control error actions. Choices should include:<ul>
-  <li>Throw exception.</li>
-  <li>Replace offending character with default character. </li>
-  <li>Replace offending character with specified character. Motivating example: 
-  Filesystem's need to use a replacement character that is acceptable to the 
-  Windows codepage. See Boost issue #5769.</li>
-  </ul>
-  </li>
-  </ul>
-<h3>Proposed resolution</h3>
-<blockquote>
-<p>Provide a boost library header inspired by the iterator adaptor approach to 
-encoding conversion pioneered by John Maddock in boost/regex/pending/unicode_iterator.hpp:</p>
-  <ul>
-    <li>from_<b><i>X</i></b> and to_<i><b>X</b></i> iterator adaptor codecs to 
-    and from UTF-32. Possibly implemented using ICU iterators for the less 
-    common encodings.</li>
-    <li>General composition support for combining a from_<b><i>X</i></b> and to_<b><i>X</i></b> 
-    into a complete conversion adaptor.</li>
-    <li>Specializations or overloads prepackaging the 25 char, wchar_t, char8_t, 
-    char16_t, and char32_t complete conversion adaptors.</li>
-  </ul>
-</blockquote>
-<h2>Issue 6: String type interoperability requires an excessive number of 
-overloads</h2>
-<p>Overloads or specializations are required for:</p>
-<blockquote>
-  <ul>
-    <li>Other instances of the same type.</li>
-    <li>Single characters.</li>
-    <li>Single iterators to terminated strings.</li>
-    <li>Single iterators to strings whose size is determined by a size argument.</li>
-    <li>Iterator ranges.</li>
-    <li>Further variations on the above, with additional arguments for position 
-    or repeat count.</li>
-  </ul>
-</blockquote>
-<p>Each of these then have to be repeated in template form for interoperability 
-with other string types.</p>
 <hr>
 <p>© Copyright Beman Dawes 2011</p>
 <p>Revised 
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->24 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32187" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->25 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32189" --></p>
 <p>&nbsp;</p>
 
 </body>
