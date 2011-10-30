@@ -350,6 +350,13 @@ namespace
   {
     cout << "stream inserter test...\n";
 
+    // no clue why these won't compile:
+    //cout << "Hello " << std::string(pipsqueek) << '\n';
+    //cout << "Hello " << std::wstring(wpipsqueek) << '\n';
+    //cout << "Hello " << boost::u8string(u8pipsqueek) << '\n';
+    //cout << "Hello " << boost::u16string(u16pipsqueek) << '\n';
+    //cout << "Hello " << boost::u32string(u32pipsqueek) << '\n';
+
     cout << "Hello " << xop::string(pipsqueek) << '\n';
     cout << "Hello " << xop::wstring(wpipsqueek) << '\n';
     cout << "Hello " << xop::u8string(u8pipsqueek) << '\n';
