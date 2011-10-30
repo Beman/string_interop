@@ -416,6 +416,7 @@ operator<<(Ostream& os, const Ctr& ctr)
     os << *itr;
   return os;
 }
+
 //
 //template <class Ostream, class InputIterator>
 //typename boost::enable_if<::boost::is_iterator<InputIterator>,
