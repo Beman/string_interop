@@ -196,15 +196,16 @@ public:
     return *this;
   }
 
-  //template <class InputIterator>
-  //  typename boost::enable_if<is_same<
-  //    typename std::iterator_traits<InputIterator>::value_type, value_type>,
-  //basic_string&>::type  append(InputIterator first, InputIterator last)
-  //{
-  //  BOOST_XOP_STRING_LOG("          InputIterator first, InputIterator last; value_type");
-  //  std::basic_string<charT,traits,Allocator>::append(first, last);
-  //  return *this;
-  //}
+  template <class InputIterator>
+    typename boost::enable_if<is_same<
+      typename std::iterator_traits<InputIterator>::value_type, value_type>,
+  basic_string&>::type  append(InputIterator first, InputIterator last)
+  {
+    BOOST_XOP_STRING_LOG("          InputIterator first, InputIterator last; value_type");
+    std::basic_string<charT,traits,Allocator>::append(first, last);
+    return *this;
+  }
+
 //basic_string&  append(initializer_list<charT>);
 
   //  interoperability signatures
@@ -266,20 +267,20 @@ public:
   //  return *this;
   //}
 
-  //template <class InputIterator>
-  //  typename boost::disable_if<is_same<
-  //    typename std::iterator_traits<InputIterator>::value_type, value_type>,
-  //basic_string&>::type  append(InputIterator first, InputIterator last)
-  //{
-  //  BOOST_XOP_STRING_LOG("          InputIterator first, InputIterator last; not value_type");
-  //  converting_iterator<typename Ctr::const_iterator,
-  //    typename Ctr::value_type, by_range,
-  //    typename std::basic_string<charT,traits,Allocator>::value_type>
-  //      itr(first, last);
-  //  for (; *itr != static_cast<value_type>(0); ++itr)
-  //    push_back(*itr);
-  //  return *this;
-  //}
+  template <class InputIterator>
+    typename boost::disable_if<is_same<
+      typename std::iterator_traits<InputIterator>::value_type, value_type>,
+  basic_string&>::type  append(InputIterator first, InputIterator last)
+  {
+    BOOST_XOP_STRING_LOG("          InputIterator first, InputIterator last; not value_type");
+    converting_iterator<InputIterator,
+      typename std::iterator_traits<InputIterator>::value_type, by_range,
+      typename std::basic_string<charT,traits,Allocator>::value_type>
+        itr(first, last);
+    for (; *itr != static_cast<value_type>(0); ++itr)
+      push_back(*itr);
+    return *this;
+  }
 
 
   // copy assign  --------------------------------------------------------------------//
