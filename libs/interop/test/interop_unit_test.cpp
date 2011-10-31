@@ -98,6 +98,10 @@ namespace
     BOOST_TEST_EQ(xop::string().append("Meow"), xop::string("Meow"));
     BOOST_TEST_EQ(xop::string().append(catfood, catfood+sizeof(catfood)-1),
       xop::string("catfood"));
+ 
+    xop::string meow0("Meow");
+    meow0.push_back('!');
+    BOOST_TEST_EQ(meow0, xop::string("Meow!"));
 
     // converting appends
     BOOST_TEST_EQ(xop::string().append(xop::wstring(L"Meow")), xop::string("Meow"));
@@ -105,6 +109,9 @@ namespace
     BOOST_TEST_EQ(xop::string().append(wcatfood,
       wcatfood+sizeof(wcatfood)/sizeof(wchar_t)-1), xop::string("catfood"));
 
+    xop::string meow1("Meow");
+    meow1.push_back(L'!');
+    BOOST_TEST_EQ(meow1, xop::string("Meow!"));
   }
 
   void construct_with_conversion_test()
@@ -127,7 +134,7 @@ int cpp_main(int, char*[])
   c_str_test();  // subsequent tests rely on this working
 
   construct_without_conversion_test();
-  append_test();
+  append_test();  // also covers push_back() and  operator+=()
   construct_with_conversion_test();
   assign_test();
 

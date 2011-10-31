@@ -208,6 +208,8 @@ public:
 
 //basic_string&  append(initializer_list<charT>);
 
+  void push_back(value_type c) {std::basic_string<charT,traits,Allocator>::push_back(c);}  
+
   //  interoperability signatures
 
   template<class Ctr>
@@ -220,7 +222,7 @@ public:
       typename std::basic_string<charT,traits,Allocator>::value_type>
         itr(ctr.cbegin(), ctr.cend());
     for (; *itr != static_cast<value_type>(0); ++itr)
-      push_back(*itr);
+      std::basic_string<charT,traits,Allocator>::push_back(*itr);
     return *this;
   }
 
@@ -234,7 +236,7 @@ public:
       typename std::basic_string<charT,traits,Allocator>::value_type>
         itr(s);
     for (; *itr != static_cast<value_type>(0); ++itr)
-      push_back(*itr);
+      std::basic_string<charT,traits,Allocator>::push_back(*itr);
     return *this;
   }
 
@@ -248,22 +250,7 @@ public:
   //    typename std::basic_string<charT,traits,Allocator>::value_type>
   //      itr(s, n);
   //  for (; *itr != static_cast<value_type>(0); ++itr)
-  //    push_back(*itr);
-  //  return *this;
-  //}
-
-  //template<class Char>
-  //  typename boost::enable_if<is_character<Char>,
-  //basic_string&>::type append(Char chr)
-  //{
-  //  BOOST_XOP_STRING_LOG("          Char chr");
-  //  converting_iterator<typename Ctr::const_iterator,
-  //    typename Ctr::value_type, by_size,
-  //    typename std::basic_string<charT,traits,Allocator>::value_type>
-  //      itr(&chr, 1);
-  //  // one input character can produce several output characters; example UTF-32->UTF-8
-  //  for (; *itr != static_cast<value_type>(0); ++itr)
-  //    push_back(*itr);
+  //    std::basic_string<charT,traits,Allocator>::push_back(*itr);
   //  return *this;
   //}
 
@@ -278,10 +265,25 @@ public:
       typename std::basic_string<charT,traits,Allocator>::value_type>
         itr(first, last);
     for (; *itr != static_cast<value_type>(0); ++itr)
-      push_back(*itr);
+      std::basic_string<charT,traits,Allocator>::push_back(*itr);
     return *this;
   }
 
+
+  template<class Char>
+    typename boost::enable_if_c<is_character<Char>::value
+      && !is_same<Char, value_type>::value, void>::type
+      push_back(Char c)
+  {
+    BOOST_XOP_STRING_LOG("          push_back Char chr");
+    converting_iterator<const Char*,
+      Char, by_size,
+      typename std::basic_string<charT,traits,Allocator>::value_type>
+        itr(&c, 1);
+    // one input character can produce several output characters; example UTF-32->UTF-8
+    for (; *itr != static_cast<value_type>(0); ++itr)
+      std::basic_string<charT,traits,Allocator>::push_back(*itr);
+  }
 
   // copy assign  --------------------------------------------------------------------//
 
