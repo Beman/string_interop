@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "is_iterator_test", "is_iter
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop_test", "interop_test\interop_test.vcxproj", "{0421F975-5BAE-4F15-90B6-3631ABAE055F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop_unit_test", "interop_unit_test\interop_unit_test.vcxproj", "{52BC227A-5EBE-4293-B4B3-751F62CAC23A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -37,6 +39,10 @@ Global
 		{0421F975-5BAE-4F15-90B6-3631ABAE055F}.Debug|Win32.Build.0 = Debug|Win32
 		{0421F975-5BAE-4F15-90B6-3631ABAE055F}.Release|Win32.ActiveCfg = Release|Win32
 		{0421F975-5BAE-4F15-90B6-3631ABAE055F}.Release|Win32.Build.0 = Release|Win32
+		{52BC227A-5EBE-4293-B4B3-751F62CAC23A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{52BC227A-5EBE-4293-B4B3-751F62CAC23A}.Debug|Win32.Build.0 = Debug|Win32
+		{52BC227A-5EBE-4293-B4B3-751F62CAC23A}.Release|Win32.ActiveCfg = Release|Win32
+		{52BC227A-5EBE-4293-B4B3-751F62CAC23A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

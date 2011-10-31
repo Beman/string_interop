@@ -1,4 +1,4 @@
-//  libs/interop/test/smoke_test.cpp  --------------------------------------------------//
+//  libs/interop/test/interop_test.cpp  ------------------------------------------------//
 
 //  Copyright Beman Dawes 2011
 
@@ -18,6 +18,16 @@ using namespace boost;
 using boost::u8_t;
 using boost::u16_t;
 using boost::u32_t;
+
+//--------------------------------------------------------------------------------------//
+//                                                                                      //
+//  The objective of these tests is to probe combinations of character types and        //
+//  encodings.                                                                          //
+//                                                                                      //
+//  See interop_unit_test.cpp for tests that call each boost::xop::basic_string         //
+//  signature.                                                                          //
+//                                                                                      //
+//--------------------------------------------------------------------------------------//
 
 namespace
 {
@@ -266,7 +276,7 @@ namespace
 
   void append_test()
   {
-    cout << "appends test...\n";
+    cout << "append test...\n";
 
     append_test1(xop::string(pipsqueek));
     append_test1(xop::wstring(wpipsqueek));
@@ -368,7 +378,7 @@ namespace
 
 int cpp_main(int, char*[])
 {
-  cout << "unit test test...\n" << hex;
+  cout << "string interoperability test...\n" << hex;
 
   misc_functions_test();  // subsequent tests rely on these functions
   constructor_test();
