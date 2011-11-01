@@ -102,12 +102,14 @@ namespace
     xop::string foo("foo");
     foo += xop::string("bar");
     BOOST_TEST_EQ(foo, xop::string("foobar"));
+    foo += foo;  // test self append via operator +=
+    BOOST_TEST_EQ(foo, xop::string("foobarfoobar"));
 
     foo += "bar";
-    BOOST_TEST_EQ(foo, xop::string("foobarbar"));
+    BOOST_TEST_EQ(foo, xop::string("foobarfoobarbar"));
 
     foo += '!';
-    BOOST_TEST_EQ(foo, xop::string("foobarbar!"));
+    BOOST_TEST_EQ(foo, xop::string("foobarfoobarbar!"));
 
     BOOST_TEST_EQ(xop::string().append(xop::string("Meow")), xop::string("Meow"));
 
@@ -151,9 +153,33 @@ namespace
     cout << "  construct_with_conversion test...\n";
   }
 
-  void assign_test()
+  void assignment_operator_test()
   {
-    cout << "  assign test...\n";
+    cout << "  assignment_operator test...\n";
+
+    xop::string s0("bar");
+    xop::string s1("foo");
+    s0 = s1;
+    BOOST_TEST_EQ(s0, xop::string("foo"));
+    s0 = s0;   // test self assignment
+    BOOST_TEST_EQ(s0, xop::string("foo"));
+
+    s0 = "blah";
+    BOOST_TEST_EQ(s0, xop::string("blah"));
+
+    s0 = '!';
+    BOOST_TEST_EQ(s0, xop::string("!"));
+
+    xop::wstring ws1(L"foo");
+    s0 = ws1;
+    BOOST_TEST_EQ(s0, xop::string("foo"));
+
+    s0 = L"blah";
+    BOOST_TEST_EQ(s0, xop::string("blah"));
+
+    s0 = L'!';
+    BOOST_TEST_EQ(s0, xop::string("!"));
+
   }
 
 
@@ -166,13 +192,14 @@ int cpp_main(int, char*[])
   c_str_test();  // subsequent tests rely on this working
 
   construct_without_conversion_test();
-  append_test();  // also covers push_back() and  operator+=()
+  append_test();  // also covers push_back() and operator+=()
   construct_with_conversion_test();
-  assign_test();
-
+  assignment_operator_test();
+  //  assign_test();
   //  insert?
   //  erase?
   //  replace?
+  //  iterators
 
   return ::boost::report_errors();
 }

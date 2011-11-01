@@ -106,7 +106,6 @@ public:
   basic_string(const Ctr& ctr, typename boost::enable_if<is_character_container<Ctr>,
     void*>::type=0)
   {
-    BOOST_XOP_STRING_LOG("   construct       const Ctr& ctr");
     converting_iterator<typename Ctr::const_iterator,
       typename Ctr::value_type, by_range,
       typename std::basic_string<charT,traits,Allocator>::value_type>
@@ -119,7 +118,6 @@ public:
   basic_string(InputIterator s,
     typename boost::enable_if<::boost::is_iterator<InputIterator>, void*>::type=0)
   {
-    BOOST_XOP_STRING_LOG("    construct      InputIterator s");
     converting_iterator<InputIterator,
       typename std::iterator_traits<InputIterator>::value_type, by_null,
       typename std::basic_string<charT,traits,Allocator>::value_type>
@@ -148,19 +146,16 @@ public:
 
   basic_string&  operator+=(const basic_string& str)
   {
-    BOOST_XOP_STRING_LOG("          operator+=(const basic_string&)");
     std::basic_string<charT,traits,Allocator>::append(str);\
     return *this;
   }
   basic_string&  operator+=(const charT* s)
   {
-    BOOST_XOP_STRING_LOG("          operator+=(const charT*)");
     std::basic_string<charT,traits,Allocator>::append(s);
     return *this;
   }
   basic_string&  operator+=(charT c)
   {
-    BOOST_XOP_STRING_LOG("          operator+=(charT)");
     std::basic_string<charT,traits,Allocator>::push_back(c);
     return *this;
   }
@@ -169,31 +164,26 @@ public:
 
   basic_string&  append(const basic_string& str)
   { 
-    BOOST_XOP_STRING_LOG("          append(const basic_string&)");
     std::basic_string<charT,traits,Allocator>::append(str);
     return *this;
   }
   basic_string&  append(const basic_string& str, size_type pos, size_type n)
   { 
-    BOOST_XOP_STRING_LOG("          append(const basic_string& str, size_type pos, size_type n)");
     std::basic_string<charT,traits,Allocator>::append(str, pos, n);
     return *this;
   }
   basic_string&  append(const charT* s, size_type n)
   { 
-    BOOST_XOP_STRING_LOG("          append(const charT* s, size_type n)");
     std::basic_string<charT,traits,Allocator>::append(s, n);
     return *this;
   }
   basic_string&  append(const charT* s)
   { 
-    BOOST_XOP_STRING_LOG("          append(const charT*)");
     std::basic_string<charT,traits,Allocator>::append(s);
     return *this;
   }
   basic_string&  append(size_type n, charT c)
   { 
-    BOOST_XOP_STRING_LOG("          append(size_type n, charT c)");
     std::basic_string<charT,traits,Allocator>::append(n, c);
     return *this;
   }
@@ -203,7 +193,6 @@ public:
       typename std::iterator_traits<InputIterator>::value_type, value_type>,
   basic_string&>::type  append(InputIterator first, InputIterator last)
   {
-    BOOST_XOP_STRING_LOG("          InputIterator first, InputIterator last; value_type");
     std::basic_string<charT,traits,Allocator>::append(first, last);
     return *this;
   }
@@ -218,7 +207,6 @@ public:
     typename boost::enable_if<is_character_container<Ctr>,
   basic_string&>::type append(const Ctr& ctr)
   {
-    BOOST_XOP_STRING_LOG("          const Ctr& ctr");
     converting_iterator<typename Ctr::const_iterator,
       typename Ctr::value_type, by_range,
       typename std::basic_string<charT,traits,Allocator>::value_type>
@@ -232,7 +220,6 @@ public:
     typename boost::enable_if<::boost::is_iterator<InputIterator>,
   basic_string&>::type append(InputIterator s)
   {
-    BOOST_XOP_STRING_LOG("          InputIterator s");
     converting_iterator<InputIterator,
       typename std::iterator_traits<InputIterator>::value_type, by_null,
       typename std::basic_string<charT,traits,Allocator>::value_type>
@@ -246,7 +233,6 @@ public:
     typename boost::enable_if<::boost::is_iterator<InputIterator>,
   basic_string&>::type append(InputIterator s, size_type n)
   {
-    BOOST_XOP_STRING_LOG("          InputIterator s, size_type n");
     converting_iterator<InputIterator,
       typename std::iterator_traits<InputIterator>::value_type, by_size,
       typename std::basic_string<charT,traits,Allocator>::value_type>
@@ -261,7 +247,6 @@ public:
       typename std::iterator_traits<InputIterator>::value_type, value_type>,
   basic_string&>::type  append(InputIterator first, InputIterator last)
   {
-    BOOST_XOP_STRING_LOG("          InputIterator first, InputIterator last; not value_type");
     converting_iterator<InputIterator,
       typename std::iterator_traits<InputIterator>::value_type, by_range,
       typename std::basic_string<charT,traits,Allocator>::value_type>
@@ -276,7 +261,6 @@ public:
       && !is_same<Char, value_type>::value, void>::type
       push_back(Char c)
   {
-    BOOST_XOP_STRING_LOG("          push_back Char chr");
     converting_iterator<const Char*,
       Char, by_size,
       typename std::basic_string<charT,traits,Allocator>::value_type>
@@ -286,7 +270,7 @@ public:
       std::basic_string<charT,traits,Allocator>::push_back(*itr);
   }
 
-  // copy assign  --------------------------------------------------------------------//
+  // assignment operator  --------------------------------------------------------------//
 
   basic_string& operator=(const basic_string& str)
   {
@@ -313,13 +297,7 @@ public:
   basic_string&>::type operator=(const Ctr& ctr)
   {
     clear();
-    BOOST_XOP_STRING_LOG("          const Ctr& ctr");
-    converting_iterator<typename Ctr::const_iterator,
-      typename Ctr::value_type, by_range,
-      typename std::basic_string<charT,traits,Allocator>::value_type>
-        itr(ctr.cbegin(), ctr.cend());
-    for (; *itr != static_cast<value_type>(0); ++itr)
-      push_back(*itr);
+    append(ctr);
     return *this;
   }
 
@@ -328,13 +306,17 @@ public:
   basic_string&>::type operator=(InputIterator s)
   {
     clear();
-    BOOST_XOP_STRING_LOG("          InputIterator s");
-    converting_iterator<InputIterator,
-      typename std::iterator_traits<InputIterator>::value_type, by_null,
-      typename std::basic_string<charT,traits,Allocator>::value_type>
-        itr(s);
-    for (; *itr != static_cast<value_type>(0); ++itr)
-      push_back(*itr);
+    append(s);
+    return *this;
+  }
+
+  template<class Char>
+    typename boost::enable_if_c<is_character<Char>::value
+      && !is_same<Char, value_type>::value,
+  basic_string&>::type operator=(Char c)
+  {
+    clear();
+    push_back(c);
     return *this;
   }
 
@@ -383,7 +365,7 @@ public:
       typename std::basic_string<charT,traits,Allocator>::value_type>
         itr(ctr.cbegin(), ctr.cend());
     for (; *itr != static_cast<value_type>(0); ++itr)
-      push_back(*itr);
+      std::basic_string<charT,traits,Allocator>::push_back(*itr);
     return *this;
   }
 
@@ -398,7 +380,7 @@ public:
       typename std::basic_string<charT,traits,Allocator>::value_type>
         itr(s);
     for (; *itr != static_cast<value_type>(0); ++itr)
-      push_back(*itr);
+      std::basic_string<charT,traits,Allocator>::push_back(*itr);
     return *this;
   }
 
