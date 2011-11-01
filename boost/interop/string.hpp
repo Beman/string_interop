@@ -191,7 +191,8 @@ public:
   template <class InputIterator>
     typename boost::enable_if<is_same<
       typename std::iterator_traits<InputIterator>::value_type, value_type>,
-  basic_string&>::type  append(InputIterator first, InputIterator last)
+        basic_string&>::type
+  append(InputIterator first, InputIterator last)
   {
     std::basic_string<charT,traits,Allocator>::append(first, last);
     return *this;
@@ -201,7 +202,7 @@ public:
 
   void push_back(value_type c) {std::basic_string<charT,traits,Allocator>::push_back(c);}  
 
-  //  interoperability signatures
+  //  append interoperability signatures
 
   template<class Ctr>
     typename boost::enable_if<is_character_container<Ctr>,
@@ -218,12 +219,12 @@ public:
 
   template<class InputIterator>
     typename boost::enable_if<::boost::is_iterator<InputIterator>,
-  basic_string&>::type append(InputIterator s)
+  basic_string&>::type append(InputIterator s, size_type pos, size_type n)
   {
     converting_iterator<InputIterator,
-      typename std::iterator_traits<InputIterator>::value_type, by_null,
+      typename std::iterator_traits<InputIterator>::value_type, by_size,
       typename std::basic_string<charT,traits,Allocator>::value_type>
-        itr(s);
+      itr(std::advance(s, pos), n);
     for (; *itr != static_cast<value_type>(0); ++itr)
       std::basic_string<charT,traits,Allocator>::push_back(*itr);
     return *this;
@@ -242,10 +243,23 @@ public:
     return *this;
   }
 
+  template<class InputIterator>
+    typename boost::enable_if<::boost::is_iterator<InputIterator>,
+  basic_string&>::type append(InputIterator s)
+  {
+    converting_iterator<InputIterator,
+      typename std::iterator_traits<InputIterator>::value_type, by_null,
+      typename std::basic_string<charT,traits,Allocator>::value_type>
+        itr(s);
+    for (; *itr != static_cast<value_type>(0); ++itr)
+      std::basic_string<charT,traits,Allocator>::push_back(*itr);
+    return *this;
+  }
+
   template <class InputIterator>
     typename boost::disable_if<is_same<
       typename std::iterator_traits<InputIterator>::value_type, value_type>,
-  basic_string&>::type  append(InputIterator first, InputIterator last)
+  basic_string&>::type append(InputIterator first, InputIterator last)
   {
     converting_iterator<InputIterator,
       typename std::iterator_traits<InputIterator>::value_type, by_range,
@@ -290,15 +304,14 @@ public:
   }
   //basic_string& operator=(initializer_list<charT>);
 
-  //  interoperability signatures
+  //  assignment operator interoperability signatures
 
   template<class Ctr>
     typename boost::enable_if<is_character_container<Ctr>,
   basic_string&>::type operator=(const Ctr& ctr)
   {
     clear();
-    append(ctr);
-    return *this;
+    return append(ctr);
   }
 
   template<class InputIterator>
@@ -306,8 +319,7 @@ public:
   basic_string&>::type operator=(InputIterator s)
   {
     clear();
-    append(s);
-    return *this;
+    return append(s);
   }
 
   template<class Char>
@@ -348,25 +360,42 @@ public:
     std::basic_string<charT,traits,Allocator>::assign(n, c);
     return *this;
   }
-//template<class InputIterator>
-//  basic_string& assign(InputIterator first, InputIterator last);
+  template <class InputIterator>
+    typename boost::enable_if<is_same<
+      typename std::iterator_traits<InputIterator>::value_type, value_type>,
+        basic_string&>::type
+  assign(InputIterator first, InputIterator last)
+  {
+    std::basic_string<charT,traits,Allocator>::assign(first, last);
+    return *this;
+  }
+
 //basic_string& assign(initializer_list<charT>);
 
-  //  interoperability signatures
+  //  assign interoperability signatures
 
   template<class Ctr>
     typename boost::enable_if<is_character_container<Ctr>,
   basic_string&>::type assign(const Ctr& ctr)
   {
     clear();
-    BOOST_XOP_STRING_LOG("          const Ctr& ctr");
-    converting_iterator<typename Ctr::const_iterator,
-      typename Ctr::value_type, by_range,
-      typename std::basic_string<charT,traits,Allocator>::value_type>
-        itr(ctr.cbegin(), ctr.cend());
-    for (; *itr != static_cast<value_type>(0); ++itr)
-      std::basic_string<charT,traits,Allocator>::push_back(*itr);
-    return *this;
+    return append(ctr);
+  }
+
+  template<class InputIterator>
+    typename boost::enable_if<::boost::is_iterator<InputIterator>,
+  basic_string&>::type assign(InputIterator s, size_type pos, size_type n)
+  {
+    clear();
+    return append(s, pos, n);
+  }
+
+  template<class InputIterator>
+    typename boost::enable_if<::boost::is_iterator<InputIterator>,
+  basic_string&>::type assign(InputIterator s, size_type n)
+  {
+    clear();
+    return append(s, n);
   }
 
   template<class InputIterator>
@@ -374,14 +403,16 @@ public:
   basic_string&>::type assign(InputIterator s)
   {
     clear();
-    BOOST_XOP_STRING_LOG("          InputIterator s");
-    converting_iterator<InputIterator,
-      typename std::iterator_traits<InputIterator>::value_type, by_null,
-      typename std::basic_string<charT,traits,Allocator>::value_type>
-        itr(s);
-    for (; *itr != static_cast<value_type>(0); ++itr)
-      std::basic_string<charT,traits,Allocator>::push_back(*itr);
-    return *this;
+    return append(s);
+  }
+
+  template <class InputIterator>
+    typename boost::disable_if<is_same<
+      typename std::iterator_traits<InputIterator>::value_type, value_type>,
+  basic_string&>::type assign(InputIterator first, InputIterator last)
+  {
+    clear();
+    return append(first, last);
   }
 
 };  // basic_string

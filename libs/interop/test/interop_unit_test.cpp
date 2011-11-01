@@ -132,7 +132,7 @@ namespace
 
     BOOST_TEST_EQ(xop::string().append(xop::wstring(L"Meow")), xop::string("Meow"));
  
-    BOOST_TEST_EQ(xop::string().append(xop::wstring("Meow?"), 1, 3), xop::string("eow"));
+    BOOST_TEST_EQ(xop::string().append(xop::wstring(L"Meow?"), 1, 3), xop::string("eow"));
 
     BOOST_TEST_EQ(xop::string().append(L"Meow!!", 4), xop::string("Meow"));
 
@@ -159,29 +159,60 @@ namespace
 
     xop::string s0("bar");
     xop::string s1("foo");
-    s0 = s1;
-    BOOST_TEST_EQ(s0, xop::string("foo"));
-    s0 = s0;   // test self assignment
-    BOOST_TEST_EQ(s0, xop::string("foo"));
-
-    s0 = "blah";
-    BOOST_TEST_EQ(s0, xop::string("blah"));
-
-    s0 = '!';
-    BOOST_TEST_EQ(s0, xop::string("!"));
-
     xop::wstring ws1(L"foo");
-    s0 = ws1;
-    BOOST_TEST_EQ(s0, xop::string("foo"));
 
-    s0 = L"blah";
-    BOOST_TEST_EQ(s0, xop::string("blah"));
+    BOOST_TEST_EQ(s0 = s1, xop::string("foo"));
+    BOOST_TEST_EQ(s0 = s0, xop::string("foo"));  // test self assignment
 
-    s0 = L'!';
-    BOOST_TEST_EQ(s0, xop::string("!"));
+    BOOST_TEST_EQ(s0 = "blah", xop::string("blah"));
 
+    BOOST_TEST_EQ(s0 = '!', xop::string("!"));
+
+    BOOST_TEST_EQ(s0 = ws1, xop::string("foo"));
+
+    BOOST_TEST_EQ(s0 = L"blah", xop::string("blah"));
+
+    BOOST_TEST_EQ(s0 = L'!', xop::string("!"));
   }
 
+
+  void assign_test()
+  {
+    cout << "  assign test...\n";
+
+    xop::string s0("bar");
+    xop::string s1("foo!");
+    xop::wstring ws1(L"foo!");
+    const char catfood[] = "catfood";
+    const wchar_t wcatfood[] = L"catfood";
+ 
+    BOOST_TEST_EQ(s0.assign(s1), xop::string("foo!"));
+    BOOST_TEST_EQ(s0 = s0, xop::string("foo!"));  // test self assignment
+
+    BOOST_TEST_EQ(s0.assign(s1, 1, 2), xop::string("oo"));
+
+    BOOST_TEST_EQ(s0.assign("blob!", 4), xop::string("blob"));
+
+    BOOST_TEST_EQ(s0.assign("fob!"), xop::string("fob!"));
+
+    BOOST_TEST_EQ(s0.assign(5, '*'), xop::string("*****"));
+
+    BOOST_TEST_EQ(s0.assign(catfood, catfood+sizeof(catfood)-1),
+      xop::string("catfood"));
+
+    BOOST_TEST_EQ(s0.assign(ws1), xop::string("foo!"));
+
+    BOOST_TEST_EQ(s0.assign(ws1, 1, 2), xop::string("oo"));
+
+    BOOST_TEST_EQ(s0.assign(L"blob!", 4), xop::string("blob"));
+
+    BOOST_TEST_EQ(s0.assign(L"fob!"), xop::string("fob!"));
+
+    BOOST_TEST_EQ(s0.assign(5, L'*'), xop::string("*****"));
+
+    BOOST_TEST_EQ(s0.assign(wcatfood, wcatfood+sizeof(wcatfood)/sizeof(wchar_t)-1),
+      xop::string("catfood"));
+  }
 
 }  // unnamed namespace
 
@@ -193,9 +224,9 @@ int cpp_main(int, char*[])
 
   construct_without_conversion_test();
   append_test();  // also covers push_back() and operator+=()
-  construct_with_conversion_test();
+  //construct_with_conversion_test();
   assignment_operator_test();
-  //  assign_test();
+  assign_test();
   //  insert?
   //  erase?
   //  replace?
