@@ -85,6 +85,9 @@ namespace
     xop::string s3(catfood, catfood+sizeof(catfood)-1);
     BOOST_TEST_EQ(s3.size(), 7);
     BOOST_TEST_EQ(s3, s2);
+
+    s3.clear();
+    BOOST_TEST(s3.empty());
   }
 
   void append_test()
@@ -94,8 +97,28 @@ namespace
     const char catfood[] = "catfood";
     const wchar_t wcatfood[] = L"catfood";
 
+    //  signatures tested in the order they appear in the standard [string.modifiers]
+
+    xop::string foo("foo");
+    foo += xop::string("bar");
+    BOOST_TEST_EQ(foo, xop::string("foobar"));
+
+    foo += "bar";
+    BOOST_TEST_EQ(foo, xop::string("foobarbar"));
+
+    foo += '!';
+    BOOST_TEST_EQ(foo, xop::string("foobarbar!"));
+
     BOOST_TEST_EQ(xop::string().append(xop::string("Meow")), xop::string("Meow"));
+
+    BOOST_TEST_EQ(xop::string().append(xop::string("Meow?"), 1, 3), xop::string("eow"));
+
+    BOOST_TEST_EQ(xop::string().append("Meow!!", 4), xop::string("Meow"));
+
     BOOST_TEST_EQ(xop::string().append("Meow"), xop::string("Meow"));
+
+    BOOST_TEST_EQ(xop::string("Meow").append(3, '!'), xop::string("Meow!!!"));
+
     BOOST_TEST_EQ(xop::string().append(catfood, catfood+sizeof(catfood)-1),
       xop::string("catfood"));
  
@@ -104,8 +127,17 @@ namespace
     BOOST_TEST_EQ(meow0, xop::string("Meow!"));
 
     // converting appends
+
     BOOST_TEST_EQ(xop::string().append(xop::wstring(L"Meow")), xop::string("Meow"));
+ 
+    BOOST_TEST_EQ(xop::string().append(xop::wstring("Meow?"), 1, 3), xop::string("eow"));
+
+    BOOST_TEST_EQ(xop::string().append(L"Meow!!", 4), xop::string("Meow"));
+
     BOOST_TEST_EQ(xop::string().append(L"Meow"), xop::string("Meow"));
+
+    BOOST_TEST_EQ(xop::string("Meow").append(3, L'!'), xop::string("Meow!!!"));
+
     BOOST_TEST_EQ(xop::string().append(wcatfood,
       wcatfood+sizeof(wcatfood)/sizeof(wchar_t)-1), xop::string("catfood"));
 

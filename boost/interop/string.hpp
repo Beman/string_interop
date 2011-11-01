@@ -149,17 +149,19 @@ public:
   basic_string&  operator+=(const basic_string& str)
   {
     BOOST_XOP_STRING_LOG("          operator+=(const basic_string&)");
-    return append(str);
+    std::basic_string<charT,traits,Allocator>::append(str);\
+    return *this;
   }
   basic_string&  operator+=(const charT* s)
   {
     BOOST_XOP_STRING_LOG("          operator+=(const charT*)");
-    return append(s);
+    std::basic_string<charT,traits,Allocator>::append(s);
+    return *this;
   }
   basic_string&  operator+=(charT c)
   {
     BOOST_XOP_STRING_LOG("          operator+=(charT)");
-    push_back(c);
+    std::basic_string<charT,traits,Allocator>::push_back(c);
     return *this;
   }
 //basic_string&  operator+=(initializer_list<charT>);
@@ -240,19 +242,19 @@ public:
     return *this;
   }
 
-  //template<class InputIterator>
-  //  typename boost::enable_if<::boost::is_iterator<InputIterator>,
-  //basic_string&>::type append(InputIterator s, size_type n)
-  //{
-  //  BOOST_XOP_STRING_LOG("          InputIterator s, size_type n");
-  //  converting_iterator<InputIterator,
-  //    typename std::iterator_traits<InputIterator>::value_type, by_size,
-  //    typename std::basic_string<charT,traits,Allocator>::value_type>
-  //      itr(s, n);
-  //  for (; *itr != static_cast<value_type>(0); ++itr)
-  //    std::basic_string<charT,traits,Allocator>::push_back(*itr);
-  //  return *this;
-  //}
+  template<class InputIterator>
+    typename boost::enable_if<::boost::is_iterator<InputIterator>,
+  basic_string&>::type append(InputIterator s, size_type n)
+  {
+    BOOST_XOP_STRING_LOG("          InputIterator s, size_type n");
+    converting_iterator<InputIterator,
+      typename std::iterator_traits<InputIterator>::value_type, by_size,
+      typename std::basic_string<charT,traits,Allocator>::value_type>
+        itr(s, n);
+    for (; *itr != static_cast<value_type>(0); ++itr)
+      std::basic_string<charT,traits,Allocator>::push_back(*itr);
+    return *this;
+  }
 
   template <class InputIterator>
     typename boost::disable_if<is_same<
@@ -268,7 +270,6 @@ public:
       std::basic_string<charT,traits,Allocator>::push_back(*itr);
     return *this;
   }
-
 
   template<class Char>
     typename boost::enable_if_c<is_character<Char>::value
