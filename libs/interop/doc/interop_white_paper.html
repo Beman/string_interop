@@ -14,25 +14,37 @@
 
 <body>
 
-<h1>String Interoperability White Paper&nbsp; <span style="background-color: #FFFF00">(DRAFT)</span></h1>
+<h1>Proposal for Improved String Interoperability in a Unicode World <span style="background-color: #FFFF00">(DRAFT)</span></h1>
 
 <h2>Introduction</h2>
 
-<p>This paper proposes additions to ease use of the C++11 standard 
-library with string internationalization in general and Unicode strings in 
-particular.</p>
+<p>This paper proposes additions to Boost and the C++11 standard library to ease use of strings 
+in an international environment. The primary focus is making the Unicode 
+features of C++11 easier to use, although other character encodings are also 
+supported.</p>
 
 <p>The proposal is for pure additions to Boost and the C++ standard library. No C++03 
 or C++11 compliant code is broken or otherwise affected by the additions.</p>
 
-<h3>Motivation</h3>
+<h2>Motivation</h2>
 
-<p>The motivation for the proposal was a series of frustrations encountered while 
-providing Unicode support for internationalization of GIS software and the 
-Boost Filesystem Library's class path.</p>
+<p>The motivation for this proposal is a series of frustrations. These 
+frustrations were originally encountered while 
+providing Unicode string support for the internationalization of commercial GIS software. 
+They appeared again while working on the 
+Boost Filesystem Library. These frustrations have become much worse as compiler 
+support for C++11's additional Unicode support makes it easier to write programs 
+that run up against current limitations.</p>
 
-<p>A &quot;Hello World&quot; program using Asian characters illustrates one of the 
-frustrations:</p>
+<p>The frustrations fall into several categories:</p>
+
+<h3>Strings of different character types do not interoperate</h3>
+
+<h3>I/O streams do not accept strings of different character types </h3>
+
+<p>A &quot;Hello World&quot; program using a C++11 Unicode string literal illustrates 
+this 
+frustration:</p>
 
 <blockquote>
   <pre>#include &lt;iostream&gt;
@@ -42,13 +54,39 @@ int main()
 }</pre>
 </blockquote>
 
-<h3>Proof-of-concept implementation</h3>
+<h3>Conversion between string types and encodings is awkward</h3>
+
+<p>Frustrations revolve around <code>std::codecvt</code>, <code>std::locale</code>, 
+<code>std::wstring_convert</code>, and other standard library conversion facilities:</p>
+<ul>
+  <li>Given <b><i>n</i></b> encodings, necessity of 
+  providing <b>n<sup>2</sup></b> <code>codecvt</code> facets rather than <b>2n</b> codecs. 
+  UTF-32 is the obvious choice for the common encoding to pass between codecs. 
+  This is existing practice in C libraries like ICU.</li>
+  <li>Interfaces don't work well with generic programming 
+  techniques, particularly iterators.</li>
+  <li>Unnecessary creation of temporary strings, with 
+  attendant memory allocations/deallocations.</li>
+  <li>Complex, difficult to learn, and difficult to use <code>std::codecvt</code> interfaces.</li>
+  <li>Intertwining of <code>std::locale</code> and code conversion, even when these 
+  are implementation details that should be hidden from the application.</li>
+  <li>Difficult to control error actions. Choices should include:<ul>
+  <li>Throw exception.</li>
+  <li>Replace offending character with default character. </li>
+  <li>Replace offending character with specified character. Motivating example: 
+  Filesystem's need to use a replacement character that is acceptable to the 
+  Windows codepage. See Boost issue #5769.</li>
+  </ul>
+  </li>
+  </ul>
+
+<h2>Proof-of-concept implementation</h2>
 
 <p>A &quot;proof-of-concept&quot; implementation of the solutions presented here is 
 available at <a href="https://github.com/Beman/string-interoperability">
 https://github.com/Beman/string-interoperability</a>.</p>
 
-<h3>Technical inspiration</h3>
+<h2>Technical inspiration</h2>
 
 <p>Peter Dimov inspired the idea of string interoperability by arguing that the 
 Boost Filesystem library should treat a path is a single 
@@ -271,11 +309,47 @@ a narrow character string with UTF-8 encoding.</p>
 }</pre>
 </blockquote>
 
->>>>>>> Rewrite front matter for clarity
+<h2>Proposed Resolution</h2>
+<h3>Additions to class std::basic_string</h3>
+<p>For each constructor, <code>operator=</code>, <code>operator+=</code>, <code>
+append</code>, and <code>assign</code> signature, add a function template with a 
+template parameter for the signature's string argument type, character argument 
+type, or iterator argument type, as appropriate. The added functions shall not 
+participate in overload resolution if the value type of the template parameter 
+is the same as <code>basic_string::value_type</code>.&nbsp; The semantics of the 
+added signatures are the same as original signatures except that arguments of 
+the template parameter type shall be converted to the type and encoding of <code>
+basic_string::value_type</code>.</p>
+<p>For <code>c_str</code> (and possibly <code>begin</code> and <code>end</code>), 
+add a function template of the same name with a template parameter specifying a 
+character type. The return type shall be an unspecified constant iterator whose 
+value type is the template parameter character type.</p>
+<p>For Boost, the additions are applied to a class <code>basic_string</code> in 
+a <code>boost</code> namespace that publicly inherits from <code>
+std::basic_string</code>.</p>
+<h3>Additional inserters and extractors for streams</h3>
+<p>Add additional function templates to those in 27.7.3.6.4 [ostream.inserters.character],
+<i>Character inserter function templates</i>, to cover the case where the 
+argument character type differs from charT and is not <code>char</code>, <code>
+signed char</code>, <code>unsigned char</code>, <code>const char*</code>, <code>
+const signed char*</code>, or <code>const unsigned char*</code>.&nbsp; (The 
+specified types are excluded because they are covered by existing signatures.) 
+The semantics of the added signatures are the same as original signatures except 
+that arguments shall be converted to the type and encoding of the stream.</p>
+<p>Do the same for the character extractors in 27.7.2.2.3 [istream::extractors],
+<i>basic_istream::operator&gt;&gt;</i>.</p>
+<p>Do the same for the two <code>std::basic_string</code> inserters and 
+extractors in 21.4.8.9 [string.io], <i>Inserters and extractors</i>.</p>
+<h3>Iterator adapters for character type and encoding conversion</h3>
+<h3>Narrow character and string types with UTF-8 encoding</h3>
+<h3>Emulation of C++11 features for C++03 compilers and standard libraries</h3>
+<p>These additions apply to Boost only. See header &lt;boost/interop/string11.hpp&gt;.</p>
+<hr>
+<p>&nbsp;</p>
 <hr>
 <p>© Copyright Beman Dawes 2011</p>
 <p>Revised 
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->25 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32189" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->02 November 2011<!--webbot bot="Timestamp" endspan i-checksum="39624" --></p>
 <p>&nbsp;</p>
 
 </body>
