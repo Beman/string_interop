@@ -294,9 +294,11 @@ Boost types for <code>char16_t</code> and <code>char32_t</code>, add:</p>
 
 <h2>Frustration ?: Missing UTF-8 string type</h2>
 
-<p dir="ltr">There is no string type that specifies UTF-8 encoding. Without such 
-a type, neither template arguments nor function overloads have a way to specify 
-a narrow character string with UTF-8 encoding.</p>
+<p dir="ltr">There is no currently no standard string type that specifies UTF-8 encoding. Without such 
+a type, neither template arguments nor function overloads have a direct way to 
+specify a narrow character string with UTF-8 encoding. Although indirect 
+detection of encoding via locales does work, it causes endless confusion and 
+bugs so an experimental alternative seems worthwhile.</p>
 
 <h3>Proposed resolution</h3>
 
@@ -309,7 +311,127 @@ a narrow character string with UTF-8 encoding.</p>
 }</pre>
 </blockquote>
 
-<h2>Proposed Resolution</h2>
+<h2>Proposed Resolutions</h2>
+<h3>Emulation of C++11 features for C++03 compilers and standard libraries</h3>
+<p>These additions apply to Boost only. See header &lt;boost/interop/string_0x.hpp&gt;.</p>
+<p>This header provides typedefs for C++0x types if present, otherwise provides 
+typedefs for C++03 equivalent types. By using these typedefs, emulations of 
+these C++0x features become available for use with C++03 compilers. </p>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
+  <tr>
+    <td align="center"><i><b>Typedef<br>
+    name</b></i></td>
+    <td align="center"><i><b>C++11<br>
+    type</b></i></td>
+    <td align="center"><i><b>C++03<br>
+    type</b></i></td>
+  </tr>
+  <tr>
+    <td><code>boost::u16_t</code></td>
+    <td><code>char16_t</code></td>
+    <td><code>uint16_t</code></td>
+  </tr>
+  <tr>
+    <td><code>boost::u32_t</code></td>
+    <td><code>char32_t</code></td>
+    <td><code>uint32_t</code></td>
+  </tr>
+  <tr>
+    <td><code>boost::u16string</code></td>
+    <td><code>std::u16string</code></td>
+    <td><code>std::basic_string&lt;boost::u16_t&gt;</code></td>
+  </tr>
+  <tr>
+    <td><code>boost::u32string</code></td>
+    <td><code>std::u32string</code></td>
+    <td><code>std::basic_string&lt;boost::u32_t&gt;</code></td>
+  </tr>
+</table>
+<p>The implementation uses the typedefs provided by Microsoft Visual C++ 2010 if 
+present.</p>
+<p>The header also provides typedefs for UTF-8 encoded characters and strings. 
+See the following section.</p>
+<h4>Acknowledgement</h4>
+<p>Thanks to Mathias Gaunard and others for Boost mailing list discussions 
+leading to the final form of these typedefs.</p>
+<h3>Narrow character and string types with UTF-8 encoding</h3>
+<p><i>This is a purely speculative feature. Its acceptability, usefulness, and 
+practicality are unknown. It will be removed from the proposal if it proves to 
+be problematical.</i></p>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
+  <tr>
+    <td align="center"><i><b>Typedef<br>
+    name</b></i></td>
+    <td align="center"><i><b>C++11<br>
+    type</b></i></td>
+    <td align="center"><i><b>C++03<br>
+    type</b></i></td>
+  </tr>
+  <tr>
+    <td><code>boost::u8_t</code></td>
+    <td><code>unsigned char</code></td>
+    <td><code>unsigned char</code></td>
+  </tr>
+  <tr>
+    <td><code>boost::u8string</code></td>
+    <td><code>std::basic_string&lt;boost::u8_t&gt;</code></td>
+    <td><code>std::basic_string&lt;boost::u8_t&gt;</code></td>
+  </tr>
+</table>
+<h3>Iterator adapters for character type and encoding conversion</h3>
+<p>Add:</p>
+<blockquote>
+  <div align="left">
+    <pre>// converting iterator
+template &lt;class InputIterator, class From, template&lt;class&gt; class EndPolicy, class To&gt;  
+  class converting_iterator;
+
+// end-detection policies
+template &lt;class InputIterator&gt; class by_range;
+template &lt;class InputIterator&gt; class by_size;
+template &lt;class InputIterator&gt; class by_null;
+
+// primary template for conversion from T to char32_t
+template &lt;class InputIterator, class T, template&lt;class&gt; class EndPolicy&gt;  
+  class from_iterator;
+
+// partial specializations for char, wchar_t, char16_t, char32_t  
+template &lt;class InputIterator, template&lt;class&gt; class EndPolicy&gt;
+  class from_iterator&lt;InputIterator, <b><i>specialization</i></b>, EndPolicy&gt;;
+
+// primary template for conversion from char32_t to T
+template &lt;class InputIterator, class T&gt; class to_iterator;
+
+// partial specializations for char, wchar_t, char16_t, char32_t  
+template &lt;class InputIterator&gt; class to_iterator&lt;InputIterator, <b><i>specialization</i></b>&gt;;
+
+// converting iterator definition
+template &lt;class InputIterator, class From, template&lt;class&gt; class EndPolicy, class To&gt;  
+  class converting_iterator
+    : public to_iterator&lt;from_iterator&lt;InputIterator, From, EndPolicy&gt;, To&gt;
+{
+public:
+  explicit converting_iterator(InputIterator begin)
+    : to_iterator&lt;from_iterator&lt;InputIterator, From, EndPolicy&gt;, To&gt;(begin)
+  // Requires: An EndPolicy that requires no initialization
+  {}
+
+  converting_iterator(InputIterator begin, InputIterator end)
+    : to_iterator&lt;from_iterator&lt;InputIterator, From, EndPolicy&gt;, To&gt;(begin)
+  // Requires: An EndPolicy that supplies end iterator initialization
+  {
+    base().end(end);
+  }
+
+  converting_iterator(InputIterator begin, std::size_t sz)
+    : to_iterator&lt;from_iterator&lt;InputIterator, From, EndPolicy&gt;, To&gt;(begin)
+  // Requires: An EndPolicy that supplies size initialization
+  {
+    base().size(sz);
+  }
+};</pre>
+  </div>
+</blockquote>
 <h3>Additions to class std::basic_string</h3>
 <p>For each constructor, <code>operator=</code>, <code>operator+=</code>, <code>
 append</code>, and <code>assign</code> signature, add a function template with a 
@@ -340,16 +462,10 @@ that arguments shall be converted to the type and encoding of the stream.</p>
 <i>basic_istream::operator&gt;&gt;</i>.</p>
 <p>Do the same for the two <code>std::basic_string</code> inserters and 
 extractors in 21.4.8.9 [string.io], <i>Inserters and extractors</i>.</p>
-<h3>Iterator adapters for character type and encoding conversion</h3>
-<h3>Narrow character and string types with UTF-8 encoding</h3>
-<h3>Emulation of C++11 features for C++03 compilers and standard libraries</h3>
-<p>These additions apply to Boost only. See header &lt;boost/interop/string11.hpp&gt;.</p>
-<hr>
-<p>&nbsp;</p>
 <hr>
 <p>© Copyright Beman Dawes 2011</p>
 <p>Revised 
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->02 November 2011<!--webbot bot="Timestamp" endspan i-checksum="39624" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->03 November 2011<!--webbot bot="Timestamp" endspan i-checksum="39626" --></p>
 <p>&nbsp;</p>
 
 </body>
