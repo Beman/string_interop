@@ -10,7 +10,7 @@
 
 #include <boost/interop/string_0x.hpp>
 #include <boost/type_traits/integral_constant.hpp>
-#include <boost/interop/conversion_iterator_adapters.hpp>
+#include <boost/interop/iterator_adapter.hpp>
 #include <boost/interop/detail/is_iterator.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/decay.hpp>

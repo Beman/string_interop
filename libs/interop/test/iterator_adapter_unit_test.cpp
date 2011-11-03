@@ -6,7 +6,7 @@
 //  See http://www.boost.org/LICENSE_1_0.txt
 
 #include <iostream>
-#include <boost/interop/conversion_iterator_adapters.hpp>
+#include <boost/interop/iterator_adapter.hpp>
 #include <boost/interop/string_0x.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>

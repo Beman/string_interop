@@ -7,13 +7,13 @@
 //  See http://www.boost.org/LICENSE_1_0.txt
 
 //--------------------------------------------------------------------------------------//
-//  John Maddock introduced me to the idea of performing conversion via iterator        //
-//  Adapters. The code for the UTF-8 <--> UTF-32 and UTF-16 <--> UTF-32 adapers was     //
-//  adapted from his boost/regex/pending/unicode_iterator.hpp header.                   //
+//  John Maddock's boost/regex/pending/unicode_iterator.hpp introduced me to the idea   //
+//  of performing conversion via iterator adapters. The code below for the UTF-8        //
+//  to/from UTF-32 and UTF-16 <--> UTF-32 adapers was based on that header.             //
 //--------------------------------------------------------------------------------------//
 
-#if !defined(BOOST_INTEROP_CONVERSION_ITERATOR_ADAPTERS_HPP)
-#define BOOST_INTEROP_CONVERSION_ITERATOR_ADAPTERS_HPP
+#if !defined(BOOST_INTEROP_ITERATOR_ADAPTER_HPP)
+#define BOOST_INTEROP_ITERATOR_ADAPTER_HPP
 
 #include <boost/interop/detail/config.hpp>
 #include <boost/interop/string_0x.hpp>
@@ -1097,4 +1097,4 @@ namespace detail
 
 }  // namespace boost
 
-#endif  // BOOST_INTEROP_CONVERSION_ITERATOR_ADAPTERS_HPP
+#endif  // BOOST_INTEROP_ITERATOR_ADAPTER_HPP

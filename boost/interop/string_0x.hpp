@@ -14,7 +14,7 @@
 //   Also provide character type u8_t and string type u8string for UTF-8 encoded        //
 //   characters and strings.                                                            //
 //                                                                                      //
-//   Boost              C++0x            C++03                                          //
+//   Boost              C++11            C++03                                          //
 //   ----------------   --------------   --------------------------------               //
 //   boost::u8_t        unsigned char    unsigned char                                  //
 //   boost::u16_t       char16_t         uint16_t                                       //
