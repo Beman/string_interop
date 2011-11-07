@@ -28,8 +28,8 @@ or C++11 compliant code is broken or otherwise affected by the additions.</p>
 
 <h2>Motivation</h2>
 
-<p>The motivation for this proposal is a series of frustrations. These 
-frustrations were originally encountered while 
+<p>The motivation for this proposal is frustration with a series of problems. The 
+C++03 versions of these problems were originally encountered while 
 providing Unicode string support for the internationalization of commercial GIS software. 
 They appeared again while working on the 
 Boost Filesystem Library. These frustrations have become much worse as compiler 
@@ -37,7 +37,7 @@ support for C++11 additional Unicode support makes it easier to write programs
 that run up against current limitations.</p>
 
 <p>A &quot;Hello World&quot; program using a C++11 Unicode string literal illustrates 
-this 
+a string interoperability 
 frustration:</p>
 
 <blockquote>
@@ -48,7 +48,7 @@ int main()
 }</pre>
 </blockquote>
 
-  <h2>Analysis</h2>
+  <h2>Rationale for implicit conversions</h2>
   <p>Consider this code:</p>
 <blockquote>
   <pre>#include &lt;string&gt;
@@ -75,11 +75,11 @@ more efficient than just calling codecvt facets. Error handling needs to be
 provided, as conversions involving some <code>char</code> and <code>wchar_t</code> 
 encodings might encounter errors.</p>
 <p>Implicit conversion between single characters of different types, as opposed 
-to strings, may require multi-character sequences and no such implicit 
-conversions are proposed here.</p>
+to strings, may require multi-character sequences. No such implicit conversions 
+are proposed here.</p>
 <h2>Proof-of-concept implementation</h2>
 
-<p>A &quot;proof-of-concept&quot; implementation of the solutions presented here is 
+<p>A &quot;proof-of-concept&quot; implementation of the Boost proposals presented here is 
 available at <a href="https://github.com/Beman/string-interoperability">
 https://github.com/Beman/string-interoperability</a>.</p>
 
@@ -116,16 +116,6 @@ characters are not addressed. See Mathias Gaunard's <a href="http://mathias.gaun
   Unicode project</a> for an example of deeper Unicode support.</p>
 
 <h3>The cat is out of the bag</h3>
-
-<h3>String interoperability</h3>
-
-<h3>Standard algorithms and other functions taking iterator arguments</h3>
-<h3 dir="ltr">Functions taking const <i>character-type</i>* arguments</h3>
-<h3 dir="ltr">Functions taking const <i>string-type</i>&amp; arguments</h3>
-
-<h3 dir="ltr">Function templates taking character iterator arguments</h3>
-
-<h3 dir="ltr">Function templates taking const <i>string-type</i>&amp; arguments</h3>
 
 <h2>Minor Proposals</h2>
 
@@ -179,17 +169,17 @@ See the following section.</p>
 <p>Thanks to Mathias Gaunard and others for Boost mailing list discussions 
 leading to the final form of these typedefs.</p>
 <h2>Proposal 2: Narrow character and string types with UTF-8 encoding</h2>
-<p><i>This is a purely speculative experimental feature. Its acceptability, usefulness, and 
-practicality are unknown. It will be removed from the proposal if it proves to 
-be problematical.</i></p>
+<p><i>This is a purely speculative experimental feature. Its acceptability, 
+usefulness, and practicality are unknown. It will be removed from the proposal 
+if it proves to be problematical.</i></p>
 <h3>Problem</h3>
-<p>There is no currently no built-in character type or standard library string type that specifies UTF-8 encoding.</p>
+<p>There is no currently no built-in character type or standard library string 
+type that specifies UTF-8 encoding.</p>
 
-<p>Without 
-such a string type, neither template arguments nor function overloads have a way to 
-specify a narrow character with UTF-8 encoding. This is a confusing 
-inconsistency with char16_t and char32_t. It sends the message to users that 
-UTF-8 encoding is a second class citizen in the C++ world.</p>
+<p>Without such a string type, neither template arguments nor function overloads 
+have a way to specify a narrow character with UTF-8 encoding. This is a 
+confusing inconsistency with char16_t and char32_t. It sends the message to 
+users that UTF-8 encoding is a second class citizen in the C++ world.</p>
 
 <p>Although indirect detection of encoding via locales does work, it causes 
 endless confusion and bugs.</p>
@@ -300,10 +290,16 @@ public:
   {
     base().size(sz);
   }
+
+  <i>To be supplied: error handling policies and/or arguments</i>
+
 };</pre>
   </div>
 </blockquote>
 <h3>Proposed additions to Boost</h3>
+
+<p>The above, in a Boost header and namespace. See <code>
+<a href="../../../boost/interop/iterator_adapter.hpp">&lt;boost/interop/iterator_adapter.hpp&gt;</a></code>.</p>
 
 <h2>Proposal 4: Additions to class std::basic_string</h2>
 
@@ -334,33 +330,49 @@ use if Issue 4 is resolved.</p>
 
 <h3>Proposed additions to the standard library/TR2</h3>
 
-<p>For each constructor, <code>operator=</code>, <code>operator+=</code>, <code>
-append</code>, and <code>assign</code> signature, add a function template with a 
-template parameter for the signature's string argument type, character argument 
-type, or iterator argument type, as appropriate. The added functions shall not 
-participate in overload resolution if the value type of the template parameter 
-is the same as <code>basic_string::value_type</code>.&nbsp; The semantics of the 
-added signatures are the same as original signatures except that arguments of 
-the template parameter type shall be converted to the type and encoding of <code>
+<p dir="ltr">The approach is to add additional <code>std::basic_string</code> 
+overloads to functions most likely to benefit from interoperability. The 
+overloads are in the form of function templates with sufficient restrictions on 
+overload resolution participation (i.e. enable_if) that the existing C++11 
+functions are always selected if the value type of the argument is the same as 
+or convertible to the <code>std::basic_string</code> type's <code>value_type</code>. 
+The semantics of the added signatures are the same as original signatures except 
+that arguments of the template parameter type have their value converted to the 
+type and encoding of <code>
 basic_string::value_type</code>.</p>
-<p>For <code>c_str</code> (and possibly <code>begin</code> and <code>end</code>), 
-add a function template of the same name with a template parameter specifying a 
-character type. The return type shall be an unspecified constant iterator whose 
-value type is the template parameter character type.</p>
-<p>For Boost, the additions are applied to a class <code>basic_string</code> in 
-a <code>boost</code> namespace that publicly inherits from <code>
+
+<p>The <code>std::basic_string</code> functions given additional overloads are:</p>
+<ul>
+  <li>Each constructor, <code>operator=</code>, <code>operator+=</code>, <code>
+append</code>, and <code>assign</code> signature.<br>
+&nbsp;</li>
+  <li> <code>template &lt;class T&gt; <b><i>unspecified_iterator</i></b> c_str()</code>, 
+  returning an unspecified iterator with <code>value_type</code> of <code>T</code>.
+  <br>
+&nbsp;</li>
+  <li dir="ltr">
+
+<p dir="ltr"><code>begin()</code> and <code>end()</code>. Similar to <code>c_str()</code>. </p>
+  </li>
+</ul>
+
+<p dir="ltr">To keep the number and complexity of overloads manageable, the 
+proof-of-concept implementation does not provide any way to specify error 
+handling policies, or <code>string</code> and <code>wstring</code> encoding. 
+Every one of the added signatures does not need to be able to control error 
+handling and encoding. The need is particularly rare in environments where UTF-8 
+is the narrow character encoding and UTF-16 is the wide character encoding. A 
+subset, possibly just <code>c_str()</code>, <code>begin()</code>, and <code>
+end()</code>, with error handling and encoding parameters or arguments, suitable 
+defaulted, may well be sufficient.</p>
+<h3>Proposed additions to Boost</h3>
+<p>The above additions, in 
+a Boost header and namespace, applied to a class <code>basic_string</code> that publicly inherits from <code>
 std::basic_string</code>.</p>
 
-<p>Boost resolution????: Provide namespace boost string classes that derived 
-from std::basic_string and add the additional functions necessary to provide as 
-much interoperability as possible without breaking existing code if substituted 
-for existing uses of std::basic_string.</p>
+<p>See <code><a href="../../../boost/interop/string.hpp">
+&lt;boost/interop/string.hpp&gt;</a></code>.</p>
 
-<p>Standard library resolution????: Add additional std::basic_string function 
-overloads 
-as necessary to provide as much interoperability as possible without breaking 
-existing code if substituted for existing uses of std::basic_string.</p>
-<h3>Proposed additions to Boost</h3>
 <h2 dir="ltr">Proposal 5: Additional inserters and extractors for streams</h2>
 
 <h3>I/O streams do not accept strings of different character types </h3>
@@ -401,10 +413,13 @@ that arguments shall be converted to the type and encoding of the stream.</p>
 <p>Do the same for the two <code>std::basic_string</code> inserters and 
 extractors in 21.4.8.9 [string.io], <i>Inserters and extractors</i>.</p>
 <h3>Proposed additions to Boost</h3>
+<p>The above, in a Boost header and namespace. See <code>
+<a href="../../../boost/interop/stream.hpp">&lt;boost/interop/stream.hpp&gt;</a></code>.</p>
+
 <hr>
 <p>© Copyright Beman Dawes 2011</p>
 <p>Revised 
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->04 November 2011<!--webbot bot="Timestamp" endspan i-checksum="39628" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->07 November 2011<!--webbot bot="Timestamp" endspan i-checksum="39634" --></p>
 <p>&nbsp;</p>
 
 </body>
