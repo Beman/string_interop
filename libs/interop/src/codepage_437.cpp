@@ -5,7 +5,7 @@
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/interop/conversion_iterator_adapters.hpp>
+#include <boost/interop/iterator_adapter.hpp>
 #include <boost/static_assert.hpp>
 
 namespace boost
