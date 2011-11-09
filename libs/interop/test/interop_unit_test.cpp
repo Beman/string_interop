@@ -12,6 +12,7 @@ using std::cout; using std::endl; using std::hex;
 #include <boost/detail/lightweight_main.hpp>
 #include <algorithm>
 #include <iterator>
+#include <string>
 #include <cstring>
 
 using namespace boost;
@@ -53,6 +54,12 @@ namespace
   u8_t     u8meow[]    = { 'M', 'e', 'o', 'w', 0 };
   u16_t    u16meow[]   = { 'M', 'e', 'o', 'w', 0 };
   u32_t    u32meow[]   = { 'M', 'e', 'o', 'w', 0 };
+
+  std::string smeow(meow);
+  std::wstring swmeow(wmeow);
+  u8string su8meow(u8meow);
+  u16string su16meow(u16meow);
+  u32string su32meow(u32meow);
 
   void c_str_test()
   {
@@ -214,6 +221,35 @@ namespace
       xop::string("catfood"));
   }
 
+  bool arg_cvt_test(const xop::string& str)
+  {
+    return str == xop::string("Meow");
+  }
+
+  void argument_with_conversion_test()
+  {
+    cout << "  argument_with_conversion test...\n";
+
+    arg_cvt_test("Meow");
+    arg_cvt_test(L"Meow");
+# ifndef BOOST_NO_UNICODE_LITERALS
+    arg_cvt_test(u8"Meow");
+    arg_cvt_test(u"Meow");
+    arg_cvt_test(U"Meow");
+# endif
+    arg_cvt_test(meow);
+    arg_cvt_test(wmeow);
+    arg_cvt_test(u8meow);
+    arg_cvt_test(u16meow);
+    arg_cvt_test(u32meow);
+
+    arg_cvt_test(smeow);
+    arg_cvt_test(swmeow);
+    arg_cvt_test(su8meow);
+    arg_cvt_test(su16meow);
+    arg_cvt_test(su32meow);
+  }
+
 }  // unnamed namespace
 
 int cpp_main(int, char*[])
@@ -227,6 +263,7 @@ int cpp_main(int, char*[])
   //construct_with_conversion_test();
   assignment_operator_test();
   assign_test();
+  argument_with_conversion_test();
   //  insert?
   //  erase?
   //  replace?
