@@ -14,11 +14,16 @@
 #include <boost/interop/detail/is_iterator.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/decay.hpp>
-#include <ostream>
 
 /*****************************************************************************************
 
   TODO
+
+  * Every enable_if/disable_if needs to be changed to this form:
+      template<class Char>
+        typename boost::enable_if_c<is_character<Char>::value
+          && !is_same<Char, value_type>::value,
+      basic_string&>::type operator=(Char c)
 
   * Every std::basic_string function that returns basic_string& needs to be forwarded
     to get the right return type (boost::basic_string&)
@@ -416,39 +421,6 @@ public:
   }
 
 };  // basic_string
-
-//--------------------------------------------------------------------------------------//
-//                               stream inserters
-//--------------------------------------------------------------------------------------//
-
-template <class Ostream, class Ctr>
-typename boost::enable_if<is_character_container<Ctr>,
-  Ostream&>::type
-operator<<(Ostream& os, const Ctr& ctr)
-{
-  converting_iterator<typename Ctr::const_iterator,
-    typename Ctr::value_type, by_range,
-    typename Ostream::char_type> itr(ctr.begin(), ctr.end());
-  for (; *itr; ++itr)
-    os << *itr;
-  return os;
-}
-
-//
-//template <class Ostream, class InputIterator>
-//typename boost::enable_if<::boost::is_iterator<InputIterator>,
-//  Ostream&>::type
-//operator<<(Ostream& os, InputIterator begin)
-//{
-//  cout << "InputIterator stream inserter\n";
-//  converting_iterator<InputIterator,
-//    typename std::iterator_traits<InputIterator>::value_type, by_null,
-//      typename Ostream::char_type>
-//    itr(begin);
-//  for (; *itr; ++itr)
-//    os << *itr;
-//  return os;
-//}
 
 //--------------------------------------------------------------------------------------//
 //                       interoperability trait specializations

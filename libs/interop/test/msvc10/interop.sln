@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop_test", "interop_tes
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop_unit_test", "interop_unit_test\interop_unit_test.vcxproj", "{52BC227A-5EBE-4293-B4B3-751F62CAC23A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stream_test", "stream_test\stream_test.vcxproj", "{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -43,6 +45,10 @@ Global
 		{52BC227A-5EBE-4293-B4B3-751F62CAC23A}.Debug|Win32.Build.0 = Debug|Win32
 		{52BC227A-5EBE-4293-B4B3-751F62CAC23A}.Release|Win32.ActiveCfg = Release|Win32
 		{52BC227A-5EBE-4293-B4B3-751F62CAC23A}.Release|Win32.Build.0 = Release|Win32
+		{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}.Debug|Win32.ActiveCfg = Debug|Win32
+		{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}.Debug|Win32.Build.0 = Debug|Win32
+		{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}.Release|Win32.ActiveCfg = Release|Win32
+		{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
