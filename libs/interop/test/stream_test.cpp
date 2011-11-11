@@ -10,9 +10,8 @@ using std::cout; using std::endl; using std::hex;
 #include <boost/interop/stream.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
-#include <algorithm>
-#include <iterator>
-#include <cstring>
+#include <string>
+#include <sstream>
 
 using namespace boost;
 using boost::u8_t;
@@ -37,7 +36,11 @@ namespace
 
   void stream_inserter_test()
   {
-    cout << "stream inserter test...\n";
+    cout << "  stream inserter test...\n";
+
+    std::stringstream ss;
+    std::string result;
+    std::string expected;
 
     // no clue why these won't compile:
     //cout << "Hello " << std::string(pipsqueek) << '\n';
@@ -46,11 +49,35 @@ namespace
     //cout << "Hello " << boost::u16string(u16pipsqueek) << '\n';
     //cout << "Hello " << boost::u32string(u32pipsqueek) << '\n';
 
-    cout << "Hello " << xop::string(pipsqueek) << '\n';
-    cout << "Hello " << xop::wstring(wpipsqueek) << '\n';
-    cout << "Hello " << xop::u8string(u8pipsqueek) << '\n';
-    cout << "Hello " << xop::u16string(u16pipsqueek) << '\n';
-    cout << "Hello " << xop::u32string(u32pipsqueek) << '\n';
+    expected = "HelloPipsqueek";
+
+    ss << "Hello" << xop::string(pipsqueek) << '\n';
+    ss >> result;
+    BOOST_TEST_EQ(result, expected);
+
+    result.clear();
+    ss.clear();
+    ss << "Hello" << xop::wstring(wpipsqueek) << '\n';
+    ss >> result;
+    BOOST_TEST_EQ(result, expected);
+
+    result.clear();
+    ss.clear();
+    ss << "Hello" << xop::u8string(u8pipsqueek) << '\n';
+    ss >> result;
+    BOOST_TEST_EQ(result, expected);
+
+    result.clear();
+    ss.clear();
+    ss << "Hello" << xop::u16string(u16pipsqueek) << '\n';
+    ss >> result;
+    BOOST_TEST_EQ(result, expected);
+
+    result.clear();
+    ss.clear();
+    ss << "Hello" << xop::u32string(u32pipsqueek) << '\n';
+    ss >> result;
+    BOOST_TEST_EQ(result, expected);
   }
 
 }  // unnamed namespace
