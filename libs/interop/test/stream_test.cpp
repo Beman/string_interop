@@ -33,76 +33,32 @@ namespace
   u16_t    u16meow[]   = { 'M', 'e', 'o', 'w', 0 };
   u32_t    u32meow[]   = { 'M', 'e', 'o', 'w', 0 };
 
+  template <class T>
+  void test_insertion(T value)
+  {
+    std::stringstream ss;
+    std::string result;
+    const std::string expected("HelloPipsqueek");
+
+    ss << "Hello" << value << '\n';
+    ss >> result;
+    BOOST_TEST_EQ(result, expected);
+  }
 
   void stream_inserter_test()
   {
     cout << "  stream inserter test...\n";
 
-    std::stringstream ss;
-    std::string result;
-    std::string expected;
-
-    expected = "HelloPipsqueek";
-
-    ss << "Hello" << std::string(pipsqueek) << '\n';
-    ss >> result;
-    BOOST_TEST_EQ(result, expected);
-    result.clear();
-    ss.clear();
-
-    ss << "Hello" << std::wstring(wpipsqueek) << '\n';
-    ss >> result;
-    BOOST_TEST_EQ(result, expected);
-    result.clear();
-    ss.clear();
-
-    ss << "Hello" << boost::u8string(u8pipsqueek) << '\n';
-    ss >> result;
-    BOOST_TEST_EQ(result, expected);
-    result.clear();
-    ss.clear();
-
-    ss << "Hello" << boost::u16string(u16pipsqueek) << '\n';
-    ss >> result;
-    BOOST_TEST_EQ(result, expected);
-    result.clear();
-    ss.clear();
-
-    ss << "Hello" << boost::u32string(u32pipsqueek) << '\n';
-    ss >> result;
-    BOOST_TEST_EQ(result, expected);
-    result.clear();
-    ss.clear();
-
-    ss << "Hello" << xop::string(pipsqueek) << '\n';
-    ss >> result;
-    BOOST_TEST_EQ(result, expected);
-    result.clear();
-    ss.clear();
-
-    ss << "Hello" << xop::wstring(wpipsqueek) << '\n';
-    ss >> result;
-    BOOST_TEST_EQ(result, expected);
-    result.clear();
-    ss.clear();
-
-    ss << "Hello" << xop::u8string(u8pipsqueek) << '\n';
-    ss >> result;
-    BOOST_TEST_EQ(result, expected);
-    result.clear();
-    ss.clear();
-
-    ss << "Hello" << xop::u16string(u16pipsqueek) << '\n';
-    ss >> result;
-    BOOST_TEST_EQ(result, expected);
-    result.clear();
-    ss.clear();
-
-    ss << "Hello" << xop::u32string(u32pipsqueek) << '\n';
-    ss >> result;
-    BOOST_TEST_EQ(result, expected);
-    result.clear();
-    ss.clear();
+    test_insertion(std::string(pipsqueek));
+    test_insertion(std::wstring(wpipsqueek));
+    test_insertion(boost::u8string(u8pipsqueek));
+    test_insertion(boost::u16string(u16pipsqueek));
+    test_insertion(boost::u32string(u32pipsqueek));
+    test_insertion(xop::string(pipsqueek));
+    test_insertion(xop::wstring(wpipsqueek));
+    test_insertion(xop::u8string(u8pipsqueek));
+    test_insertion(xop::u16string(u16pipsqueek));
+    test_insertion(xop::u32string(u32pipsqueek));
   }
 
 }  // unnamed namespace
