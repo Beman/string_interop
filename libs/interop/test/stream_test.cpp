@@ -42,42 +42,67 @@ namespace
     std::string result;
     std::string expected;
 
-    // no clue why these won't compile:
-    //cout << "Hello " << std::string(pipsqueek) << '\n';
-    //cout << "Hello " << std::wstring(wpipsqueek) << '\n';
-    //cout << "Hello " << boost::u8string(u8pipsqueek) << '\n';
-    //cout << "Hello " << boost::u16string(u16pipsqueek) << '\n';
-    //cout << "Hello " << boost::u32string(u32pipsqueek) << '\n';
-
     expected = "HelloPipsqueek";
+
+    ss << "Hello" << std::string(pipsqueek) << '\n';
+    ss >> result;
+    BOOST_TEST_EQ(result, expected);
+    result.clear();
+    ss.clear();
+
+    ss << "Hello" << std::wstring(wpipsqueek) << '\n';
+    ss >> result;
+    BOOST_TEST_EQ(result, expected);
+    result.clear();
+    ss.clear();
+
+    ss << "Hello" << boost::u8string(u8pipsqueek) << '\n';
+    ss >> result;
+    BOOST_TEST_EQ(result, expected);
+    result.clear();
+    ss.clear();
+
+    ss << "Hello" << boost::u16string(u16pipsqueek) << '\n';
+    ss >> result;
+    BOOST_TEST_EQ(result, expected);
+    result.clear();
+    ss.clear();
+
+    ss << "Hello" << boost::u32string(u32pipsqueek) << '\n';
+    ss >> result;
+    BOOST_TEST_EQ(result, expected);
+    result.clear();
+    ss.clear();
 
     ss << "Hello" << xop::string(pipsqueek) << '\n';
     ss >> result;
     BOOST_TEST_EQ(result, expected);
-
     result.clear();
     ss.clear();
+
     ss << "Hello" << xop::wstring(wpipsqueek) << '\n';
     ss >> result;
     BOOST_TEST_EQ(result, expected);
-
     result.clear();
     ss.clear();
+
     ss << "Hello" << xop::u8string(u8pipsqueek) << '\n';
     ss >> result;
     BOOST_TEST_EQ(result, expected);
-
     result.clear();
     ss.clear();
+
     ss << "Hello" << xop::u16string(u16pipsqueek) << '\n';
     ss >> result;
     BOOST_TEST_EQ(result, expected);
-
     result.clear();
     ss.clear();
+
     ss << "Hello" << xop::u32string(u32pipsqueek) << '\n';
     ss >> result;
     BOOST_TEST_EQ(result, expected);
+    result.clear();
+    ss.clear();
   }
 
 }  // unnamed namespace

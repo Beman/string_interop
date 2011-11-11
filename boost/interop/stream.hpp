@@ -14,22 +14,25 @@
 #include <boost/utility/enable_if.hpp>
 #include <ostream>
 
-namespace boost
-{
-namespace xop  // short for interoperability
-{
+//--------------------------------------------------------------------------------------//
+//                                                                                      //
+//                         stream inserters and extractors                              //
+//                                                                                      //
+//     These need to be found by argument dependent lookup so go in namespace std       //
+//                                                                                      //
+//--------------------------------------------------------------------------------------//
 
-//--------------------------------------------------------------------------------------//
-//                               stream inserters
-//--------------------------------------------------------------------------------------//
+namespace std
+{
 
 template <class Ostream, class Ctr>
-typename boost::enable_if<is_character_container<Ctr>,
+typename boost::enable_if_c<boost::xop::is_character_container<Ctr>::value
+    && !boost::is_same<typename Ctr::value_type, typename Ostream::value_type>::value,
   Ostream&>::type
 operator<<(Ostream& os, const Ctr& ctr)
 {
-  converting_iterator<typename Ctr::const_iterator,
-    typename Ctr::value_type, by_range,
+  boost::xop::converting_iterator<typename Ctr::const_iterator,
+    typename Ctr::value_type, boost::xop::by_range,
     typename Ostream::char_type> itr(ctr.begin(), ctr.end());
   for (; *itr; ++itr)
     os << *itr;
@@ -52,7 +55,6 @@ operator<<(Ostream& os, const Ctr& ctr)
 //  return os;
 //}
 
-}  // namespace xop
-}  // namespace boost
+}  // namespace std
 
 #endif  // BOOST_INTEROP_STREAM_HPP

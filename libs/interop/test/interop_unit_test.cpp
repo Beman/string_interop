@@ -61,6 +61,22 @@ namespace
   u16string su16meow(u16meow);
   u32string su32meow(u32meow);
 
+  void traits_test()
+  {
+    cout << "  traits test...\n";
+
+    BOOST_TEST(boost::xop::is_character_container<std::string>::value);
+    BOOST_TEST(boost::xop::is_character_container<std::wstring>::value);
+    BOOST_TEST(boost::xop::is_character_container<std::basic_string<u8_t> >::value);
+    BOOST_TEST(boost::xop::is_character_container<std::u16string>::value);
+    BOOST_TEST(boost::xop::is_character_container<std::u32string>::value);
+    BOOST_TEST(boost::xop::is_character_container<boost::xop::string>::value);
+    BOOST_TEST(boost::xop::is_character_container<boost::xop::wstring>::value);
+    BOOST_TEST(boost::xop::is_character_container<boost::xop::u8string>::value);
+    BOOST_TEST(boost::xop::is_character_container<boost::xop::u16string>::value);
+    BOOST_TEST(boost::xop::is_character_container<boost::xop::u32string>::value);
+  }
+
   void c_str_test()
   {
     cout << "  c_str() template test...\n";
@@ -255,6 +271,8 @@ namespace
 int cpp_main(int, char*[])
 {
   cout << "string interoperability unit test...\n" << hex;
+
+  traits_test(); // critical dependency so test first
 
   c_str_test();  // subsequent tests rely on this working
 
