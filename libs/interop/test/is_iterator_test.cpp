@@ -10,6 +10,7 @@
 #include <boost/detail/lightweight_main.hpp>
 #include <iostream>
 #include <vector>
+#include <string>
 
 using boost::is_iterator;
 
@@ -26,6 +27,7 @@ int cpp_main(int, char*[])
   BOOST_TEST(is_iterator<std::vector<int>::iterator>::value);
   BOOST_TEST(is_iterator<const std::vector<int>::iterator>::value);
   BOOST_TEST(is_iterator<std::vector<int>::const_iterator>::value);
+  BOOST_TEST(!is_iterator<std::string>::value);
 
   return ::boost::report_errors();
 }

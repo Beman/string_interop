@@ -34,13 +34,13 @@ namespace
   u32_t    u32meow[]   = { 'M', 'e', 'o', 'w', 0 };
 
   template <class T>
-  void test_insertion(T value)
+  void test_insertion(T x)
   {
     std::stringstream ss;
     std::string result;
     const std::string expected("HelloPipsqueek");
 
-    ss << "Hello" << value << '\n';
+    ss << "Hello" << x << '\n';
     ss >> result;
     BOOST_TEST_EQ(result, expected);
   }
