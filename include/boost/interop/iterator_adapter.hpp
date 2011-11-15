@@ -173,14 +173,14 @@ public:
     // Requires: An EndPolicy that supplies end iterator initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by range");
-      base().end(end);
+      this->base().end(end);
     }
     converting_iterator(InputIterator begin, std::size_t sz)
       : to_iterator<from_iterator<InputIterator, From, EndPolicy>, To>(begin)
     // Requires: An EndPolicy that supplies size initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by size");
-      base().size(sz);
+      this->base().size(sz);
     }
   };
 
@@ -408,14 +408,14 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         for(unsigned c = 0; c < extra; ++c)
         {
            ++m_position;
-           advance();
+           this->advance();
            if (is_end(m_position))
              invalid_sequence();
            m_value <<= 6;
            m_value += static_cast<boost::uint8_t>(*m_position) & 0x3Fu;
         }
         ++m_position;  // satisfy the invariant that m_position
-        advance();     //   points to next input character
+        this->advance();     //   points to next input character
         // we now need to remove a few of the leftmost bits, but how many depends
         // upon how many extra bytes we've extracted:
         static const boost::uint32_t masks[4] = 
@@ -510,7 +510,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         {
            // precondition; next value must have be a low-surrogate:
            ++m_position;
-           advance();
+           this->advance();
            if (is_end(m_position))
              invalid_sequence();
            ::boost::uint16_t t = *m_position;
@@ -521,7 +521,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
              & detail::ten_bit_mask);
         }
         ++m_position;  // satisfy the invariant that m_position
-        advance();     //   points to next input character
+        this->advance();     //   points to next input character
 
         // postcondition; result must not be a surrogate:
         if(detail::is_surrogate(m_value))
@@ -556,7 +556,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
     {
       BOOST_ASSERT_MSG(!is_end(m_itr), "Attempt to increment past end");
       ++m_itr;
-      advance();
+      this->advance();
     }
   };
 
@@ -865,7 +865,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      { 
        BOOST_ASSERT_MSG(!is_end(m_iterator), "Attempt to increment past end");
        ++m_iterator;
-       advance();
+       this->advance();
      }
 
      // construct:
@@ -1078,7 +1078,7 @@ namespace detail
   public:
     policy_iterator() {}
     explicit policy_iterator(InputIterator itr) : m_itr(itr) {}
-    value_type dereference() const
+    typename std::iterator_traits<InputIterator>::value_type dereference() const
     {
       if (is_end(m_itr))
         return 0;
@@ -1089,7 +1089,7 @@ namespace detail
     {
       BOOST_ASSERT_MSG(!is_end(m_itr), "Attempt to increment past end");
       ++m_itr;
-      advance();
+      this->advance();
     }
   };
 

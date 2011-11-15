@@ -71,6 +71,20 @@ template<class charT, class traits, class Allocator >
 class basic_string : public std::basic_string<charT,traits,Allocator>
 {
 public:
+  typedef typename std::basic_string<charT,traits,Allocator>::traits_type      traits_type;
+  typedef typename std::basic_string<charT,traits,Allocator>::value_type       value_type;
+  typedef typename std::basic_string<charT,traits,Allocator>::allocator_type   allocator_type;
+  typedef typename std::basic_string<charT,traits,Allocator>::size_type        size_type;
+  typedef typename std::basic_string<charT,traits,Allocator>::difference_type  difference_type;
+  typedef typename std::basic_string<charT,traits,Allocator>::reference        reference;
+  typedef typename std::basic_string<charT,traits,Allocator>::const_reference  const_reference;
+  typedef typename std::basic_string<charT,traits,Allocator>::pointer          pointer;
+  typedef typename std::basic_string<charT,traits,Allocator>::const_pointer    const_pointer;
+  typedef typename std::basic_string<charT,traits,Allocator>::iterator         iterator;
+  typedef typename std::basic_string<charT,traits,Allocator>::const_iterator   const_iterator;
+  typedef typename std::basic_string<charT,traits,Allocator>::reverse_iterator reverse_iterator;
+  typedef typename std::basic_string<charT,traits,Allocator>::const_reverse_iterator
+                                                                               const_reverse_iterator;
 
   //  C++11 constructors
   basic_string() {}
@@ -121,7 +135,7 @@ public:
 
   template<class InputIterator>
   basic_string(InputIterator s,
-    typename boost::enable_if<::boost::is_iterator<InputIterator>, void*>::type=0)
+    typename boost::enable_if<boost::is_iterator<InputIterator>, void*>::type=0)
   {
     converting_iterator<InputIterator,
       typename std::iterator_traits<InputIterator>::value_type, by_null,
@@ -142,7 +156,7 @@ public:
   c_str() const
   {
     return converting_iterator<const_iterator,
-      value_type, by_range, T>(begin(), end());
+      value_type, by_range, T>(this->begin(), this->end());
   }
 
   //  append()  ------------------------------------------------------------------------//
@@ -223,7 +237,7 @@ public:
   }
 
   template<class InputIterator>
-    typename boost::enable_if<::boost::is_iterator<InputIterator>,
+    typename boost::enable_if<boost::is_iterator<InputIterator>,
   basic_string&>::type append(InputIterator s, size_type pos, size_type n)
   {
     converting_iterator<InputIterator,
@@ -236,7 +250,7 @@ public:
   }
 
   template<class InputIterator>
-    typename boost::enable_if<::boost::is_iterator<InputIterator>,
+    typename boost::enable_if<boost::is_iterator<InputIterator>,
   basic_string&>::type append(InputIterator s, size_type n)
   {
     converting_iterator<InputIterator,
@@ -249,7 +263,7 @@ public:
   }
 
   template<class InputIterator>
-    typename boost::enable_if<::boost::is_iterator<InputIterator>,
+    typename boost::enable_if<boost::is_iterator<InputIterator>,
   basic_string&>::type append(InputIterator s)
   {
     converting_iterator<InputIterator,
@@ -315,15 +329,15 @@ public:
     typename boost::enable_if<is_character_container<Ctr>,
   basic_string&>::type operator=(const Ctr& ctr)
   {
-    clear();
+    this->clear();
     return append(ctr);
   }
 
   template<class InputIterator>
-    typename boost::enable_if<::boost::is_iterator<InputIterator>,
+    typename boost::enable_if<boost::is_iterator<InputIterator>,
   basic_string&>::type operator=(InputIterator s)
   {
-    clear();
+    this->clear();
     return append(s);
   }
 
@@ -332,7 +346,7 @@ public:
       && !is_same<Char, value_type>::value,
   basic_string&>::type operator=(Char c)
   {
-    clear();
+    this->clear();
     push_back(c);
     return *this;
   }
@@ -383,31 +397,31 @@ public:
     typename boost::enable_if<is_character_container<Ctr>,
   basic_string&>::type assign(const Ctr& ctr)
   {
-    clear();
+    this->clear();
     return append(ctr);
   }
 
   template<class InputIterator>
-    typename boost::enable_if<::boost::is_iterator<InputIterator>,
+    typename boost::enable_if<boost::is_iterator<InputIterator>,
   basic_string&>::type assign(InputIterator s, size_type pos, size_type n)
   {
-    clear();
+    this->clear();
     return append(s, pos, n);
   }
 
   template<class InputIterator>
-    typename boost::enable_if<::boost::is_iterator<InputIterator>,
+    typename boost::enable_if<boost::is_iterator<InputIterator>,
   basic_string&>::type assign(InputIterator s, size_type n)
   {
-    clear();
+    this->clear();
     return append(s, n);
   }
 
   template<class InputIterator>
-    typename boost::enable_if<::boost::is_iterator<InputIterator>,
+    typename boost::enable_if<boost::is_iterator<InputIterator>,
   basic_string&>::type assign(InputIterator s)
   {
-    clear();
+    this->clear();
     return append(s);
   }
 
@@ -416,7 +430,7 @@ public:
       typename std::iterator_traits<InputIterator>::value_type, value_type>,
   basic_string&>::type assign(InputIterator first, InputIterator last)
   {
-    clear();
+    this->clear();
     return append(first, last);
   }
 

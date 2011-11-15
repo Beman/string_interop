@@ -7,7 +7,6 @@
 
 project
     : requirements
-      <library>/boost/interop//boost_interop
       <toolset>msvc:<asynch-exceptions>on
     ;
     
@@ -17,9 +16,24 @@ project
     [ run is_iterator_test.cpp
       : # command line
       : # input files
-      : # requirements
-#              <link>static
-#              <link>shared
+      : <test-info>always_show_run_output # requirements
       : # test name
     ]
+    [ run interop_unit_test.cpp
+       ../src/codepage_437.cpp
+       : :  : <test-info>always_show_run_output # requirements
+    ] 
+    [ run interop_test.cpp
+       ../src/codepage_437.cpp
+       : :  : <test-info>always_show_run_output # requirements
+    ] 
+    [ run iterator_adapter_unit_test.cpp
+       ../src/codepage_437.cpp
+       : :  : <test-info>always_show_run_output # requirements
+    ] 
+    [ run stream_test.cpp
+       ../src/codepage_437.cpp
+       : :  : <test-info>always_show_run_output # requirements
+    ] 
+
   ;
