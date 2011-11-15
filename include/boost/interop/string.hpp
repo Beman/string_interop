@@ -93,7 +93,8 @@ public:
   basic_string(const basic_string& str)
     : std::basic_string<charT,traits,Allocator>(str) {}
   //basic_string(basic_string&& str) noexcept;
-  basic_string(const basic_string& str, size_type pos, size_type n = npos,
+  basic_string(const basic_string& str, size_type pos,
+               size_type n = std::basic_string<charT,traits,Allocator>::npos,
                const Allocator& a = Allocator())
     : std::basic_string<charT,traits,Allocator>(str, pos, n, a) {}
   basic_string(const charT* s, size_type n, const Allocator& a = Allocator())

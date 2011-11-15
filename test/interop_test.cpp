@@ -152,6 +152,8 @@ namespace
   void assign_test2(const T& t, const U& u)
   {
     std::basic_string<typename U::value_type> expected;
+    typename U::value_type c;
+    t.c_str<char>();
     for (auto itr = t.c_str<typename U::value_type>(); *itr; ++itr)
       expected.push_back(*itr);
     expected.assign(u.c_str());
