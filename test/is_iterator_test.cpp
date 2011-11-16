@@ -8,11 +8,30 @@
 #include <boost/interop/detail/is_iterator.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
+#include <boost/utility/enable_if.hpp>
 #include <iostream>
 #include <vector>
 #include <string>
 
 using boost::is_iterator;
+
+namespace
+{
+  template <class T>
+  typename boost::enable_if<is_iterator<T>, bool>::type
+  f(T x)
+  {
+    std::cout << "  true\n";
+    return true;
+  }
+  template <class T>
+  typename boost::disable_if<is_iterator<T>, bool>::type
+  f(T x)
+  {
+    std::cout << "  false\n";
+    return false;
+  }
+}
 
 int cpp_main(int, char*[])
 {
@@ -28,6 +47,10 @@ int cpp_main(int, char*[])
   BOOST_TEST(is_iterator<const std::vector<int>::iterator>::value);
   BOOST_TEST(is_iterator<std::vector<int>::const_iterator>::value);
   BOOST_TEST(!is_iterator<std::string>::value);
+
+  std::string s;
+  BOOST_TEST(f(s.begin()));
+  BOOST_TEST(!f(s));
 
   return ::boost::report_errors();
 }
