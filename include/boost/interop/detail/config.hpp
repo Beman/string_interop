@@ -1,4 +1,4 @@
-//  boost/interop/detail/confi.hpp  ----------------------------------------------------//
+//  boost/interop/detail/config.hpp  ---------------------------------------------------//
 
 //  Copyright Beman Dawes 2011
 

@@ -88,6 +88,20 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os, const wchar_t* p)
   return boost::xop::detail::inserter(os, p);
 }
 
+#ifndef BOOST_NO_CHAR16_T
+basic_ostream<char>& operator<<(basic_ostream<char>& os, const char16_t* p)
+{
+  return boost::xop::detail::inserter(os, p);
+}
+#endif
+
+#ifndef BOOST_NO_CHAR32_T
+basic_ostream<char>& operator<<(basic_ostream<char>& os, const char32_t* p)
+{
+  return boost::xop::detail::inserter(os, p);
+}
+#endif
+
 }  // namespace std
 
 #endif  // BOOST_INTEROP_STREAM_HPP

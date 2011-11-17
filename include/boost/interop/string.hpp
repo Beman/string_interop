@@ -454,13 +454,11 @@ template<> class is_character<boost::u32_t> : public boost::true_type {};
 
 //-----------------------------  is_character_container  -------------------------------//
 
-template<> class is_character_container<std::string>    : public boost::true_type {}; 
-template<> class is_character_container<std::wstring>   : public boost::true_type {}; 
-template<> class is_character_container<std::basic_string<u8_t> >
-                                                        : public boost::true_type {}; 
-template<> class is_character_container<std::u16string> : public boost::true_type {}; 
-template<> class is_character_container<std::u32string> : public boost::true_type {};
-
+template<> class is_character_container<std::string>           : public boost::true_type {}; 
+template<> class is_character_container<std::wstring>          : public boost::true_type {}; 
+template<> class is_character_container<boost::u8string>       : public boost::true_type {};
+template<> class is_character_container<boost::u16string>      : public boost::true_type {};
+template<> class is_character_container<boost::u32string>      : public boost::true_type {};
 template<> class is_character_container<boost::xop::string>    : public boost::true_type {}; 
 template<> class is_character_container<boost::xop::wstring>   : public boost::true_type {}; 
 template<> class is_character_container<boost::xop::u8string>  : public boost::true_type {}; 

@@ -12,6 +12,7 @@ using std::cout;
   using std::wstring;
 #else
 # include <boost/interop/string.hpp>
+# include <boost/interop/stream.hpp>
   using boost::xop::wstring;
 #endif
 

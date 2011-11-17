@@ -75,38 +75,18 @@ namespace
     test_insertion(L"Pipsqueek");
     test_insertion(wpipsqueek);
 
-    //std::stringstream ss;
-    //std::string result;
-    //const std::string expected("HelloPipsqueek");
+#ifndef BOOST_NO_CHAR16_T
+    test_insertion(u16pipsqueek);
+#endif
 
-    //cout << "test std::string\n";
-    //ss << "Hello" << std::string(pipsqueek) << '\n';
-    //ss >> result;
-    //cout << "  result is " << result << '\n';
-    //BOOST_TEST_EQ(result, expected);
-    //ss.clear(); result.clear();
+#ifndef BOOST_NO_CHAR32_T
+    test_insertion(u32pipsqueek);
+#endif
 
-    //cout << "test std::wstring\n";
-    //ss << "Hello" << std::wstring(wpipsqueek) << '\n';
-    //ss >> result;
-    //cout << "  result is " << result << '\n';
-    //BOOST_TEST_EQ(result, expected);
-    //ss.clear(); result.clear();
- 
-    //cout << "test L\"Pipsqueek\"\n";
-    //ss << "Hello" << L"Pipsqueek" << '\n';
-    //ss >> result;
-    //cout << "  result is " << result << '\n';
-    //BOOST_TEST_EQ(result, expected);
-    //ss.clear(); result.clear();
-
-    //cout << "test std::wstring c_str()\n";
-    //ss << "Hello" << std::wstring(wpipsqueek).c_str() << '\n';
-    //ss >> result;
-    //cout << "  result is " << result << '\n';
-    //BOOST_TEST_EQ(result, expected);
-    //ss.clear(); result.clear();
-
+#ifndef BOOST_NO_UNICODE_LITERALS
+    test_insertion(u"Pipsqueek");
+    test_insertion(U"Pipsqueek");
+#endif
   }
 
 }  // unnamed namespace
