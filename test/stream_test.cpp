@@ -70,6 +70,11 @@ namespace
     test_insertion(xop::u16string(u16pipsqueek));
     test_insertion(xop::u32string(u32pipsqueek));
 
+    cout << "    boost pointer overloads in namespace std...\n";
+
+    test_insertion(L"Pipsqueek");
+    test_insertion(wpipsqueek);
+
     //std::stringstream ss;
     //std::string result;
     //const std::string expected("HelloPipsqueek");
