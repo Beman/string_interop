@@ -393,7 +393,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
      void extract_current() const
      {
-        if (is_end(m_position))
+        if (this->is_end(m_position))
         {
           m_value = 0U;
           return;
@@ -409,7 +409,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         {
            ++m_position;
            this->advance();
-           if (is_end(m_position))
+           if (this->is_end(m_position))
              invalid_sequence();
            m_value <<= 6;
            m_value += static_cast<boost::uint8_t>(*m_position) & 0x3Fu;
@@ -499,7 +499,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
      void extract_current()const
      {
-        if (is_end(m_position))
+        if (this->is_end(m_position))
         {
           m_value = 0U;
           return;
@@ -511,7 +511,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
            // precondition; next value must have be a low-surrogate:
            ++m_position;
            this->advance();
-           if (is_end(m_position))
+           if (this->is_end(m_position))
              invalid_sequence();
            ::boost::uint16_t t = *m_position;
            if((t & 0xFC00u) != 0xDC00u)
@@ -547,14 +547,14 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
     }
     u32_t dereference() const
     {
-      if (is_end(m_itr))
+      if (this->is_end(m_itr))
         return 0;
       return *m_itr;
     }
     bool equal(const from_iterator& that) const {return m_itr == that.m_itr;}
     void increment()
     {
-      BOOST_ASSERT_MSG(!is_end(m_itr), "Attempt to increment past end");
+      BOOST_ASSERT_MSG(!this->is_end(m_itr), "Attempt to increment past end");
       ++m_itr;
       this->advance();
     }
@@ -852,7 +852,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
   public:
      u32_t dereference() const
      {
-       if (is_end(m_iterator))
+       if (this->is_end(m_iterator))
          return 0;
        unsigned char c = static_cast<unsigned char>(*m_iterator);
        return static_cast<u32_t>(xop::detail::to_utf16[c]);
@@ -863,7 +863,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
      void increment()
      { 
-       BOOST_ASSERT_MSG(!is_end(m_iterator), "Attempt to increment past end");
+       BOOST_ASSERT_MSG(!this->is_end(m_iterator), "Attempt to increment past end");
        ++m_iterator;
        this->advance();
      }
@@ -1080,14 +1080,14 @@ namespace detail
     explicit policy_iterator(InputIterator itr) : m_itr(itr) {}
     typename std::iterator_traits<InputIterator>::value_type dereference() const
     {
-      if (is_end(m_itr))
+      if (this->is_end(m_itr))
         return 0;
       return *m_itr;
     }
     bool equal(const policy_iterator& that) const {return m_itr == that.m_itr;}
     void increment()
     {
-      BOOST_ASSERT_MSG(!is_end(m_itr), "Attempt to increment past end");
+      BOOST_ASSERT_MSG(!this->is_end(m_itr), "Attempt to increment past end");
       ++m_itr;
       this->advance();
     }
