@@ -147,22 +147,27 @@ namespace
   u16_t    u16meow[]   = { 'M', 'e', 'o', 'w', 0 };
   u32_t    u32meow[]   = { 'M', 'e', 'o', 'w', 0 };
 
+  void show_type(const std::string&) {cout<<"std::string\n"; }
+  void show_type(const xop::string&) {cout<<"xop::string\n"; }
+
   template <class T, class U>  // T must be xop:basic_string
                                // U may be xop:basic_string or std::basic_string
   void assign_test2(const T& t, const U& u)
   {
     std::basic_string<typename U::value_type> expected;
-    typename U::value_type c;
-    t.c_str<char>();
+
+    // build expected
     for (auto itr = t.c_str<typename U::value_type>(); *itr; ++itr)
       expected.push_back(*itr);
     expected.assign(u.c_str());
 
     T tmp(t);
-    tmp.assign(u);
+    tmp.assign(u); // do the assign to be tested
+    // extract the actual from tmp
     std::basic_string<typename U::value_type> actual;
     for (auto itr = tmp.c_str<typename U::value_type>(); *itr; ++itr)
       actual.push_back(*itr);
+    // test that all is well
     BOOST_TEST(actual == expected);
 
     for (auto itr = tmp.c_str<char>(); *itr; ++itr)
@@ -220,7 +225,7 @@ namespace
 
   void assign_test()
   {
-    cout << "assigns test...\n";
+    cout << "assign test...\n";
 
     assign_test1(xop::string(pipsqueek));
     assign_test1(xop::wstring(wpipsqueek));

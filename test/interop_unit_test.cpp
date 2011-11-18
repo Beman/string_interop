@@ -67,9 +67,9 @@ namespace
 
     BOOST_TEST(boost::xop::is_character_container<std::string>::value);
     BOOST_TEST(boost::xop::is_character_container<std::wstring>::value);
-    BOOST_TEST(boost::xop::is_character_container<std::basic_string<u8_t> >::value);
-    BOOST_TEST(boost::xop::is_character_container<std::u16string>::value);
-    BOOST_TEST(boost::xop::is_character_container<std::u32string>::value);
+    BOOST_TEST(boost::xop::is_character_container<boost::u8string>::value);
+    BOOST_TEST(boost::xop::is_character_container<boost::u16string>::value);
+    BOOST_TEST(boost::xop::is_character_container<boost::u32string>::value);
     BOOST_TEST(boost::xop::is_character_container<boost::xop::string>::value);
     BOOST_TEST(boost::xop::is_character_container<boost::xop::wstring>::value);
     BOOST_TEST(boost::xop::is_character_container<boost::xop::u8string>::value);
@@ -81,14 +81,15 @@ namespace
   {
     cout << "  c_str() template test...\n";
 
-    xop::wstring wstr(L"Meow\n");
+    xop::string s("Meow");
 
-    std::string str;
+    s.c_str();
+    s.c_str<char>();
+    s.c_str<wchar_t>();
+    s.c_str<u8_t>();
+    s.c_str<u16_t>();
+    s.c_str<u32_t>();
 
-    for (auto itr=wstr.c_str<char>(); *itr; ++itr)
-      str.push_back(*itr);
-
-    BOOST_TEST_EQ(str, std::string("Meow\n"));
   }
 
   void construct_without_conversion_test()

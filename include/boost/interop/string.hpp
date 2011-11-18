@@ -150,7 +150,10 @@ public:
   //
   //  having c_str() in place early in the development process simplifies testing
    
-  const charT* c_str() const {return std::basic_string<charT,traits,Allocator>::c_str();}
+  const charT* c_str() const
+  {
+    return std::basic_string<charT,traits,Allocator>::c_str();
+  }
 
   template <class T>
   converting_iterator<const_iterator, value_type, by_range, T>
