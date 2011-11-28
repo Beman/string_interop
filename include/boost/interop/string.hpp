@@ -57,6 +57,17 @@ typedef basic_string<u32_t>    u32string;  // u32_t with UTF-32 encoding
 
 template<class T> class is_character            : public boost::false_type {};
 template<class T> class is_character_container  : public boost::false_type {};
+    
+//--------------------------------------------------------------------------------------//
+//                                c_str_return trait
+//--------------------------------------------------------------------------------------//
+
+template <class XopString, class T> struct c_str_return
+{
+  typedef converting_iterator<
+    typename XopString::const_iterator,
+    typename XopString::value_type, by_range, T>  type; 
+};
   
 //--------------------------------------------------------------------------------------//
 //
@@ -85,7 +96,6 @@ public:
   typedef typename std::basic_string<charT,traits,Allocator>::reverse_iterator reverse_iterator;
   typedef typename std::basic_string<charT,traits,Allocator>::const_reverse_iterator
                                                                                const_reverse_iterator;
-
   //  C++11 constructors
   basic_string() {}
   explicit basic_string(const Allocator& a)
@@ -129,7 +139,7 @@ public:
     converting_iterator<typename Ctr::const_iterator,
       typename Ctr::value_type, by_range,
       typename std::basic_string<charT,traits,Allocator>::value_type>
-        itr(ctr.cbegin(), ctr.cend());
+        itr(ctr.begin(), ctr.end());
     for (; *itr != static_cast<value_type>(0); ++itr)
       push_back(*itr);
   }
@@ -234,7 +244,7 @@ public:
     converting_iterator<typename Ctr::const_iterator,
       typename Ctr::value_type, by_range,
       typename std::basic_string<charT,traits,Allocator>::value_type>
-        itr(ctr.cbegin(), ctr.cend());
+        itr(ctr.begin(), ctr.end());
     for (; *itr != static_cast<value_type>(0); ++itr)
       std::basic_string<charT,traits,Allocator>::push_back(*itr);
     return *this;

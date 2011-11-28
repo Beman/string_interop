@@ -157,7 +157,8 @@ namespace
     std::basic_string<typename U::value_type> expected;
 
     // build expected
-    for (auto itr = t.c_str<typename U::value_type>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, typename U::value_type>::type 
+          itr = t.template c_str<typename U::value_type>(); *itr; ++itr)
       expected.push_back(*itr);
     expected.assign(u.c_str());
 
@@ -165,45 +166,53 @@ namespace
     tmp.assign(u); // do the assign to be tested
     // extract the actual from tmp
     std::basic_string<typename U::value_type> actual;
-    for (auto itr = tmp.c_str<typename U::value_type>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, typename U::value_type>::type
+          itr = tmp.template c_str<typename U::value_type>(); *itr; ++itr)
       actual.push_back(*itr);
     // test that all is well
     BOOST_TEST(actual == expected);
 
-    for (auto itr = tmp.c_str<char>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, char>::type
+          itr = tmp.template c_str<char>(); *itr; ++itr)
       cout << *itr;
     cout << '\n';
  
     T tmp2(t);
     tmp2.assign(u.c_str());
     std::basic_string<typename U::value_type> actual2;
-    for (auto itr = tmp2.c_str<typename U::value_type>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, typename U::value_type>::type itr
+        = tmp2.template c_str<typename U::value_type>(); *itr; ++itr)
       actual2.push_back(*itr);
     BOOST_TEST(actual2 == expected);
 
-    for (auto itr = tmp2.c_str<char>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, char>::type
+          itr = tmp2.template c_str<char>(); *itr; ++itr)
       cout << *itr;
     cout << '\n';
 
     T tmp3(t);
     tmp3 = u;
     std::basic_string<typename U::value_type> actual3;
-    for (auto itr = tmp3.c_str<typename U::value_type>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, typename U::value_type>::type
+          itr = tmp3.template c_str<typename U::value_type>(); *itr; ++itr)
       actual3.push_back(*itr);
     BOOST_TEST(actual3 == expected);
 
-    for (auto itr = tmp3.c_str<char>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, char>::type itr
+          = tmp3.template c_str<char>(); *itr; ++itr)
       cout << *itr;
     cout << '\n';
 
     T tmp4(t);
     tmp4 = u.c_str();
     std::basic_string<typename U::value_type> actual4;
-    for (auto itr = tmp4.c_str<typename U::value_type>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, typename U::value_type>::type
+          itr = tmp4.template c_str<typename U::value_type>(); *itr; ++itr)
       actual4.push_back(*itr);
     BOOST_TEST(actual4 == expected);
 
-    for (auto itr = tmp4.c_str<char>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, char>::type
+          itr = tmp4.template c_str<char>(); *itr; ++itr)
       cout << *itr;
     cout << '\n';
   }
@@ -239,29 +248,34 @@ namespace
   void append_test2(const T& t, const U& u)
   {
     std::basic_string<typename U::value_type> expected;
-    for (auto itr = t.c_str<typename U::value_type>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, typename U::value_type>::type
+          itr = t.template c_str<typename U::value_type>(); *itr; ++itr)
       expected.push_back(*itr);
     expected.append(u.c_str());
 
     T tmp(t);
     tmp.append(u);
     std::basic_string<typename U::value_type> actual;
-    for (auto itr = tmp.c_str<typename U::value_type>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, typename U::value_type>::type
+          itr = tmp.template c_str<typename U::value_type>(); *itr; ++itr)
       actual.push_back(*itr);
     BOOST_TEST(actual == expected);
 
-    for (auto itr = tmp.c_str<char>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, char>::type
+          itr = tmp.template c_str<char>(); *itr; ++itr)
       cout << *itr;
     cout << '\n';
 
     T tmp2(t);
     tmp2.append(u.c_str());
     std::basic_string<typename U::value_type> actual2;
-    for (auto itr = tmp2.c_str<typename U::value_type>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, typename U::value_type>::type
+          itr = tmp2.template c_str<typename U::value_type>(); *itr; ++itr)
       actual2.push_back(*itr);
     BOOST_TEST(actual2 == expected);
 
-    for (auto itr = tmp2.c_str<char>(); *itr; ++itr)
+    for (typename xop::c_str_return<T, char>::type
+          itr = tmp2.template c_str<char>(); *itr; ++itr)
       cout << *itr;
     cout << '\n';
   }
@@ -304,25 +318,29 @@ namespace
 
     string_type x2(s);
     std::basic_string<typename U::value_type> actual;
-    for (auto itr = x2.c_str<typename U::value_type>(); *itr; ++itr)
+    for (typename xop::c_str_return<string_type, typename U::value_type>::type
+          itr = x2.template c_str<typename U::value_type>(); *itr; ++itr)
       actual.push_back(*itr);
     BOOST_TEST(actual == expected);
 
     string_type x3(x2);
     actual.clear();
-    for (auto itr = x3.c_str<typename U::value_type>(); *itr; ++itr)
+    for (typename xop::c_str_return<string_type, typename U::value_type>::type
+          itr = x3.template c_str<typename U::value_type>(); *itr; ++itr)
       actual.push_back(*itr);
     BOOST_TEST(actual == expected);
 
     string_type x4(expected);
     actual.clear();
-    for (auto itr = x4.c_str<typename U::value_type>(); *itr; ++itr)
+    for (typename xop::c_str_return<string_type, typename U::value_type>::type
+          itr = x4.template c_str<typename U::value_type>(); *itr; ++itr)
       actual.push_back(*itr);
     BOOST_TEST(actual == expected);
 
     string_type x5(expected.begin(), expected.end());
     actual.clear();
-    for (auto itr = x5.c_str<typename U::value_type>(); *itr; ++itr)
+    for (typename xop::c_str_return<string_type, typename U::value_type>::type
+          itr = x5.template c_str<typename U::value_type>(); *itr; ++itr)
       actual.push_back(*itr);
     BOOST_TEST(actual == expected);
 
@@ -357,7 +375,7 @@ namespace
 
     std::string str;
 
-    for (auto itr=wstr.c_str<char>(); *itr; ++itr)
+    for (xop::c_str_return<xop::wstring, char>::type itr=wstr.c_str<char>(); *itr; ++itr)
       str.push_back(*itr);
 
     BOOST_TEST_EQ(str, std::string("Meow\n"));
