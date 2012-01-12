@@ -39,8 +39,8 @@
 <h2>Table of contents</h2>
 
 <p><a href="#Introduction">Introduction</a><br>
-<a href="#String-encoding-conversion-safety-rationale">String encoding 
-conversion safety rationale</a><br>
+<a href="#String-encoding-conversion-safety-rationale">String conversion safety 
+rationale</a><br>
 <a href="#Design-paths-not-taken">Design paths not taken</a><br>
 <a href="#Acknowledgements">Acknowledgements</a><br>
 <a href="#Problems-and-solutions">String interoperability problems and proposed 
@@ -81,25 +81,21 @@ provided if this proposal is accepted in principle.</p>
 available at <a href="https://github.com/Beman/string-interoperability">
 https://github.com/Beman/string-interoperability</a>.</p>
 
-<h2><a name="String-encoding-conversion-safety-rationale">String encoding conversion safety 
+<h2><a name="String-encoding-conversion-safety-rationale">String  conversion safety 
 rationale</a></h2>
-  <p>Consider this code:</p>
-<blockquote>
-  <pre>int i = 100;
-long j;
-j = i;               // no problem</pre>
-  <pre>#include &lt;string&gt;
-std::u16string s16;
-std::u32string s32 = U&quot;&#24744;&#22909;&#19990;&#30028;&quot;;
-s16 = s32;  // error in C++11</pre>
-</blockquote>
-<p>The value types of these containers, <code>char16_t</code> and <code>char32_t</code>, 
-are defined by the C++11 standard to represent characters encoded as UTF-16 and 
-UTF-32 respectively. The conversion between strings of UTF-16 and UTF-32 
-characters is defined by the Unicode Consortium and ISO/IEC 10646, and is 
-unambiguous and lossless. Thus an implicit conversion in either direction 
-between <code>std::u16string</code> and <code>std::u32string</code> objects is 
-always safe.</p>
+  <p>The proposed solutions below make the assumption that it is safe to convert 
+  a string of any type and encoding to another type and encoding. The rationale 
+  for that assumption follows.</p>
+<p>Conversion in either direction between UTF-8 encoded std::string and UTF-32 
+encoded std::u32string is safe because it is defined by the Unicode Consortium 
+and ISO/IEC 10646 as unambiguous and lossless.</p>
+<p dir="ltr">Conversion in either direction between UTF-16 encoded 
+std::u16string and UTF-32 encoded std::u32string is safe because it is defined 
+by the Unicode Consortium and ISO/IEC 10646 as unambiguous and lossless.</p>
+<p>Conversion in either direction between UTF-8 encoded std::string and UTF-16 
+encoded std::u16string is safe because it can be composed from the two previous 
+known safe conversions via an intermediate conversion to and from UTF-32 encoded 
+char32_t characters.</p>
 <p>The cases of <code>std::string</code> and <code>std::wstring</code> are more 
 complex in that the encoding is not implied by the <code>char</code> and <code>
 wchar_t</code> value types.&nbsp; It is not necessary, however, to  know 
@@ -107,12 +103,14 @@ the encoding of these string types in advance as long as it is known how to conv
 one of the known encoding string types. The C++11 standard library requires
 <code>codecvt&lt;char32_t,char,mbstate_t&gt;</code>&nbsp; and <code>codecvt&lt;wchar_t,char,mbstate_t&gt;</code> 
 facets, so such conversions are always possible using the standard library. In practice, library 
-implementations have additional knowledge that allows such conversions to be 
-more efficient than just calling codecvt facets. Error handling does need to be 
-provided, as conversions involving some <code>char</code> and <code>wchar_t</code> 
-encodings can encounter errors.</p>
+implementations have additional knowledge that allow such conversions to be 
+more efficient than just calling codecvt facets. To ensure safety, error handling 
+does need to be 
+provided, however, as conversions involving some <code>char</code> and <code>wchar_t</code> 
+encodings can encounter errors. See <a href="#Problem-3">Problem 3</a> below for 
+some requested error handling approaches. </p>
 <p>Implicit conversion between single characters of different types, as opposed 
-to strings, may require multi-character sequences. No such implicit conversions 
+to strings, may require multi-character sequences. No such single character implicit conversions 
 are proposed here.</p>
 
 <h2><a name="Design-paths-not-taken">Design paths not taken</a></h2>
