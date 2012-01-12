@@ -22,7 +22,7 @@
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-06<!--webbot bot="Timestamp" endspan i-checksum="12050" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-12<!--webbot bot="Timestamp" endspan i-checksum="12043" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -58,11 +58,12 @@ provided if this proposal is accepted in principle.</p>
 encoding interoperability problems.</p>
 
   <ol>
-    <li>Strings don't interoperate if encoding differs.<br>
+    <li><a href="#Problem-1">Strings don't interoperate if encoding differs.</a><br>
 &nbsp;</li>
-    <li>Strings don't interoperate with I/O streams if encoding differs.<br>
+    <li><a href="#Problem-2">Strings don't interoperate with I/O streams if encoding differs.</a><br>
 &nbsp;</li>
-    <li>Missing string encoding conversion iterators.</li>
+    <li><a href="#Problem-3">String encoding conversion iterators are not 
+    provided.</a></li>
   </ol>
 
 <p>The 
@@ -76,9 +77,9 @@ that run up against current limitations.</p>
 <p><span style="background-color: #FFFF00">Cat out of bag, toothpaste out of 
 tube.</span></p>
 
-  <h1 align="left">String Interoperability Proposal Details</h1>
+  <h1 align="left">String Interoperability Problems</h1>
 
-<h2>Strings don't interoperate if encoding differs</h2>
+<h2><a name="Problem-1">Problem 1</a>: Strings don't interoperate if encoding differs</h2>
 
 <h3>Discussion</h3>
 
@@ -152,7 +153,7 @@ subset, possibly just <code>c_str()</code>, <code>begin()</code>, and <code>
 end()</code>, with error handling and encoding parameters or arguments, suitable 
 defaulted, may well be sufficient.</p>
 
-<h2 dir="ltr">Strings don't interoperate with I/O streams if encoding differs</h2>
+<h2 dir="ltr"><a name="Problem-2">Problem 2</a>: Strings don't interoperate with I/O streams if encoding differs</h2>
 
 <h3>Discussion</h3>
 
@@ -194,7 +195,8 @@ that arguments shall be converted to the type and encoding of the stream.</p>
 <p>Do the same for the two <code>std::basic_string</code> inserters and 
 extractors in 21.4.8.9 [string.io], <i>Inserters and extractors</i>.</p>
 
-<h2>Missing string encoding conversion iterators.</h2>
+<h2><a name="Problem-3">Problem 3</a>: String encoding conversion iterators are 
+not provided</h2>
 <h3>Discussion</h3>
 
 <p>Conversion between character types and their encodings using current standard 
@@ -387,7 +389,12 @@ characters are not addressed. See Mathias Gaunard's <a href="http://mathias.gaun
 <p>This proposal does not suggest providing a string type guaranteed to provide 
 UTF-8 encoding.&nbsp; Although experiments with <code>typedef 
 basic_string&lt;unsigned char&gt; u8string;</code> worked well, benefits would be 
-speculative and not based on existing practice. </p>
+speculative and not based on existing practice.</p>
+
+<p>Another approach would be to provide a <code>utf8_char_traits</code> class 
+and then <code>typedef 
+basic_string&lt;char, utf8_char_traits&gt; u8string;</code>. This approach has 
+not been investigated. </p>
 
 <h2>Acknowledgements</h2>
 
