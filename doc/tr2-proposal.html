@@ -36,18 +36,28 @@
 
 <h1>Adapting Standard Library Strings and I/O to a Unicode World <span style="background-color: #FFFF00">(DRAFT)</span></h1>
 
-<h2>Introduction</h2>
+<h2>Table of contents</h2>
+
+<p><a href="#Introduction">Introduction</a><br>
+<a href="#String-encoding-conversion-safety-rationale">String encoding 
+conversion safety rationale</a><br>
+<a href="#Design-paths-not-taken">Design paths not taken</a><br>
+<a href="#Acknowledgements">Acknowledgements</a><br>
+<a href="#Problems-and-solutions">String interoperability problems and proposed 
+solutions</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Problem-1">Problem 1: Strings don't interoperate if 
+encoding differs</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Problem-2">Problem 2: Strings don't interoperate 
+with I/O streams if encoding differs</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Problem-3">Problem 3: String encoding conversion 
+iterators are not provided</a><br>
+  </p>
+
+<h2><a name="Introduction">Introduction</a></h2>
 
 <p>This paper proposes additions to the C++ standard library/TR2 to ease use of 
 Unicode and other string encodings. The motivation  is a series of problems with 
-the C++11 standard library:</p>
-
-  <ol>
-    <li><a href="#Problem-1">Strings don't interoperate if encoding differs.</a></li>
-    <li><a href="#Problem-2">Strings don't interoperate with I/O streams if encoding differs.</a></li>
-    <li><a href="#Problem-3">String encoding conversion iterators are not 
-    provided.</a></li>
-  </ol>
+the C++11 standard library.</p>
 
 <p>The full statement of the problems with proposed solutions is given below in
 <a href="#Problems-and-solutions">String interoperability problems and proposed 
@@ -71,7 +81,8 @@ provided if this proposal is accepted in principle.</p>
 available at <a href="https://github.com/Beman/string-interoperability">
 https://github.com/Beman/string-interoperability</a>.</p>
 
-<h2>String encoding conversion safety rationale</h2>
+<h2><a name="String-encoding-conversion-safety-rationale">String encoding conversion safety 
+rationale</a></h2>
   <p>Consider this code:</p>
 <blockquote>
   <pre>int i = 100;
@@ -104,7 +115,7 @@ encodings can encounter errors.</p>
 to strings, may require multi-character sequences. No such implicit conversions 
 are proposed here.</p>
 
-<h2>Design paths not taken</h2>
+<h2><a name="Design-paths-not-taken">Design paths not taken</a></h2>
 
 <p>This proposal deals with C++11 <code>std::basic_string</code> and 
 character types, and with their encodings. The deeper attributes of Unicode 
@@ -121,7 +132,7 @@ and then <code>typedef
 basic_string&lt;char, utf8_char_traits&gt; u8string;</code>. This approach has 
 not been investigated. </p>
 
-<h2>Acknowledgements</h2>
+<h2><a name="Acknowledgements">Acknowledgements</a></h2>
 
 <p>Peter Dimov inspired the idea of string interoperability by arguing that the 
 Boost Filesystem library should treat a path is a single 
@@ -147,8 +158,9 @@ interoperability:</p>
   programming with Unicode character types and encodings.</li>
 </ul>
 
-  <h1 align="left"><a name="Problems-and-solutions">String</a> interoperability 
-  problems and proposed solutions</h1>
+  <h1 align="left">
+  <a name="String-interoperability-problems-and-proposed-solutions">String interoperability 
+  problems and proposed solutions</a></h1>
 
 <h2><a name="Problem-1">Problem 1</a>: Strings don't interoperate if encoding differs</h2>
 
