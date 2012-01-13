@@ -41,6 +41,9 @@ namespace detail
 
   *  by_null should do the character_traits eof dance
 
+  *  Shouldn't it be possible to support BidirectionalIterator rather than just
+     InputIterator?
+
   *  John's code in <u8_t> from_iterator has been modified enough that it needs a
      complete test of its own.
      See Markus Kuhn's http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt as a
@@ -108,7 +111,7 @@ public:
 //---------------------------------  from_iterator  ------------------------------------//
 
   // primary template; partial specializations *must* be provided
-  template <class InputIterator, class T, template<class> class EndPolicy>  
+  template <class InputIterator, class FromCharT, template<class> class EndPolicy>  
   class from_iterator; 
 
   template <class InputIterator, template<class> class EndPolicy>
@@ -131,7 +134,7 @@ public:
 //  These iterators always identify the end by termination value
 
   // primary template; partial specializations *must* be provided
-  template <class InputIterator, class T>  
+  template <class InputIterator, class ToCharTCharT>  
   class to_iterator; 
 
   template <class InputIterator>
@@ -157,26 +160,27 @@ public:
 //-------------------------------  converting_iterator  --------------------------------//
 
   // primary template; partial specializations *may* be provided
-  template <class InputIterator, class From, template<class> class EndPolicy, class To>  
+  template <class InputIterator, class FromCharT, template<class> class EndPolicy,
+    class ToCharT>  
   class converting_iterator
-    : public to_iterator<from_iterator<InputIterator, From, EndPolicy>, To>
+    : public to_iterator<from_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>
   {
   public:
     explicit converting_iterator(InputIterator begin)
-      : to_iterator<from_iterator<InputIterator, From, EndPolicy>, To>(begin)
+      : to_iterator<from_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
     // Requires: An EndPolicy that requires no initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by_null");
     }
     converting_iterator(InputIterator begin, InputIterator end)
-      : to_iterator<from_iterator<InputIterator, From, EndPolicy>, To>(begin)
+      : to_iterator<from_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
     // Requires: An EndPolicy that supplies end iterator initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by range");
       this->base().end(end);
     }
     converting_iterator(InputIterator begin, std::size_t sz)
-      : to_iterator<from_iterator<InputIterator, From, EndPolicy>, To>(begin)
+      : to_iterator<from_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
     // Requires: An EndPolicy that supplies size initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by size");
@@ -184,63 +188,63 @@ public:
     }
   };
 
-  ////  case of From is u32_t
-  //template <class InputIterator, class To, template<class> class EndPolicy>
-  //class converting_iterator<InputIterator, u32_t, EndPolicy, To>                
-  //  : public to_iterator<policy_iterator<InputIterator, EndPolicy>, To>
+  ////  case of FromCharT is u32_t
+  //template <class InputIterator, class ToCharT, template<class> class EndPolicy>
+  //class converting_iterator<InputIterator, u32_t, EndPolicy, ToCharT>                
+  //  : public to_iterator<policy_iterator<InputIterator, EndPolicy>, ToCharT>
   //{
   //public:
   //  explicit converting_iterator(InputIterator begin)
-  //    : to_iterator<policy_iterator<InputIterator, EndPolicy>, To>(begin)
+  //    : to_iterator<policy_iterator<InputIterator, EndPolicy>, ToCharT>(begin)
   //  // Requires: An EndPolicy that requires no initialization
   //  {
-  //    BOOST_XOP_LOG("converting_iterator; From is u32_t, by_null");
+  //    BOOST_XOP_LOG("converting_iterator; FromCharT is u32_t, by_null");
   //  }
   //  converting_iterator(InputIterator begin, InputIterator end)
-  //    : to_iterator<policy_iterator<InputIterator, EndPolicy>, To>(begin)
+  //    : to_iterator<policy_iterator<InputIterator, EndPolicy>, ToCharT>(begin)
   //  // Requires: An EndPolicy that supplies end iterator initialization
   //  {
-  //    BOOST_XOP_LOG("converting_iterator; From is u32_t, by range");
+  //    BOOST_XOP_LOG("converting_iterator; FromCharT is u32_t, by range");
   //    base().end(end);
   //  }
   //  converting_iterator(InputIterator begin, std::size_t sz)
-  //    : to_iterator<policy_iterator<InputIterator, EndPolicy>, To>(begin)
+  //    : to_iterator<policy_iterator<InputIterator, EndPolicy>, ToCharT>(begin)
   //  // Requires: An EndPolicy that supplies size initialization
   //  {
-  //    BOOST_XOP_LOG("converting_iterato; From is u32_t, by size");
+  //    BOOST_XOP_LOG("converting_iterato; FromCharT is u32_t, by size");
   //    base().size(sz);
   //  }
   //};
 
-  ////  case of To is u32_t
-  //template <class InputIterator, class From, template<class> class EndPolicy>
-  //class converting_iterator<InputIterator, From, EndPolicy, u32_t>                
-  //  : public from_iterator<InputIterator, From, EndPolicy>
+  ////  case of ToCharT is u32_t
+  //template <class InputIterator, class FromCharT, template<class> class EndPolicy>
+  //class converting_iterator<InputIterator, FromCharT, EndPolicy, u32_t>                
+  //  : public from_iterator<InputIterator, FromCharT, EndPolicy>
   //{
   //public:
   //  explicit converting_iterator(InputIterator begin)
-  //    : from_iterator<InputIterator,From,EndPolicy>(begin)
+  //    : from_iterator<InputIterator,FromCharT,EndPolicy>(begin)
   //  // Requires: An EndPolicy that requires no initialization
   //  {
-  //    BOOST_XOP_LOG("converting_iterator; To is u32_t, by null");
+  //    BOOST_XOP_LOG("converting_iterator; ToCharT is u32_t, by null");
   //  }
   //  converting_iterator(InputIterator begin, InputIterator end)
-  //    : from_iterator<InputIterator,From,EndPolicy>(begin)
+  //    : from_iterator<InputIterator,FromCharT,EndPolicy>(begin)
   //  // Requires: An EndPolicy that supplies end iterator initialization
   //  {
-  //    BOOST_XOP_LOG("converting_iterator; To is u32_t, by range");
+  //    BOOST_XOP_LOG("converting_iterator; ToCharT is u32_t, by range");
   //    this->end(end);
   //  }
   //  converting_iterator(InputIterator begin, std::size_t sz)
-  //    : from_iterator<InputIterator,From,EndPolicy>(begin)
+  //    : from_iterator<InputIterator,FromCharT,EndPolicy>(begin)
   //  // Requires: An EndPolicy that supplies size initialization
   //  {
-  //    BOOST_XOP_LOG("converting_iterator; To is u32_t, by size");
+  //    BOOST_XOP_LOG("converting_iterator; ToCharT is u32_t, by size");
   //    this->size(sz);
   //  }
   //};
 
-  ////  case of value_type/To/From are all the same type 
+  ////  case of value_type/ToCharT/FromCharT are all the same type 
   //template <class InputIterator, template<class> class EndPolicy>
   //class converting_iterator<InputIterator,
   //  typename std::iterator_traits<InputIterator>::value_type, EndPolicy,
@@ -252,20 +256,20 @@ public:
   //    : policy_iterator<InputIterator,EndPolicy>(begin)
   //  // Requires: An EndPolicy that requires no initialization
   //  {
-  //    BOOST_XOP_LOG("converting_iterator; value_type/To/From the same, by null");
+  //    BOOST_XOP_LOG("converting_iterator; value_type/ToCharT/FromCharT the same, by null");
   //  }
   //  converting_iterator(InputIterator begin, InputIterator end)
   //    : policy_iterator<InputIterator,EndPolicy>(begin)
   //  // Requires: An EndPolicy that supplies end iterator initialization
   //  {
-  //    BOOST_XOP_LOG("converting_iterator; value_type/To/From the same, by range");
+  //    BOOST_XOP_LOG("converting_iterator; value_type/ToCharT/FromCharT the same, by range");
   //    this->end(end);
   //  }
   //  converting_iterator(InputIterator begin, std::size_t sz)
   //    : policy_iterator<InputIterator,EndPolicy>(begin)
   //  // Requires: An EndPolicy that supplies size initialization
   //  {
-  //    BOOST_XOP_LOG("converting_iterator; value_type/To/From the same, by size");
+  //    BOOST_XOP_LOG("converting_iterator; value_type/ToCharT/FromCharT the same, by size");
   //    this->size(sz);
   //  }
   //};
