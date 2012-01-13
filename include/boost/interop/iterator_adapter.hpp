@@ -44,7 +44,7 @@ namespace detail
   *  Shouldn't it be possible to support BidirectionalIterator rather than just
      InputIterator?
 
-  *  John's code in <u8_t> from_iterator has been modified enough that it needs a
+  *  John's code in <u8_t> to32_iterator has been modified enough that it needs a
      complete test of its own.
      See Markus Kuhn's http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt as a
      possible test file.
@@ -56,7 +56,7 @@ namespace detail
 //  For n encodings, it is desirable to provide 2n rather than n squared adapters.
 //  This is achieved conceptually by converting to and from UTF-32 as
 //  an intermediate encoding, and then composing a converting_iterator from one
-//  from_iterator and one to_iterator. For efficiency, specializations of
+//  to32_iterator and one from32_iterator. For efficiency, specializations of
 //  converting_iterator can provide direct conversion without an intermedate UTF32 step.
 
 //--------------------------------------------------------------------------------------//
@@ -108,49 +108,49 @@ public:
   void advance() const { --m_size; }
 };
 
-//---------------------------------  from_iterator  ------------------------------------//
+//---------------------------------  to32_iterator  ------------------------------------//
 
   // primary template; partial specializations *must* be provided
   template <class InputIterator, class FromCharT, template<class> class EndPolicy>  
-  class from_iterator; 
+  class to32_iterator; 
 
   template <class InputIterator, template<class> class EndPolicy>
-  class from_iterator<InputIterator, u8_t, EndPolicy>;
+  class to32_iterator<InputIterator, u8_t, EndPolicy>;
 
   template <class InputIterator, template<class> class EndPolicy>
-  class from_iterator<InputIterator, u16_t, EndPolicy>;
+  class to32_iterator<InputIterator, u16_t, EndPolicy>;
 
   template <class InputIterator, template<class> class EndPolicy>
-  class from_iterator<InputIterator, u32_t, EndPolicy>;
+  class to32_iterator<InputIterator, u32_t, EndPolicy>;
 
   template <class InputIterator, template<class> class EndPolicy>
-  class from_iterator<InputIterator, char, EndPolicy>;
+  class to32_iterator<InputIterator, char, EndPolicy>;
 
   template <class InputIterator, template<class> class EndPolicy>
-  class from_iterator<InputIterator, wchar_t, EndPolicy>;
+  class to32_iterator<InputIterator, wchar_t, EndPolicy>;
 
-//----------------------------------  to_iterator  -------------------------------------//
+//--------------------------------  from32_iterator  -----------------------------------//
 //
 //  These iterators always identify the end by termination value
 
   // primary template; partial specializations *must* be provided
-  template <class InputIterator, class ToCharTCharT>  
-  class to_iterator; 
+  template <class InputIterator, class ToCharT>  
+  class from32_iterator; 
 
   template <class InputIterator>
-  class to_iterator<InputIterator, u8_t>;
+  class from32_iterator<InputIterator, u8_t>;
 
   template <class InputIterator>
-  class to_iterator<InputIterator, u16_t>;
+  class from32_iterator<InputIterator, u16_t>;
 
   template <class InputIterator>
-  class to_iterator<InputIterator, u32_t>;
+  class from32_iterator<InputIterator, u32_t>;
   
   template <class InputIterator>
-  class to_iterator<InputIterator, char>;
+  class from32_iterator<InputIterator, char>;
 
   template <class InputIterator>
-  class to_iterator<InputIterator, wchar_t>;
+  class from32_iterator<InputIterator, wchar_t>;
 
 //---------------------------------  policy_iterator  ----------------------------------//
 
@@ -163,24 +163,24 @@ public:
   template <class InputIterator, class FromCharT, template<class> class EndPolicy,
     class ToCharT>  
   class converting_iterator
-    : public to_iterator<from_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>
+    : public from32_iterator<to32_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>
   {
   public:
     explicit converting_iterator(InputIterator begin)
-      : to_iterator<from_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
+      : from32_iterator<to32_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
     // Requires: An EndPolicy that requires no initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by_null");
     }
     converting_iterator(InputIterator begin, InputIterator end)
-      : to_iterator<from_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
+      : from32_iterator<to32_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
     // Requires: An EndPolicy that supplies end iterator initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by range");
       this->base().end(end);
     }
     converting_iterator(InputIterator begin, std::size_t sz)
-      : to_iterator<from_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
+      : from32_iterator<to32_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
     // Requires: An EndPolicy that supplies size initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by size");
@@ -191,24 +191,24 @@ public:
   ////  case of FromCharT is u32_t
   //template <class InputIterator, class ToCharT, template<class> class EndPolicy>
   //class converting_iterator<InputIterator, u32_t, EndPolicy, ToCharT>                
-  //  : public to_iterator<policy_iterator<InputIterator, EndPolicy>, ToCharT>
+  //  : public from32_iterator<policy_iterator<InputIterator, EndPolicy>, ToCharT>
   //{
   //public:
   //  explicit converting_iterator(InputIterator begin)
-  //    : to_iterator<policy_iterator<InputIterator, EndPolicy>, ToCharT>(begin)
+  //    : from32_iterator<policy_iterator<InputIterator, EndPolicy>, ToCharT>(begin)
   //  // Requires: An EndPolicy that requires no initialization
   //  {
   //    BOOST_XOP_LOG("converting_iterator; FromCharT is u32_t, by_null");
   //  }
   //  converting_iterator(InputIterator begin, InputIterator end)
-  //    : to_iterator<policy_iterator<InputIterator, EndPolicy>, ToCharT>(begin)
+  //    : from32_iterator<policy_iterator<InputIterator, EndPolicy>, ToCharT>(begin)
   //  // Requires: An EndPolicy that supplies end iterator initialization
   //  {
   //    BOOST_XOP_LOG("converting_iterator; FromCharT is u32_t, by range");
   //    base().end(end);
   //  }
   //  converting_iterator(InputIterator begin, std::size_t sz)
-  //    : to_iterator<policy_iterator<InputIterator, EndPolicy>, ToCharT>(begin)
+  //    : from32_iterator<policy_iterator<InputIterator, EndPolicy>, ToCharT>(begin)
   //  // Requires: An EndPolicy that supplies size initialization
   //  {
   //    BOOST_XOP_LOG("converting_iterato; FromCharT is u32_t, by size");
@@ -219,24 +219,24 @@ public:
   ////  case of ToCharT is u32_t
   //template <class InputIterator, class FromCharT, template<class> class EndPolicy>
   //class converting_iterator<InputIterator, FromCharT, EndPolicy, u32_t>                
-  //  : public from_iterator<InputIterator, FromCharT, EndPolicy>
+  //  : public to32_iterator<InputIterator, FromCharT, EndPolicy>
   //{
   //public:
   //  explicit converting_iterator(InputIterator begin)
-  //    : from_iterator<InputIterator,FromCharT,EndPolicy>(begin)
+  //    : to32_iterator<InputIterator,FromCharT,EndPolicy>(begin)
   //  // Requires: An EndPolicy that requires no initialization
   //  {
   //    BOOST_XOP_LOG("converting_iterator; ToCharT is u32_t, by null");
   //  }
   //  converting_iterator(InputIterator begin, InputIterator end)
-  //    : from_iterator<InputIterator,FromCharT,EndPolicy>(begin)
+  //    : to32_iterator<InputIterator,FromCharT,EndPolicy>(begin)
   //  // Requires: An EndPolicy that supplies end iterator initialization
   //  {
   //    BOOST_XOP_LOG("converting_iterator; ToCharT is u32_t, by range");
   //    this->end(end);
   //  }
   //  converting_iterator(InputIterator begin, std::size_t sz)
-  //    : from_iterator<InputIterator,FromCharT,EndPolicy>(begin)
+  //    : to32_iterator<InputIterator,FromCharT,EndPolicy>(begin)
   //  // Requires: An EndPolicy that supplies size initialization
   //  {
   //    BOOST_XOP_LOG("converting_iterator; ToCharT is u32_t, by size");
@@ -338,15 +338,15 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 //--------------------------------  specializations  -----------------------------------//
 
-//------------------------------  <u8_t> from_iterator  --------------------------------//
+//------------------------------  <u8_t> to32_iterator  --------------------------------//
 
   template <class InputIterator, template<class> class EndPolicy>
-  class from_iterator<InputIterator, u8_t, EndPolicy>
-   : public boost::iterator_facade<from_iterator<InputIterator, u8_t, EndPolicy>,
+  class to32_iterator<InputIterator, u8_t, EndPolicy>
+   : public boost::iterator_facade<to32_iterator<InputIterator, u8_t, EndPolicy>,
        u32_t, std::input_iterator_tag, const u32_t>,
      public EndPolicy<InputIterator>
   {
-     typedef boost::iterator_facade<from_iterator<InputIterator, u8_t, EndPolicy>,
+     typedef boost::iterator_facade<to32_iterator<InputIterator, u8_t, EndPolicy>,
        u32_t, std::input_iterator_tag, const u32_t> base_type;
      // special values for pending iterator reads:
      BOOST_STATIC_CONSTANT(u32_t, pending_read = 0xffffffffu);
@@ -369,7 +369,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
            extract_current();
         return m_value;
      }
-     bool equal(const from_iterator& that)const
+     bool equal(const to32_iterator& that)const
      {
         return m_position == that.m_position;
      }
@@ -380,11 +380,11 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
 
      // construct:
-     from_iterator() : m_position()
+     to32_iterator() : m_position()
      {
         m_value = pending_read;
      }
-     from_iterator(InputIterator b) : m_position(b)
+     to32_iterator(InputIterator b) : m_position(b)
      {
         m_value = pending_read;
         BOOST_XOP_LOG("utf-8 to utf-32");
@@ -436,15 +436,15 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
   };
 
-//------------------------------  <u16_t> from_iterator  -------------------------------//
+//------------------------------  <u16_t> to32_iterator  -------------------------------//
 
   template <class InputIterator, template<class> class EndPolicy>
-  class from_iterator<InputIterator, u16_t, EndPolicy>
-   : public boost::iterator_facade<from_iterator<InputIterator, u16_t, EndPolicy>,
+  class to32_iterator<InputIterator, u16_t, EndPolicy>
+   : public boost::iterator_facade<to32_iterator<InputIterator, u16_t, EndPolicy>,
        u32_t, std::input_iterator_tag, const u32_t>,
      public EndPolicy<InputIterator>
   {
-     typedef boost::iterator_facade<from_iterator<InputIterator, u16_t, EndPolicy>,
+     typedef boost::iterator_facade<to32_iterator<InputIterator, u16_t, EndPolicy>,
        u32_t, std::input_iterator_tag, const u32_t> base_type;
      // special values for pending iterator reads:
      BOOST_STATIC_CONSTANT(u32_t, pending_read = 0xffffffffu);
@@ -467,7 +467,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
            extract_current();
         return m_value;
      }
-     bool equal(const from_iterator& that)const
+     bool equal(const to32_iterator& that)const
      {
         return m_position == that.m_position;
      }
@@ -478,11 +478,11 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
 
      // construct:
-     from_iterator() : m_position()
+     to32_iterator() : m_position()
      {
         m_value = pending_read;
      }
-     from_iterator(InputIterator b) : m_position(b)
+     to32_iterator(InputIterator b) : m_position(b)
      {
         m_value = pending_read;
         BOOST_XOP_LOG("utf-16 to utf-32");
@@ -533,19 +533,19 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
   };
 
-//-------------------------------  <u32_t> from_iterator  ------------------------------//
+//-------------------------------  <u32_t> to32_iterator  ------------------------------//
 
   template <class InputIterator, template<class> class EndPolicy>
-  class from_iterator<InputIterator, u32_t, EndPolicy>
-    : public boost::iterator_facade<from_iterator<InputIterator, u32_t, EndPolicy>,
+  class to32_iterator<InputIterator, u32_t, EndPolicy>
+    : public boost::iterator_facade<to32_iterator<InputIterator, u32_t, EndPolicy>,
         u32_t, std::input_iterator_tag, const u32_t>,
       public EndPolicy<InputIterator>
 
   {
     InputIterator m_itr;
   public:
-    from_iterator() {}
-    from_iterator(InputIterator itr) : m_itr(itr)
+    to32_iterator() {}
+    to32_iterator(InputIterator itr) : m_itr(itr)
     {
         BOOST_XOP_LOG("utf-32 to utf-32");
     }
@@ -555,7 +555,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         return 0;
       return *m_itr;
     }
-    bool equal(const from_iterator& that) const {return m_itr == that.m_itr;}
+    bool equal(const to32_iterator& that) const {return m_itr == that.m_itr;}
     void increment()
     {
       BOOST_ASSERT_MSG(!this->is_end(m_itr), "Attempt to increment past end");
@@ -564,14 +564,14 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
     }
   };
 
-//-------------------------------  <u8_t> to_iterator  ---------------------------------//
+//-------------------------------  <u8_t> from32_iterator  ---------------------------------//
 
   template <class InputIterator>
-  class to_iterator<InputIterator, u8_t>
-   : public boost::iterator_facade<to_iterator<InputIterator, u8_t>,
+  class from32_iterator<InputIterator, u8_t>
+   : public boost::iterator_facade<from32_iterator<InputIterator, u8_t>,
        u8_t, std::input_iterator_tag, const u8_t>
   {
-     typedef boost::iterator_facade<to_iterator<InputIterator, u8_t>,
+     typedef boost::iterator_facade<from32_iterator<InputIterator, u8_t>,
        u8_t, std::input_iterator_tag, const u8_t> base_type;
    
      typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
@@ -588,7 +588,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
            extract_current();
         return m_values[m_current];
      }
-     bool equal(const to_iterator& that)const
+     bool equal(const from32_iterator& that)const
      {
         if(m_position == that.m_position)
         {
@@ -621,7 +621,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      InputIterator& base() { return m_position; }
 
      // construct:
-     to_iterator() : m_position(), m_current(0)
+     from32_iterator() : m_position(), m_current(0)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -629,7 +629,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         m_values[3] = 0;
         m_values[4] = 0;
      }
-     to_iterator(InputIterator b) : m_position(b), m_current(4)
+     from32_iterator(InputIterator b) : m_position(b), m_current(4)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -680,14 +680,14 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      mutable unsigned m_current;
   };
 
-//-------------------------------  <u16_t> to_iterator  --------------------------------//
+//-------------------------------  <u16_t> from32_iterator  --------------------------------//
 
   template <class InputIterator>
-  class to_iterator<InputIterator, u16_t>
-   : public boost::iterator_facade<to_iterator<InputIterator, u16_t>,
+  class from32_iterator<InputIterator, u16_t>
+   : public boost::iterator_facade<from32_iterator<InputIterator, u16_t>,
       u16_t, std::input_iterator_tag, const u16_t>
   {
-     typedef boost::iterator_facade<to_iterator<InputIterator, u16_t>,
+     typedef boost::iterator_facade<from32_iterator<InputIterator, u16_t>,
        u16_t, std::input_iterator_tag, const u16_t> base_type;
 
      typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
@@ -704,7 +704,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
            extract_current();
         return m_values[m_current];
      }
-     bool equal(const to_iterator& that)const
+     bool equal(const from32_iterator& that)const
      {
         if(m_position == that.m_position)
         {
@@ -736,13 +736,13 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      InputIterator& base() {return m_position;}
 
      // construct:
-     to_iterator() : m_position(), m_current(0)
+     from32_iterator() : m_position(), m_current(0)
      {
         m_values[0] = 0;
         m_values[1] = 0;
         m_values[2] = 0;
      }
-     to_iterator(InputIterator b) : m_position(b), m_current(2)
+     from32_iterator(InputIterator b) : m_position(b), m_current(2)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -782,22 +782,22 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      mutable unsigned m_current;
   };
 
-//-------------------------------  <u32_t> to_iterator  --------------------------------//
+//-------------------------------  <u32_t> from32_iterator  --------------------------------//
 
   template <class InputIterator>
-  class to_iterator<InputIterator, u32_t>
-   : public boost::iterator_facade<to_iterator<InputIterator, u32_t>,
+  class from32_iterator<InputIterator, u32_t>
+   : public boost::iterator_facade<from32_iterator<InputIterator, u32_t>,
       u32_t, std::input_iterator_tag, const u32_t>
   {
     InputIterator m_itr;
   public:
-    to_iterator() {}
-    to_iterator(InputIterator itr) : m_itr(itr)
+    from32_iterator() {}
+    from32_iterator(InputIterator itr) : m_itr(itr)
     {
       BOOST_XOP_LOG("utf-32 from utf-32");
     }
     u32_t dereference() const { return *m_itr; }
-    bool equal(const to_iterator& that) const {return m_itr == that.m_itr;}
+    bool equal(const from32_iterator& that) const {return m_itr == that.m_itr;}
     void increment() { ++m_itr; }
     InputIterator& base() {return m_itr;}
   };
@@ -835,15 +835,15 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 //
 //  *************************************************************************************/
 
-//-------------------------------  <char> from_iterator  -------------------------------//
+//-------------------------------  <char> to32_iterator  -------------------------------//
 
   template <class InputIterator, template<class> class EndPolicy>
-  class from_iterator<InputIterator, char, EndPolicy>
-   : public boost::iterator_facade<from_iterator<InputIterator, char, EndPolicy>,
+  class to32_iterator<InputIterator, char, EndPolicy>
+   : public boost::iterator_facade<to32_iterator<InputIterator, char, EndPolicy>,
        u32_t, std::input_iterator_tag, const u32_t>,
      public EndPolicy<InputIterator>
   {
-     typedef boost::iterator_facade<from_iterator<InputIterator, char, EndPolicy>,
+     typedef boost::iterator_facade<to32_iterator<InputIterator, char, EndPolicy>,
        u32_t, std::input_iterator_tag, const u32_t> base_type;
 
      typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
@@ -861,7 +861,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
        unsigned char c = static_cast<unsigned char>(*m_iterator);
        return static_cast<u32_t>(xop::detail::to_utf16[c]);
      }
-     bool equal(const from_iterator& that) const
+     bool equal(const to32_iterator& that) const
      {
        return m_iterator == that.m_iterator;
      }
@@ -873,23 +873,23 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
 
      // construct:
-     from_iterator() : m_iterator() {}
-     from_iterator(InputIterator b) : m_iterator(b)
+     to32_iterator() : m_iterator() {}
+     to32_iterator(InputIterator b) : m_iterator(b)
      {
        BOOST_XOP_LOG("char to utf-32");
      }
   };
 
-//-------------------------------  <char> to_iterator  ---------------------------------//
+//-------------------------------  <char> from32_iterator  ---------------------------------//
 
 #if defined(BOOST_WINDOWS_API)
 
   template <class InputIterator>
-  class to_iterator<InputIterator, char>
-   : public boost::iterator_facade<to_iterator<InputIterator, char>,
+  class from32_iterator<InputIterator, char>
+   : public boost::iterator_facade<from32_iterator<InputIterator, char>,
        char, std::input_iterator_tag, const char>
   {
-     typedef boost::iterator_facade<to_iterator<InputIterator, char>,
+     typedef boost::iterator_facade<from32_iterator<InputIterator, char>,
        char, std::input_iterator_tag, const char> base_type;
    
      typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
@@ -912,7 +912,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
          ]);
      }
 
-     bool equal(const to_iterator& that) const
+     bool equal(const from32_iterator& that) const
      {
        return m_iterator == that.m_iterator;
      }
@@ -922,8 +922,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      InputIterator& base() {return m_iterator;}
 
      // construct:
-     to_iterator() : m_iterator() {}
-     to_iterator(InputIterator b) : m_iterator(b)
+     from32_iterator() : m_iterator() {}
+     from32_iterator(InputIterator b) : m_iterator(b)
      {
        BOOST_XOP_LOG("char from utf-32");
      }
@@ -932,11 +932,11 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
  # elif defined(BOOST_POSIX_API)  // POSIX; assumes char is UTF-8
 
   template <class InputIterator>
-  class to_iterator<InputIterator, char>
-   : public boost::iterator_facade<to_iterator<InputIterator, char>,
+  class from32_iterator<InputIterator, char>
+   : public boost::iterator_facade<from32_iterator<InputIterator, char>,
        char, std::input_iterator_tag, const char>
   {
-     to_iterator<InputIterator, u8_t>  m_iterator;
+     from32_iterator<InputIterator, u8_t>  m_iterator;
 
   public:
      char dereference() const
@@ -944,7 +944,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
        return static_cast<char>(*m_iterator);
      }
 
-     bool equal(const to_iterator& that) const
+     bool equal(const from32_iterator& that) const
      {
        return m_iterator == that.m_iterator;
      }
@@ -954,8 +954,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      InputIterator& base() {return m_iterator;}
 
      // construct:
-     to_iterator() : m_iterator() {}
-     to_iterator(InputIterator b) : m_iterator(b)
+     from32_iterator() : m_iterator() {}
+     from32_iterator(InputIterator b) : m_iterator(b)
      {
         BOOST_XOP_LOG("char from utf-32");
      }
@@ -965,7 +965,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 #   error Sorry, not implemented for other than 16 or 32 bit wchar_t
 # endif
 
-//-----------------------------  <wchar_t> from_iterator  ------------------------------//
+//-----------------------------  <wchar_t> to32_iterator  ------------------------------//
 
 #if defined(BOOST_WINDOWS_API)  // assume wchar_t is UTF-16
 
@@ -988,11 +988,11 @@ namespace detail
   BOOST_STATIC_ASSERT(sizeof(wchar_t)*CHAR_BIT == 16);
 
   template <class InputIterator, template<class> class EndPolicy>
-  class from_iterator<InputIterator, wchar_t, EndPolicy>
-   : public boost::iterator_facade<from_iterator<InputIterator, wchar_t, EndPolicy>,
+  class to32_iterator<InputIterator, wchar_t, EndPolicy>
+   : public boost::iterator_facade<to32_iterator<InputIterator, wchar_t, EndPolicy>,
        u32_t, std::input_iterator_tag, const u32_t>
   {
-     typedef boost::iterator_facade<from_iterator<InputIterator, wchar_t, EndPolicy>,
+     typedef boost::iterator_facade<to32_iterator<InputIterator, wchar_t, EndPolicy>,
        u32_t, std::input_iterator_tag, const u32_t> base_type;
 
      typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
@@ -1000,16 +1000,16 @@ namespace detail
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
 
-     from_iterator<detail::wide_to_u16<InputIterator>, u16_t, EndPolicy> m_iterator;
+     to32_iterator<detail::wide_to_u16<InputIterator>, u16_t, EndPolicy> m_iterator;
 
   public:
-     from_iterator() : m_iterator() {}
-     from_iterator(InputIterator b) : m_iterator(detail::wide_to_u16<InputIterator>(b))
+     to32_iterator() : m_iterator() {}
+     to32_iterator(InputIterator b) : m_iterator(detail::wide_to_u16<InputIterator>(b))
      {
        BOOST_XOP_LOG("wchar_t to utf-32");
      }
      u32_t dereference() const { return *m_iterator; }
-     bool equal(const from_iterator& that) const {return m_iterator == that.m_iterator;}
+     bool equal(const to32_iterator& that) const {return m_iterator == that.m_iterator;}
      void increment() { ++m_iterator; }
      void size(std::size_t sz) { m_iterator.size(sz); }
      void end(InputIterator e) { m_iterator.end(detail::wide_to_u16<InputIterator>(e)); }
@@ -1023,18 +1023,18 @@ namespace detail
 #   error Sorry, not implemented for other than 16 or 32 bit wchar_t
 # endif
 
-//------------------------------  <wchar_t> to_iterator  -------------------------------//
+//------------------------------  <wchar_t> from32_iterator  -------------------------------//
 
 #if defined(BOOST_WINDOWS_API)  // assume wchar_t is UTF-16
 
   BOOST_STATIC_ASSERT(sizeof(wchar_t)*CHAR_BIT == 16);
 
   template <class InputIterator>
-  class to_iterator<InputIterator, wchar_t>
-   : public boost::iterator_facade<to_iterator<InputIterator, wchar_t>,
+  class from32_iterator<InputIterator, wchar_t>
+   : public boost::iterator_facade<from32_iterator<InputIterator, wchar_t>,
        wchar_t, std::input_iterator_tag, const wchar_t>
   {
-     to_iterator<InputIterator, u16_t>  m_iterator;
+     from32_iterator<InputIterator, u16_t>  m_iterator;
 
   public:
      wchar_t dereference() const
@@ -1042,7 +1042,7 @@ namespace detail
        return static_cast<wchar_t>(*m_iterator);
      }
 
-     bool equal(const to_iterator& that) const
+     bool equal(const from32_iterator& that) const
      {
        return m_iterator == that.m_iterator;
      }
@@ -1052,8 +1052,8 @@ namespace detail
      InputIterator& base() {return m_iterator.base();}
 
      // construct:
-     to_iterator() : m_iterator() {}
-     to_iterator(InputIterator b) : m_iterator(b)
+     from32_iterator() : m_iterator() {}
+     from32_iterator(InputIterator b) : m_iterator(b)
      {
        BOOST_XOP_LOG("wchar_t from utf-32");
      }
