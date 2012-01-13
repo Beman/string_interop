@@ -32,6 +32,7 @@ namespace xop
 {
 namespace detail
 {
+  // for the proof-of-concept, simply linking in codec tables is sufficient
   extern const boost::u16_t  to_utf16[];  
   extern const unsigned char to_char[];
   extern const boost::uint8_t slice_index[];
@@ -39,6 +40,10 @@ namespace detail
 
 /*  TODO:
 
+  *  For char, provide:
+      -- compile time selection of codec
+      -- runtime selection of codec
+  
   *  by_null should do the character_traits eof dance
 
   *  Shouldn't it be possible to support BidirectionalIterator rather than just

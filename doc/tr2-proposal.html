@@ -22,7 +22,7 @@
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-12<!--webbot bot="Timestamp" endspan i-checksum="12043" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-13<!--webbot bot="Timestamp" endspan i-checksum="12045" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -78,8 +78,8 @@ or C++11 compliant code is broken or otherwise affected by the additions.</p>
 provided if this proposal is accepted in principle.</p>
 
 <p>A &quot;proof-of-concept&quot; implementation of the proposals (and more) is 
-available at <a href="https://github.com/Beman/string-interoperability">
-https://github.com/Beman/string-interoperability</a>.</p>
+available at <a href="http://github.com/Beman/string-interoperability">
+github.com/Beman/string-interoperability</a>.</p>
 
 <h2><a name="String-encoding-conversion-safety-rationale">String  conversion safety 
 rationale</a></h2>
@@ -350,9 +350,15 @@ converting_iterator&lt;const_iterator, value_type, by_range, T&gt; c_str() const
 }</pre>
   </blockquote>
   <p dir="ltr">No temporary string is created, and none of the other problems 
-  listed above are present either. The <code>converting_iterator</code> template 
+  listed above are present either. The&nbsp; 
   is generally useful for user defined types, and not just for implementations 
   of the standard library.</p>
+  <p dir="ltr">Other problems become easier to solve with <code>converting_iterator.</code> 
+  For example, the Filesystem library's class <code>path</code> in
+  <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2011/n3239.html">
+  N3239</a> has many functions with an argument in the form <code>const 
+  codecvt_type&amp; cvt=codecvt()</code> that could be eliminated by either direct 
+  or indirect use of <code>converting_iterator.</code></p>
   <h3>Existing practice</h3>
 
 <p>Boost Regex for many years has included a set of Unicode conversion 
@@ -361,64 +367,51 @@ technique of using encoding conversion iterators to avoid creation of temporary
 strings.</p>
 
 <h3>Proposed Solution</h3>
-<blockquote>
-  <div align="left">
-    <pre>// converting iterator
-template &lt;class InputIterator, class From, template&lt;class&gt; class EndPolicy, class To&gt;  
-  class converting_iterator;
 
-// end-detection policies
-template &lt;class InputIterator&gt; class by_range;
+<p>This solution is based on the
+<a href="http://github.com/Beman/string-interoperability/blob/master/include/boost/interop/iterator_adapter.hpp">
+proof-of-concept implementation</a>. Input iterator requirements can probably be 
+loosened to bidirectional, but that hasn't been tested yet.</p>
+
+<p>The preliminaries begin with end-detection policy classes, since strings used 
+null termination, size, or half-open ranges to determine the end of a sequence.</p>
+  <blockquote>
+    <pre>template &lt;class InputIterator&gt; class by_null;
 template &lt;class InputIterator&gt; class by_size;
-template &lt;class InputIterator&gt; class by_null;
-
-// primary template for conversion from T to char32_t
-template &lt;class InputIterator, class T, template&lt;class&gt; class EndPolicy&gt;  
-  class from_iterator;
-
-// partial specializations for char, wchar_t, char16_t, char32_t  
-template &lt;class InputIterator, template&lt;class&gt; class EndPolicy&gt;
-  class from_iterator&lt;InputIterator, <b><i>specialization</i></b>, EndPolicy&gt;;
-
-// primary template for conversion from char32_t to T
-template &lt;class InputIterator, class T&gt; class to_iterator;
-
-// partial specializations for char, wchar_t, char16_t, char32_t  
-template &lt;class InputIterator&gt; class to_iterator&lt;InputIterator, <b><i>specialization</i></b>&gt;;
-
-// converting iterator definition
-template &lt;class InputIterator, class From, template&lt;class&gt; class EndPolicy, class To&gt;  
-  class converting_iterator
-    : public to_iterator&lt;from_iterator&lt;InputIterator, From, EndPolicy&gt;, To&gt;
+template &lt;class InputIterator&gt; class by_range;</pre>
+  </blockquote>
+  <p>Codec templates handle actual conversion to and from UTF-32. The primary 
+  templates are:</p>
+  <blockquote>
+    <pre>template &lt;class InputIterator, class FromCharT, template&lt;class&gt; class EndPolicy&gt; 
+  class to32_iterator;
+template &lt;class InputIterator, class ToCharT&gt; 
+  class from32_iterator;</pre>
+  </blockquote>
+  <p dir="ltr">The standard library would provide specializations for <code>char</code>,
+  <code>wchar_t</code>, <code>char16_t</code>, and <code>char32_t</code>. 
+  Presumably users could provide specializations for UDTs, but that hasn't been 
+  tested yet. The <code>char</code> and <code>wchar_t</code> specializations 
+  provide mechanisms to select the encoding. Since this is a new component the
+  <code>char</code> default encoding could be UTF-8 rather than locale based and 
+  no existing coded would be broken.</p>
+  <p dir="ltr">The actual <code>converting_iterator</code> primary template is 
+  simply:</p>
+  <blockquote>
+    <pre><font size="1">template &lt;class InputIterator, class FromCharT, template&lt;class&gt; class EndPolicy,
+          class ToCharT&gt; 
+class converting_iterator
+  : public from32_iterator&lt;to32_iterator&lt;InputIterator, FromCharT, EndPolicy&gt;,
+      ToCharT&gt;
 {
 public:
-  explicit converting_iterator(InputIterator begin)
-    : to_iterator&lt;from_iterator&lt;InputIterator, From, EndPolicy&gt;, To&gt;(begin)
-  // Requires: An EndPolicy that requires no initialization
-  {}
-
-  converting_iterator(InputIterator begin, InputIterator end)
-    : to_iterator&lt;from_iterator&lt;InputIterator, From, EndPolicy&gt;, To&gt;(begin)
-  // Requires: An EndPolicy that supplies end iterator initialization
-  {
-    base().end(end);
-  }
-
-  converting_iterator(InputIterator begin, std::size_t sz)
-    : to_iterator&lt;from_iterator&lt;InputIterator, From, EndPolicy&gt;, To&gt;(begin)
-  // Requires: An EndPolicy that supplies size initialization
-  {
-    base().size(sz);
-  }
-
-  <i>To be supplied: error handling policies and/or arguments</i>
- <i> To be supplied:</i> <i>for char and wchar_t, encoding policies and/or arguments</i>
-
-};</pre>
-  </div>
-</blockquote>
-
-<hr>
+  using from32_iterator::from32_iterator;
+};</font></pre>
+  </blockquote>
+  <p>Specializations may be provided, but aren't required. The proof-of-concept 
+  implementation doesn't use inherited constructors because of lack of compiler 
+  support.</p>
+  <hr>
 
 </body>
 
