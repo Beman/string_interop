@@ -252,6 +252,12 @@ subset, possibly just <code>c_str()</code>, <code>begin()</code>, and <code>
 end()</code>, with error handling and encoding parameters or arguments, suitable 
 defaulted, may well be sufficient.</p>
 
+<p dir="ltr">Because full implicit interoperability involves a lot of additional 
+signatures be added to basic_string, it will certainly be appropriate to discuss 
+limiting changes to the key areas of need. For example, constructors and <code>
+operator=</code> are much more likely to need interoperability than <code>operator+=</code>, <code>
+append</code>, or <code>assign</code> signatures.</p>
+
 <h2 dir="ltr"><a name="Problem-2">Problem 2</a>: Strings don't interoperate with I/O streams if encoding differs</h2>
 
 <h3>Discussion</h3>
@@ -273,12 +279,14 @@ int main()
 <p>This code should 
 &quot;just work&quot;, even though the type of <code>U&quot;&#24744;&#22909;&#19990;&#30028;&quot;</code> is <code>const 
 char32_t*</code>, not <code>const char*</code>, as long as the encoding of <code>char</code> 
-supports &#24744;&#22909;&#19990;&#30028;. </p>
-<p>It does &quot;just work&quot; with the proof-of-concept implementation of this 
+supports &#24744;&#22909;&#19990;&#30028;. Even if those characters are not 
+supported by default encodings, alternatives like UTF-8 are available. </p>
+<p>The code does &quot;just work&quot; with the proof-of-concept implementation of this 
 proposal. On Linux, with default <code>char</code> encoding of UTF-8,  execution 
 produces the expected &#24744;&#22909;&#19990;&#30028; output. On Windows, the 
 console doesn't support full UTF-8, so the output can be piped to a file or to a 
-program which does handle UTF-8 correctly.</p>
+program which does handle UTF-8 correctly. And, yes, that does work correctly 
+with the proof-of-concept implementation of this proposal.</p>
 
 <h3>Proposed Solution</h3>
 <p>Add additional function templates to those in 27.7.3.6.4 [ostream.inserters.character],
