@@ -5,7 +5,7 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Unicode White Paper</title>
+<title>Adapting to Unicode</title>
 <style type="text/css">
  ins {background-color:#A0FFA0}
  del {background-color:#FFA0A0}
@@ -17,7 +17,7 @@
   <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="579">
     <tr>
       <td width="153" align="left" valign="top">Document number:</td>
-      <td width="426"><span style="background-color: #FFFF00">D3336 = 12-0026</span></td>
+      <td width="426">N3336 = 12-0026</td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
@@ -34,7 +34,7 @@
     </tr>
   </table>
 
-<h1>Adapting Standard Library Strings and I/O to a Unicode World <span style="background-color: #FFFF00">(DRAFT)</span></h1>
+<h1>Adapting Standard Library Strings and I/O to a Unicode World</h1>
 
 <h2>Table of contents</h2>
 
@@ -49,7 +49,7 @@ solutions</a><br>
 encoding differs</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Problem-2">Problem 2: Strings don't interoperate 
 with I/O streams if encoding differs</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#Problem-3">Problem 3: String encoding conversion 
+&nbsp;&nbsp;&nbsp; <a href="#Problem-3">Problem 3: String  conversion 
 iterators are not provided</a><br>
   </p>
 
@@ -152,7 +152,7 @@ interoperability:</p>
   encodings.</li>
   <li><code>std::u16string</code> and <code>std::u32string</code> provide 
   library support for Unicode character types and encodings.</li>
-  <li><code>u8, u</code> and <code>U</code> character and string literals ease 
+  <li><code>u8</code>, <code>u</code>, and <code>U</code> character and string literals ease 
   programming with Unicode character types and encodings.</li>
 </ul>
 
@@ -294,7 +294,7 @@ that arguments shall be converted to the type and encoding of the stream.</p>
 <p>Do the same for the two <code>std::basic_string</code> inserters and 
 extractors in 21.4.8.9 [string.io], <i>Inserters and extractors</i>.</p>
 
-<h2><a name="Problem-3">Problem 3</a>: String encoding conversion iterators are 
+<h2><a name="Problem-3">Problem 3</a>: String conversion iterators are 
 not provided</h2>
 <h3>Discussion</h3>
 
@@ -350,7 +350,7 @@ converting_iterator&lt;const_iterator, value_type, by_range, T&gt; c_str() const
 }</pre>
   </blockquote>
   <p dir="ltr">No temporary string is created, and none of the other problems 
-  listed above are present either. The&nbsp; 
+  listed above are present either. The solution 
   is generally useful for user defined types, and not just for implementations 
   of the standard library.</p>
   <p dir="ltr">Other problems become easier to solve with <code>converting_iterator.</code> 
@@ -394,11 +394,11 @@ template &lt;class InputIterator, class ToCharT&gt;
   tested yet. The <code>char</code> and <code>wchar_t</code> specializations 
   provide mechanisms to select the encoding. Since this is a new component the
   <code>char</code> default encoding could be UTF-8 rather than locale based and 
-  no existing coded would be broken.</p>
+  no existing code would be broken.</p>
   <p dir="ltr">The actual <code>converting_iterator</code> primary template is 
   simply:</p>
   <blockquote>
-    <pre><font size="1">template &lt;class InputIterator, class FromCharT, template&lt;class&gt; class EndPolicy,
+    <pre>template &lt;class InputIterator, class FromCharT, template&lt;class&gt; class EndPolicy,
           class ToCharT&gt; 
 class converting_iterator
   : public from32_iterator&lt;to32_iterator&lt;InputIterator, FromCharT, EndPolicy&gt;,
@@ -406,7 +406,7 @@ class converting_iterator
 {
 public:
   using from32_iterator::from32_iterator;
-};</font></pre>
+};</pre>
   </blockquote>
   <p>Specializations may be provided, but aren't required. The proof-of-concept 
   implementation doesn't use inherited constructors because of lack of compiler 
