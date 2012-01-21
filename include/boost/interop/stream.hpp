@@ -19,8 +19,6 @@
 #include <ostream>
 #include <iterator>
 
-
-
 namespace boost
 {
 namespace xop
