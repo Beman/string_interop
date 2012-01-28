@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Language" content="en-us">
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>Unicode White Paper</title>
 <style type="text/css">
  ins {background-color:#A0FFA0}
@@ -14,150 +14,35 @@
 
 <body>
 
-<h1>Proposals for Improved String Interoperability in a Unicode World <span style="background-color: #FFFF00">(DRAFT)</span></h1>
+<h1>Proposals for Improved String Interoperability in a Unicode World</h1>
 
 <h2>Introduction</h2>
 
-<p>This paper proposes additions to Boost and the C++11 standard library to ease use of strings 
+<p>This paper proposes additions to Boost to ease use of strings 
 in an international environment. The primary focus is making the Unicode 
 features of C++11 easier to use, although other character encodings are also 
 supported.</p>
 
-<p>The proposals are for pure additions to Boost and the C++ standard library. No C++03 
-or C++11 compliant code is broken or otherwise affected by the additions.</p>
+<p>These changes are the Boost equivalent of the C++ standard library TR2 
+proposal
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3336.html">
+N3336, Adapting Standard Library Strings and I/O to a Unicode World</a>. </p>
 
-<p>This paper describes motivation, existing practice, safety, a 
-proof-of-concept implementation, design paths not taken, and acknowledgements. 
-For each of five proposed additions to the C++ standard library/TR2 and Boost, 
-the problem is described and the solution details presented.</p>
-
-<h2>Motivation</h2>
-
-<p>The motivation for this proposal is frustration with a series of problems. The 
-C++03 versions of these problems were originally encountered while 
-providing Unicode string support for the internationalization of commercial GIS software. 
-They appeared again while working on the 
-Boost Filesystem Library. These frustrations have become much worse as compiler 
-support for C++11 additional Unicode support makes it easier to write programs 
-that run up against current limitations.</p>
-
-<p>A &quot;Hello World&quot; program using a C++11 Unicode string literal illustrates 
-a string interoperability 
-frustration:</p>
-
-<blockquote>
-  <pre>#include &lt;iostream&gt;
-int main()
-{
-  std::cout &lt;&lt; U&quot;&#24744;&#22909;&#19990;&#30028;&quot;;   // error in C++11!
-}</pre>
-</blockquote>
-
-  <h2>Existing practice</h2>
-
-  <h3>Boost Filesystem Version 3</h3>
-
-  <p>Boost Filesystem Version 3, and the filesystem proposal before the C++ 
-  committee, has a&nbsp; class <code>path</code> that solves some of the string 
-  interoperability problems, albeit in limited context. A function that is 
-  declared like this:</p>
-  <blockquote>
-    <pre>void f(const path&amp;);</pre>
-</blockquote>
-<p>Can be called like this:</p>
-<blockquote>
-  <pre>f(&quot;Meow&quot;);
-f(L&quot;Meow&quot;);
-f(u8&quot;Meow&quot;);
-f(u&quot;Meow&quot;);
-f(U&quot;Meow&quot;);
-... many additional variations such as strings and iterators</pre>
-</blockquote>
-<p>This string interoperability support has been a success. It does, however, 
-raise the question of why <code>std::basic_string</code> isn't providing the 
-interoperability support. The string interoperability cat is out of the bag.</p>
-<h3>Boost Regex</h3>
-<p>Boost Regex for many years has included a set of Unicode conversion 
-iterators. Although these not provide composition, they do demonstrate the 
-technique of using encoding conversion iterators to avoid creation of temporary 
-strings.</p>
-<h2>String encoding conversion safety</h2>
-  <p>Consider this code:</p>
-<blockquote>
-  <pre>#include &lt;string&gt;
-std::u16string s16;
-std::u32string s32 = U&quot;&#24744;&#22909;&#19990;&#30028;&quot;;
-s16 = s32;  // error in C++11</pre>
-</blockquote>
-<p>The value types of these containers, <code>char16_t</code> and <code>char32_t</code>, 
-are defined by the C++11 standard to represent characters encoded as UTF-16 and 
-UTF-32 respectively. The conversion between strings of UTF-16 and UTF-32 
-characters is defined by the Unicode Consortium and ISO/IEC 10646, and is 
-unambiguous and lossless. Thus an implicit conversion in either direction 
-between <code>std::u16string</code> and <code>std::u32string</code> objects is 
-always safe.</p>
-<p>The cases of <code>std::string</code> and <code>std::wstring</code> are more 
-complex in that the encoding is not implied by the <code>char</code> and <code>
-wchar_t</code> value types.&nbsp; It is not necessary, however, to  know 
-the encoding of these string types in advance as long as it is known how to convert them to 
-one of the known encoding string types. The C++11 standard library requires
-<code>codecvt&lt;char32_t,char,mbstate_t&gt;</code>&nbsp; and <code>codecvt&lt;wchar_t,char,mbstate_t&gt;</code> 
-facets, so such conversions are always possible using the standard library. In practice, library 
-implementations have additional knowledge that allows such conversions to be 
-more efficient than just calling codecvt facets. Error handling does need to be 
-provided, as conversions involving some <code>char</code> and <code>wchar_t</code> 
-encodings can encounter errors.</p>
-<p>Implicit conversion between single characters of different types, as opposed 
-to strings, may require multi-character sequences. No such implicit conversions 
-are proposed here.</p>
-<h2>Proof-of-concept implementation</h2>
-
-<p>A &quot;proof-of-concept&quot; Boost implementation of the proposals is 
-available at <a href="https://github.com/Beman/string-interoperability">
-https://github.com/Beman/string-interoperability</a>.</p>
-
-<h2>Not addressed</h2>
-
-<p>The proposed additions deal with C++11 <code>std::basic_string</code> and 
-character types, and with their encodings. The deeper attributes of Unicode 
-characters are not addressed. See Mathias Gaunard's <a href="http://mathias.gaunard.com/unicode/doc/html/">
-  Unicode project</a> for an example of deeper Unicode support.</p>
-
-<h2>Acknowledgements</h2>
-
-<p>Peter Dimov inspired the idea of string interoperability by arguing that the 
-Boost Filesystem library should treat a path is a single 
-  type (i.e. not a template) regardless of the character size 
-  and encoding of the source and target strings.</p>
-
-<p>John Maddock's Unicode conversion iterators demonstrated an 
-  easier-to-use, more efficient, and STL friendlier way to perform character 
-type and encoding conversions as an alternative to standard library <code>
-codecvt</code> facets.</p>
-
-<p>Mathias Gaunard and others on the Boost mailing list participated in 
-discussions leading to the final form of the C++11 feature emulation for C++03 compilers and standard libraries.</p>
-
-<p>The C++11 standard deserves acknowledgement as it provides the underlying language and library features that allow 
-Unicode string 
-interoperability:</p>
-
-<ul>
-  <li><code>char16_t</code> and <code>char32_t</code>&nbsp; provide Unicode 
-  character types and null-terminated characters strings with guaranteed 
-  encodings.</li>
-  <li><code>std::u16string</code> and <code>std::u32string</code> provide 
-  library support for Unicode character types and encodings.</li>
-  <li><code>u</code> and <code>U</code> character and string literals ease 
-  programming with Unicode character types and encodings.</li>
-</ul>
+<p>A proof-of-concept Boost implementation is available at
+<a href="https://github.com/Beman/string-interoperability">
+github.com/Beman/string-interoperability</a></p>
 
 <hr>
-<h1 align="center">Proposed Additions</h1>
+<h1 align="center">Proposed Boost Components</h1>
 
-<h2>Addition 1: Interoperability functions for std::basic_string</h2>
+<p align="left">The proposals are presented as a series of problems and their 
+solutions. The higher-level problems are presented before the lower-level 
+problems. The  higher-level components are built using some of the proposed 
+lower-level components.</p>
 
-<h3>Problem</h3>
+<h2><a name="Problem-1">Problem 1</a>: Standard strings don't interoperate if encoding differs</h2>
+
+<h3>Discussion</h3>
 
 <p>Standard library strings of different character types do not interoperate.</p>
 
@@ -182,7 +67,7 @@ band-aid. It is being misused, too - users are passing around boost::filesystem:
 <p>Note: interoperability will be easier to specify, implement, and 
 use if Issue 4 is resolved.</p>
 
-<h3>Proposed additions to the standard library/TR2</h3>
+<h3>Proposed Boost component</h3>
 
 <p dir="ltr">The approach is to add additional <code>std::basic_string</code> 
 overloads to functions most likely to benefit from interoperability. The 
@@ -219,7 +104,6 @@ is the narrow character encoding and UTF-16 is the wide character encoding. A
 subset, possibly just <code>c_str()</code>, <code>begin()</code>, and <code>
 end()</code>, with error handling and encoding parameters or arguments, suitable 
 defaulted, may well be sufficient.</p>
-<h3>Proposed additions to Boost</h3>
 <p>The above additions, in 
 a Boost header and namespace, applied to a class <code>basic_string</code> that publicly inherits from <code>
 std::basic_string</code>.</p>
@@ -227,9 +111,9 @@ std::basic_string</code>.</p>
 <p>See <code><a href="../../../boost/interop/string.hpp">
 &lt;boost/interop/string.hpp&gt;</a></code>.</p>
 
-<h2 dir="ltr">Addition 2: Interoperability inserters and extractors for streams</h2>
+<h2 dir="ltr"><a name="Problem-2">Problem 2</a>: Interoperability inserters and extractors for streams</h2>
 
-<h3>I/O streams do not accept strings of different character types </h3>
+<h3>Discussion</h3>
 
 <p>A &quot;Hello World&quot; program using a C++11 Unicode string literal illustrates 
 this 
@@ -239,21 +123,21 @@ frustration:</p>
   <pre>#include &lt;iostream&gt;
 int main()
 {
-  std::cout &lt;&lt; U&quot;&#24744;&#22909;&#19990;&#30028;&quot;;   // error in C++11!
+  std::cout &lt;&lt; U&quot;您好世界&quot;;   // error in C++11!
 }</pre>
 </blockquote>
 
 <p>This code should 
-&quot;just work&quot;, even though the type of <code>U&quot;&#24744;&#22909;&#19990;&#30028;&quot;</code> is <code>const 
+&quot;just work&quot;, even though the type of <code>U&quot;您好世界&quot;</code> is <code>const 
 char32_t*</code>, not <code>const char*</code>, as long as the encoding of <code>char</code> 
-supports &#24744;&#22909;&#19990;&#30028;. </p>
+supports 您好世界. </p>
 <p>It does &quot;just work&quot; with the proof-of-concept implementation of this 
-proposal. On Linux, with default <code>char</code> encoding of UTF-8,  execution 
-produces the expected &#24744;&#22909;&#19990;&#30028; output. On Windows, the 
-console doesn't support full UTF-8, so the output can be piped to a file or to a 
-program which does handle UTF-8 correctly.</p>
+proposal. On Linux, with default <code>char</code> encoding of UTF-8, execution 
+produces the expected 您好世界 output. On Windows, the console doesn&#39;t support full 
+UTF-8, so the output can be piped to a file or to a program which does handle 
+UTF-8 correctly.</p>
 
-<h3>Proposed additions to the standard library/TR2</h3>
+<h3>Proposed Boost component</h3>
 <p>Add additional function templates to those in 27.7.3.6.4 [ostream.inserters.character],
 <i>Character inserter function templates</i>, to cover the case where the 
 argument character type differs from charT and is not <code>char</code>, <code>
@@ -266,12 +150,11 @@ that arguments shall be converted to the type and encoding of the stream.</p>
 <i>basic_istream::operator&gt;&gt;</i>.</p>
 <p>Do the same for the two <code>std::basic_string</code> inserters and 
 extractors in 21.4.8.9 [string.io], <i>Inserters and extractors</i>.</p>
-<h3>Proposed additions to Boost</h3>
 <p>The above, in a Boost header and namespace. See <code>
 <a href="../../../boost/interop/stream.hpp">&lt;boost/interop/stream.hpp&gt;</a></code>.</p>
 
-<h2>Addition 3: Interoperability iterator adapters</h2>
-<h3>Problem</h3>
+<h2><a name="Problem-3">Problem 3</a>: String conversion iterators are not provided</h2>
+<h3>Discussion</h3>
 
 <p>Conversion between string types and their encodings using current standard 
 library facilities such as <code>std::codecvt</code>, <code>std::locale</code>, 
@@ -303,7 +186,7 @@ and
   </li>
   </ul>
 
-<h3>Proposed additions to the standard library/TR2</h3>
+<h3>Proposed Boost component</h3>
 <blockquote>
   <div align="left">
     <pre>// converting iterator
@@ -365,11 +248,58 @@ public:
 <p>The above, in a Boost header and namespace. See <code>
 <a href="../../../boost/interop/iterator_adapter.hpp">&lt;boost/interop/iterator_adapter.hpp&gt;</a></code>.</p>
 
-<h2>Addition 4: Narrow character type and string types with UTF-8 encoding</h2>
+<h2 dir="ltr"><a name="Problem-4">Problem 4</a>:&nbsp; C++11 feature emulation needed for C++03 compilers</h2>
+
+<h3 dir="ltr">Discussion</h3>
+
+<p dir="ltr">We want to support C++03 compilers where it is possible to do so 
+with a reasonable amount of effort.</p>
+<h3>Proposed Boost component</h3>
+<p>Provide a header, <code><a href="../../../boost/interop/string_0x.hpp">
+&lt;boost/interop/string_0x.hpp&gt;</a></code>, with the typedefs in the table.&nbsp; This header provides typedefs for C++11 types if present, otherwise provides 
+typedefs for C++03 equivalent types. By using these typedefs, emulation of these 
+C++11 features are available for use with C++03 compilers and automatically 
+switches to use the C++11 features as they are become available.</p>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
+  <tr>
+    <td align="center"><i><b>Typedef<br>
+    name</b></i></td>
+    <td align="center"><i><b>C++11<br>
+    type</b></i></td>
+    <td align="center"><i><b>C++03<br>
+    type</b></i></td>
+  </tr>
+  <tr>
+    <td><code>boost::u16_t</code></td>
+    <td><code>char16_t</code></td>
+    <td><code>boost::uint_least16_t</code></td>
+  </tr>
+  <tr>
+    <td><code>boost::u32_t</code></td>
+    <td><code>char32_t</code></td>
+    <td><code>boost::uint_least16_t</code></td>
+  </tr>
+  <tr>
+    <td><code>boost::u16string</code></td>
+    <td><code>std::u16string</code></td>
+    <td><code>std::basic_string&lt;boost::u16_t&gt;</code></td>
+  </tr>
+  <tr>
+    <td><code>boost::u32string</code></td>
+    <td><code>std::u32string</code></td>
+    <td><code>std::basic_string&lt;boost::u32_t&gt;</code></td>
+  </tr>
+</table>
+<p>The implementation uses the typedefs provided by Microsoft Visual C++ 2010 if 
+present.</p>
+<p>The header also provides typedefs for UTF-8 encoded characters and strings. 
+See Problem 4.</p>
+
+<h2><a name="Problem-5">Problem-5</a>: No string type with UTF-8 encoding guarantee</h2>
 <p><i>This is a purely speculative experimental feature. Its acceptability, 
 usefulness, and practicality are unknown. It will be removed from the proposal 
 if it proves to be problematical.</i></p>
-<h3>Problem</h3>
+<h3>Discussion</h3>
 <p>There is no currently no built-in character type or standard library string 
 type that specifies UTF-8 encoding.</p>
 
@@ -381,8 +311,9 @@ C++ world.</p>
 
 <p>Although indirect detection of encoding via locales does work, it causes 
 endless confusion and bugs.</p>
-<h3>Proposed additions to the standard library/TR2</h3>
-<p>Provide the following typedefs:</p>
+<h3>Proposed Boost component</h3>
+<p>Provide the following typedefs in <code>
+<a href="../../../boost/interop/string_0x.hpp">&lt;boost/interop/string_0x.hpp&gt;</a></code>.</p>
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
     <td align="center"><i><b>Typedef<br>
@@ -403,59 +334,11 @@ endless confusion and bugs.</p>
     <td><code>std::basic_string&lt;boost::u8_t&gt;</code></td>
   </tr>
 </table>
-<h3>Proposed additions to Boost</h3>
-<p>The above, in a Boost header and namespace. See <code>
-<a href="../../../boost/interop/string_0x.hpp">&lt;boost/interop/string_0x.hpp&gt;</a></code>.</p>
-
-<h2 dir="ltr">Addition 5:&nbsp; C++11 feature emulation for C++03 compilers and standard libraries</h2>
-<p>Boost only. See <code><a href="../../../boost/interop/string_0x.hpp">
-&lt;boost/interop/string_0x.hpp&gt;</a></code>.</p>
-
-<p>This header provides typedefs for C++11 types if present, otherwise provides 
-typedefs for C++03 equivalent types. By using these typedefs, emulation of these 
-C++11 features are available for use with C++03 compilers and automatically 
-switches to use the C++11 features as they are become available</p>
-<h3>Proposed additions to Boost</h3>
-<p>Provide the following typedefs: </p>
-<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
-  <tr>
-    <td align="center"><i><b>Typedef<br>
-    name</b></i></td>
-    <td align="center"><i><b>C++11<br>
-    type</b></i></td>
-    <td align="center"><i><b>C++03<br>
-    type</b></i></td>
-  </tr>
-  <tr>
-    <td><code>boost::u16_t</code></td>
-    <td><code>char16_t</code></td>
-    <td><code>uint16_t</code></td>
-  </tr>
-  <tr>
-    <td><code>boost::u32_t</code></td>
-    <td><code>char32_t</code></td>
-    <td><code>uint32_t</code></td>
-  </tr>
-  <tr>
-    <td><code>boost::u16string</code></td>
-    <td><code>std::u16string</code></td>
-    <td><code>std::basic_string&lt;boost::u16_t&gt;</code></td>
-  </tr>
-  <tr>
-    <td><code>boost::u32string</code></td>
-    <td><code>std::u32string</code></td>
-    <td><code>std::basic_string&lt;boost::u32_t&gt;</code></td>
-  </tr>
-</table>
-<p>The implementation uses the typedefs provided by Microsoft Visual C++ 2010 if 
-present.</p>
-<p>The header also provides typedefs for UTF-8 encoded characters and strings. 
-See Addition 4.</p>
-<hr>
-<p>� Copyright Beman Dawes 2011</p>
-<p>Revised 
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->08 November 2011<!--webbot bot="Timestamp" endspan i-checksum="39636" --></p>
 <p>&nbsp;</p>
+<hr>
+<p>© Copyright Beman Dawes 2011</p>
+<p>Revised 
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->27 January 2012<!--webbot bot="Timestamp" endspan i-checksum="32276" --></p>
 
 </body>
 

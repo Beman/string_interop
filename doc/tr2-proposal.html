@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Language" content="en-us">
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>Adapting to Unicode</title>
 <style type="text/css">
  ins {background-color:#A0FFA0}
@@ -22,7 +22,7 @@
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-13<!--webbot bot="Timestamp" endspan i-checksum="12045" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-23<!--webbot bot="Timestamp" endspan i-checksum="12046" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -169,7 +169,7 @@ types that do not interoperate.</p>
 
 <h3>Example</h3>
 <blockquote>
-  <pre>u16string s16 = u&quot;&#24744;&#22909;&#19990;&#30028;&quot;;
+  <pre>u16string s16 = u&quot;您好世界&quot;;
 u32string s32;
 s32 = s16;           // error!
 s32 = &quot;foo&quot;;         // error!
@@ -272,21 +272,21 @@ frustration:</p>
   <pre>#include &lt;iostream&gt;
 int main()
 {
-  std::cout &lt;&lt; U&quot;&#24744;&#22909;&#19990;&#30028;&quot;;   // error in C++11!
+  std::cout &lt;&lt; U&quot;您好世界&quot;;   // error in C++11!
 }</pre>
 </blockquote>
 
 <p>This code should 
-&quot;just work&quot;, even though the type of <code>U&quot;&#24744;&#22909;&#19990;&#30028;&quot;</code> is <code>const 
+&quot;just work&quot;, even though the type of <code>U&quot;您好世界&quot;</code> is <code>const 
 char32_t*</code>, not <code>const char*</code>, as long as the encoding of <code>char</code> 
-supports &#24744;&#22909;&#19990;&#30028;. Even if those characters are not 
-supported by default encodings, alternatives like UTF-8 are available. </p>
+supports 您好世界. Even if those characters are not supported by default encodings, 
+alternatives like UTF-8 are available. </p>
 <p>The code does &quot;just work&quot; with the proof-of-concept implementation of this 
-proposal. On Linux, with default <code>char</code> encoding of UTF-8,  execution 
-produces the expected &#24744;&#22909;&#19990;&#30028; output. On Windows, the 
-console doesn't support full UTF-8, so the output can be piped to a file or to a 
-program which does handle UTF-8 correctly. And, yes, that does work correctly 
-with the proof-of-concept implementation of this proposal.</p>
+proposal. On Linux, with default <code>char</code> encoding of UTF-8, execution 
+produces the expected 您好世界 output. On Windows, the console doesn&#39;t support full 
+UTF-8, so the output can be piped to a file or to a program which does handle 
+UTF-8 correctly. And, yes, that does work correctly with the proof-of-concept 
+implementation of this proposal.</p>
 
 <h3>Proposed Solution</h3>
 <p>Add additional function templates to those in 27.7.3.6.4 [ostream.inserters.character],
