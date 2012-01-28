@@ -64,15 +64,15 @@ that string interoperability brings a considerable simplification and
 improvement to internationalized applications, but that having to provide 
 interoperability without the resolution of the issues presented here is a 
 band-aid. It is being misused, too - users are passing around boost::filesystem::path objects simply to get string encoding interoperability!</p>
-<p>Note: interoperability will be easier to specify, implement, and 
-use if Issue 4 is resolved.</p>
 
 <h3>Proposed Boost component</h3>
 
-<p dir="ltr">The approach is to add additional <code>std::basic_string</code> 
+<p dir="ltr">The approach is to derive a string class from <code>std::basic_string</code> 
+and add 
 overloads to functions most likely to benefit from interoperability. The 
 overloads are in the form of function templates with sufficient restrictions on 
-overload resolution participation (i.e. enable_if) that the existing C++11 
+overload resolution participation (i.e. enable_if) that the existing standard 
+library 
 functions are always selected if the value type of the argument is the same as 
 or convertible to the <code>std::basic_string</code> type's <code>value_type</code>. 
 The semantics of the added signatures are the same as original signatures except 
@@ -104,14 +104,12 @@ is the narrow character encoding and UTF-16 is the wide character encoding. A
 subset, possibly just <code>c_str()</code>, <code>begin()</code>, and <code>
 end()</code>, with error handling and encoding parameters or arguments, suitable 
 defaulted, may well be sufficient.</p>
-<p>The above additions, in 
-a Boost header and namespace, applied to a class <code>basic_string</code> that publicly inherits from <code>
-std::basic_string</code>.</p>
 
-<p>See <code><a href="../../../boost/interop/string.hpp">
-&lt;boost/interop/string.hpp&gt;</a></code>.</p>
+<p>See <code>
+<a href="https://github.com/Beman/string-interoperability/blob/master/include/boost/interop/string.hpp">&lt;boost/interop/string.hpp&gt;</a></code>.</p>
 
-<h2 dir="ltr"><a name="Problem-2">Problem 2</a>: Interoperability inserters and extractors for streams</h2>
+<h2 dir="ltr"><a name="Problem-2">Problem 2</a>: Strings don&#39;t interoperate with 
+I/O streams if encoding differs</h2>
 
 <h3>Discussion</h3>
 
@@ -130,12 +128,14 @@ int main()
 <p>This code should 
 &quot;just work&quot;, even though the type of <code>U&quot;您好世界&quot;</code> is <code>const 
 char32_t*</code>, not <code>const char*</code>, as long as the encoding of <code>char</code> 
-supports 您好世界. </p>
-<p>It does &quot;just work&quot; with the proof-of-concept implementation of this 
+supports 您好世界. Even if those characters are not supported by default encodings, 
+alternatives like UTF-8 are available. </p>
+<p>The code does &quot;just work&quot; with the proof-of-concept implementation of this 
 proposal. On Linux, with default <code>char</code> encoding of UTF-8, execution 
 produces the expected 您好世界 output. On Windows, the console doesn&#39;t support full 
 UTF-8, so the output can be piped to a file or to a program which does handle 
-UTF-8 correctly.</p>
+UTF-8 correctly. And, yes, that does work correctly with the proof-of-concept 
+implementation of this proposal.</p>
 
 <h3>Proposed Boost component</h3>
 <p>Add additional function templates to those in 27.7.3.6.4 [ostream.inserters.character],
@@ -150,113 +150,130 @@ that arguments shall be converted to the type and encoding of the stream.</p>
 <i>basic_istream::operator&gt;&gt;</i>.</p>
 <p>Do the same for the two <code>std::basic_string</code> inserters and 
 extractors in 21.4.8.9 [string.io], <i>Inserters and extractors</i>.</p>
-<p>The above, in a Boost header and namespace. See <code>
-<a href="../../../boost/interop/stream.hpp">&lt;boost/interop/stream.hpp&gt;</a></code>.</p>
+<p>See <code>
+<a href="https://github.com/Beman/string-interoperability/blob/master/include/boost/interop/stream.hpp">&lt;boost/interop/stream.hpp&gt;</a></code>.</p>
 
 <h2><a name="Problem-3">Problem 3</a>: String conversion iterators are not provided</h2>
 <h3>Discussion</h3>
 
-<p>Conversion between string types and their encodings using current standard 
+<p>Conversion between character types and their encodings using current standard 
 library facilities such as <code>std::codecvt</code>, <code>std::locale</code>, 
-and 
-<code>std::wstring_convert</code> has multiple problems:</p>
-
+and <code>std::wstring_convert</code> has multiple problems:</p>
 <ul>
-  <li>Interfaces are overly complex, difficult to learn, difficult to use, and error prone.</li>
-  <li>Given <b><i>n</i></b> encodings, it is necessary to 
-  providing <b>n<sup>2</sup></b>&nbsp; rather than <b>2n</b> codecs. In other 
-  words, two <code>codecvt</code> facets don't easily compose into a complete 
-  conversion from one encoding to another. Such composition is existing practice in C libraries like ICU. 
-  UTF-32 is the obvious choice for the common encoding to pass between codecs.</li>
-  <li>Interfaces don't work well with generic programming 
-  techniques, particularly iterators.</li>
+  <li>Interfaces are overly complex, difficult to learn, difficult to use, and 
+  error prone.</li>
+  <li>Given <b><i>n</i></b> encodings, it is necessary to providing <b>n<sup>2</sup></b>&nbsp; 
+  rather than <b>2n</b> codecs. In other words, two <code>codecvt</code> facets 
+  don&#39;t easily compose into a complete conversion from one encoding to another. 
+  Such composition is existing practice in C libraries like ICU. UTF-32 is the 
+  obvious choice for the common encoding to pass between codecs.</li>
+  <li>Interfaces don&#39;t work well with generic programming techniques, 
+  particularly iterators.</li>
   <li>Interfaces work at the level of entire strings rather than characters, 
-  resulting in unnecessary creation of temporary strings, with 
-  attendant memory allocations/deallocations.</li>
-  <li>Intertwining of <code>std::locale</code> and code conversion, even when these 
-  are implementation details that should be hidden from the application.</li>
+  resulting in unnecessary creation of temporary strings, with attendant memory 
+  allocations/deallocations.</li>
+  <li>Interfaces entangle <code>std::locale</code> and code conversion, even 
+  when these are implementation details that should be hidden from the 
+  application.</li>
   <li>Difficult to control error actions. Choices requested by users and 
   provided by other interfaces include:<ul>
-  <li>Throw exception.</li>
-  <li>Replace offending character with default character. </li>
-  <li>Replace offending character with specified character. Motivating example: 
-  Filesystem's need to use a replacement character that is acceptable to the 
-  Windows codepage. See Boost issue #5769.</li>
+    <li>Throw exception.</li>
+    <li>Replace offending character with default character. </li>
+    <li>Replace offending character with specified character. Motivating 
+    example: Filesystem need to use a replacement character that is acceptable 
+    to the Windows codepage. See Boost issue #5769.</li>
   </ul>
   </li>
-  </ul>
+</ul>
+<h3>Example</h3>
+<p dir="ltr">The generalization of the <code>std::basic_string</code> function
+<code>c_str</code> is:</p>
+<blockquote>
+  <pre>template &lt;class T&gt; <i>unspecified_iterator</i> c_str() const;</pre>
+</blockquote>
+<p>Give a <code>std::string</code> named <code>s8</code>, this allows a user to 
+write <code>s8.c_str&lt;char16_t&gt;()</code> to obtain an iterator with a value type 
+of <code>char16_t</code>.&nbsp; To implement this function generically using the 
+current standard library would be difficult, and would involve the creation of a 
+temporary sting. The full implementation with the proposed solution is simply:</p>
+<blockquote>
+  <pre>template &lt;class T&gt;
+converting_iterator&lt;const_iterator, value_type, by_range, T&gt; c_str() const
+{
+  return converting_iterator&lt;const_iterator,
+    value_type, by_range, T&gt;(cbegin(), cend());
+}</pre>
+</blockquote>
+<p dir="ltr">No temporary string is created, and none of the other problems 
+listed above are present either. The solution is generally useful for user 
+defined types, and not just for implementations of the standard library.</p>
+<p dir="ltr">Other problems become easier to solve with <code>
+converting_iterator.</code> For example, the Filesystem library&#39;s class <code>
+path</code> in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2011/n3239.html">
+N3239</a> has many functions with an argument in the form <code>const 
+codecvt_type&amp; cvt=codecvt()</code> that could be eliminated by either direct or 
+indirect use of <code>converting_iterator.</code></p>
+<h3>Existing practice</h3>
+<p>Boost Regex for many years has included a set of Unicode conversion iterators 
+as an implementation detail. Although these do not provide composition, they do 
+demonstrate the technique of using encoding conversion iterators to avoid 
+creation of temporary strings.</p>
 
 <h3>Proposed Boost component</h3>
+<p>This solution is based on the
+<a href="http://github.com/Beman/string-interoperability/blob/master/include/boost/interop/iterator_adapter.hpp">
+proof-of-concept implementation</a>. Input iterator requirements can probably be 
+loosened to bidirectional, but that hasn&#39;t been tested yet.</p>
+<p>The preliminaries begin with end-detection policy classes, since strings used 
+null termination, size, or half-open ranges to determine the end of a sequence.</p>
 <blockquote>
-  <div align="left">
-    <pre>// converting iterator
-template &lt;class InputIterator, class From, template&lt;class&gt; class EndPolicy, class To&gt;  
-  class converting_iterator;
-
-// end-detection policies
-template &lt;class InputIterator&gt; class by_range;
+  <pre>template &lt;class InputIterator&gt; class by_null;
 template &lt;class InputIterator&gt; class by_size;
-template &lt;class InputIterator&gt; class by_null;
-
-// primary template for conversion from T to char32_t
-template &lt;class InputIterator, class T, template&lt;class&gt; class EndPolicy&gt;  
-  class from_iterator;
-
-// partial specializations for char, wchar_t, char16_t, char32_t  
-template &lt;class InputIterator, template&lt;class&gt; class EndPolicy&gt;
-  class from_iterator&lt;InputIterator, <b><i>specialization</i></b>, EndPolicy&gt;;
-
-// primary template for conversion from char32_t to T
-template &lt;class InputIterator, class T&gt; class to_iterator;
-
-// partial specializations for char, wchar_t, char16_t, char32_t  
-template &lt;class InputIterator&gt; class to_iterator&lt;InputIterator, <b><i>specialization</i></b>&gt;;
-
-// converting iterator definition
-template &lt;class InputIterator, class From, template&lt;class&gt; class EndPolicy, class To&gt;  
-  class converting_iterator
-    : public to_iterator&lt;from_iterator&lt;InputIterator, From, EndPolicy&gt;, To&gt;
+template &lt;class InputIterator&gt; class by_range;</pre>
+</blockquote>
+<p>Codec templates handle actual conversion to and from UTF-32. The primary 
+templates are:</p>
+<blockquote>
+  <pre>template &lt;class InputIterator, class FromCharT, template&lt;class&gt; class EndPolicy&gt; 
+  class to32_iterator;
+template &lt;class InputIterator, class ToCharT&gt; 
+  class from32_iterator;</pre>
+</blockquote>
+<p dir="ltr">The Boost library would provide specializations for <code>char</code>,
+<code>wchar_t</code>, <code>char16_t</code>, and <code>char32_t</code>. 
+Presumably users could provide specializations for UDTs, but that hasn&#39;t been 
+tested yet. The <code>char</code> and <code>wchar_t</code> specializations 
+provide mechanisms to select the encoding. Since this is a new component the
+<code>char</code> default encoding could be UTF-8 rather than locale based and 
+no existing code would be broken.</p>
+<p dir="ltr">The actual <code>converting_iterator</code> primary template is 
+simply:</p>
+<blockquote>
+  <pre>template &lt;class InputIterator, class FromCharT, template&lt;class&gt; class EndPolicy,
+          class ToCharT&gt; 
+class converting_iterator
+  : public from32_iterator&lt;to32_iterator&lt;InputIterator, FromCharT, EndPolicy&gt;,
+      ToCharT&gt;
 {
 public:
-  explicit converting_iterator(InputIterator begin)
-    : to_iterator&lt;from_iterator&lt;InputIterator, From, EndPolicy&gt;, To&gt;(begin)
-  // Requires: An EndPolicy that requires no initialization
-  {}
-
-  converting_iterator(InputIterator begin, InputIterator end)
-    : to_iterator&lt;from_iterator&lt;InputIterator, From, EndPolicy&gt;, To&gt;(begin)
-  // Requires: An EndPolicy that supplies end iterator initialization
-  {
-    base().end(end);
-  }
-
-  converting_iterator(InputIterator begin, std::size_t sz)
-    : to_iterator&lt;from_iterator&lt;InputIterator, From, EndPolicy&gt;, To&gt;(begin)
-  // Requires: An EndPolicy that supplies size initialization
-  {
-    base().size(sz);
-  }
-
-  <i>To be supplied: error handling policies and/or arguments</i>
- <i> To be supplied:</i> <i>for char and wchar_t, encoding policies and/or arguments</i>
-
+  using from32_iterator::from32_iterator;
 };</pre>
-  </div>
 </blockquote>
-<h3>Proposed additions to Boost</h3>
+<p>Specializations may be provided, but aren&#39;t required. The proof-of-concept 
+implementation doesn&#39;t use inherited constructors because of lack of compiler 
+support.</p>
 
-<p>The above, in a Boost header and namespace. See <code>
-<a href="../../../boost/interop/iterator_adapter.hpp">&lt;boost/interop/iterator_adapter.hpp&gt;</a></code>.</p>
-
-<h2 dir="ltr"><a name="Problem-4">Problem 4</a>:&nbsp; C++11 feature emulation needed for C++03 compilers</h2>
+<h2 dir="ltr"><a name="Problem-4">Problem 4</a>:&nbsp; C++11 feature emulation for C++03 compilers</h2>
 
 <h3 dir="ltr">Discussion</h3>
 
-<p dir="ltr">We want to support C++03 compilers where it is possible to do so 
+<p dir="ltr">The Boost library needs to support C++03 compilers where it is possible to do so 
 with a reasonable amount of effort.</p>
 <h3>Proposed Boost component</h3>
-<p>Provide a header, <code><a href="../../../boost/interop/string_0x.hpp">
-&lt;boost/interop/string_0x.hpp&gt;</a></code>, with the typedefs in the table.&nbsp; This header provides typedefs for C++11 types if present, otherwise provides 
+<p>Header <code>
+<a href="https://github.com/Beman/string-interoperability/blob/master/include/boost/interop/string_0x.hpp">&lt;boost/interop/string_0x.hpp&gt;</a></code> 
+provides the typedefs in the table below.&nbsp; This header provides typedefs for C++11 types if present, otherwise provides 
 typedefs for C++03 equivalent types. By using these typedefs, emulation of these 
 C++11 features are available for use with C++03 compilers and automatically 
 switches to use the C++11 features as they are become available.</p>
@@ -293,15 +310,14 @@ switches to use the C++11 features as they are become available.</p>
 <p>The implementation uses the typedefs provided by Microsoft Visual C++ 2010 if 
 present.</p>
 <p>The header also provides typedefs for UTF-8 encoded characters and strings. 
-See Problem 4.</p>
+See Problem 5.</p>
 
 <h2><a name="Problem-5">Problem-5</a>: No string type with UTF-8 encoding guarantee</h2>
-<p><i>This is a purely speculative experimental feature. Its acceptability, 
-usefulness, and practicality are unknown. It will be removed from the proposal 
+<p><i>This is a purely speculative feature. Its  usefulness and practicality are unknown. It will be removed from the proposal 
 if it proves to be problematical.</i></p>
 <h3>Discussion</h3>
 <p>There is no currently no built-in character type or standard library string 
-type that specifies UTF-8 encoding.</p>
+type that guarantees UTF-8 encoding.</p>
 
 <p>Without such a string type, neither template arguments nor function overloads 
 have a way to specify a narrow character with UTF-8 encoding. This is a 
@@ -310,10 +326,10 @@ sends the message to users that UTF-8 encoding is a second class citizen in the
 C++ world.</p>
 
 <p>Although indirect detection of encoding via locales does work, it causes 
-endless confusion and bugs.</p>
+confusion and bugs, and is needlessly complex.</p>
 <h3>Proposed Boost component</h3>
 <p>Provide the following typedefs in <code>
-<a href="../../../boost/interop/string_0x.hpp">&lt;boost/interop/string_0x.hpp&gt;</a></code>.</p>
+<a href="https://github.com/Beman/string-interoperability/blob/master/include/boost/interop/string_0x.hpp">&lt;boost/interop/string_0x.hpp&gt;</a></code>.</p>
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
     <td align="center"><i><b>Typedef<br>
