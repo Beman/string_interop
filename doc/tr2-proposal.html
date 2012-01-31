@@ -17,12 +17,13 @@
   <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="579">
     <tr>
       <td width="153" align="left" valign="top">Document number:</td>
-      <td width="426">N3336 = 12-0026</td>
+      <td width="426"><span style="background-color: #CCFFCC">Dnnnn 
+      = 12-nnnn</span></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-23<!--webbot bot="Timestamp" endspan i-checksum="12046" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-31<!--webbot bot="Timestamp" endspan i-checksum="12043" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -34,7 +35,9 @@
     </tr>
   </table>
 
-<h1>Adapting Standard Library Strings and I/O to a Unicode World</h1>
+<h1>Adapting Standard Library Strings and I/O to a Unicode World 
+<span style="background-color: #CCFFCC">(Revision 1)</span>
+<span style="background-color: #CCFFCC">(Draft 1)</span></h1>
 
 <h2>Table of contents</h2>
 
@@ -80,6 +83,18 @@ provided if this proposal is accepted in principle.</p>
 <p>A &quot;proof-of-concept&quot; implementation of the proposals (and more) is 
 available at <a href="http://github.com/Beman/string-interoperability">
 github.com/Beman/string-interoperability</a>.</p>
+
+<p>Changes from the prior revision are <span style="background-color: #CCFFCC">
+high-lighted in green</span>.</p>
+
+<h2><a name="Revision-history">Revision history</a></h2>
+
+<p><b>Revision 1</b></p>
+
+  <ul>
+    <li>Provided <a href="#Alternate-Solutions-1">Alternative solutions</a> to 
+    problem 1.</li>
+  </ul>
 
 <h2><a name="String-encoding-conversion-safety-rationale">String  conversion safety 
 rationale</a></h2>
@@ -141,6 +156,14 @@ Boost Filesystem library should treat a path is a single
   easier-to-use, more efficient, and STL friendlier way to perform character 
 type and encoding conversions as an alternative to standard library <code>
 codecvt</code> facets.</p>
+
+<p><span style="background-color: #CCFFCC">Yakov</span><span style="background-color: #CCFFCC">
+</span><span style="background-color: #CCFFCC">Galka</span><span style="background-color: #CCFFCC"> 
+suggested attacking string interoperability with free functions to reduce or 
+eliminate changes to </span><code><span style="background-color: #CCFFCC">
+basic_string</span></code><span style="background-color: #CCFFCC">. See Problem 
+1 </span><a href="#Alternate-Solutions-1">
+<span style="background-color: #CCFFCC">Alternative solutions</span></a><span style="background-color: #CCFFCC">.</span></p>
 
 <p>The C++11 standard deserves acknowledgement as it provides the underlying language and library features that allow 
 Unicode string 
@@ -257,6 +280,82 @@ signatures be added to basic_string, it will certainly be appropriate to discuss
 limiting changes to the key areas of need. For example, constructors and <code>
 operator=</code> are much more likely to need interoperability than <code>operator+=</code>, <code>
 append</code>, or <code>assign</code> signatures.</p>
+
+<h3 dir="ltr"><span style="background-color: #CCFFCC">
+<a name="Alternate-Solutions-1">Alternate Solutions</a></span></h3>
+
+<p dir="ltr"><b><span style="background-color: #CCFFCC">Alternative 1</span></b></p>
+
+<p dir="ltr"><span style="background-color: #CCFFCC">An alternative that avoids additions to
+</span> <code><span style="background-color: #CCFFCC">basic_string</span></code><span style="background-color: #CCFFCC"> 
+is to provide non-member function templates that provide encoding conversion.</span></p>
+  <blockquote>
+    <pre dir="ltr"><span style="background-color: #CCFFCC">template &lt;class String1, class String2&gt;
+String encoding_cast(const String2&amp; str);</span></pre>
+  </blockquote>
+
+<p dir="ltr"><span style="background-color: #CCFFCC">Such an approach is speculative and has not been implemented. It requires 
+additional user code and a temporary string compared to the proposed solution. 
+Move semantics would reduce the cost of the temporary in many uses. A 
+practical version would require additional overloads, although that need would 
+probably be reduced if the N3334 </span> <code>
+<span style="background-color: #CCFFCC">basic_string_ref</span></code><span style="background-color: #CCFFCC"> proposal is 
+accepted.</span></p>
+
+<p dir="ltr"><b><span style="background-color: #CCFFCC">Alternative 2</span></b></p>
+
+<p dir="ltr"><span style="background-color: #CCFFCC">Assume </span> <code>
+<span style="background-color: #CCFFCC">basic_string</span></code><span style="background-color: #CCFFCC"> accepted additional overloads of a 
+range template in addition to the current InputIterator templates. Presumably 
+this would be part of a general range proposal, rather than something specific 
+to string interoperability. For 
+example:</span></p>
+  <blockquote>
+    <pre dir="ltr"><span style="background-color: #CCFFCC">template &lt;class Range&gt;
+  basic_string(Range range);</span></pre>
+  </blockquote>
+
+
+    <p dir="ltr"><span style="background-color: #CCFFCC">Then <code>
+    encoding_cast</code> might looks something like this:</span></p>
+  <blockquote>
+    <pre dir="ltr"><span style="background-color: #CCFFCC">template &lt;class ToChar, class String&gt;
+<i>unspecified-range</i> encoding_cast(const String&amp; str);</span></pre>
+  </blockquote>
+  <p dir="ltr"><span style="background-color: #CCFFCC">This approach eliminates 
+  the need for a temporary string. As with alternative 1, a practical version 
+  would require additional overloads, although that need would probably be 
+  reduced if the N3334 </span> <code><span style="background-color: #CCFFCC">basic_string_ref</span></code><span style="background-color: #CCFFCC"> proposal is 
+accepted.</span></p>
+
+<p dir="ltr"><b><span style="background-color: #CCFFCC">Alternative </span></b>
+<span style="background-color: #CCFFCC"><b>3</b></span></p>
+
+<p dir="ltr"><span style="background-color: #CCFFCC">Assume </span> <code>
+<span style="background-color: #CCFFCC">basic_string</span></code><span style="background-color: #CCFFCC"> accepted additional overloads of a 
+single InputIterator template in addition to the current two InputIterator templates. 
+Presumably this would be done in the absence of a general range proposal, and 
+specified to only participate in overload resolution when appropriate. For 
+example:</span></p>
+  <blockquote>
+    <pre dir="ltr"><span style="background-color: #CCFFCC">template &lt;class InputIterator&gt;
+  basic_string(InputIterator begin);  // end determined by traits</span></pre>
+  </blockquote>
+
+
+    <p dir="ltr"><span style="background-color: #CCFFCC">Then <code>
+    encoding_cast</code> might looks something like this:</span></p>
+  <blockquote>
+    <pre dir="ltr"><span style="background-color: #CCFFCC">template &lt;class ToChar, class String2&gt;
+<i>unspecified-iterator</i> encoding_cast(const String2&amp; str);</span></pre>
+  </blockquote>
+  <p dir="ltr"><span style="background-color: #CCFFCC">This approach also 
+  eliminates the need for a temporary string. See problem 3 for how <i><code>
+  unspecified-iterator</code></i> might work. As with alternative 1, a practical 
+  version would require additional overloads, although that need would probably 
+  be reduced if the N3334 </span> <code><span style="background-color: #CCFFCC">basic_string_ref</span></code><span style="background-color: #CCFFCC"> proposal is 
+accepted.</span></p>
+
 
 <h2 dir="ltr"><a name="Problem-2">Problem 2</a>: Strings don't interoperate with I/O streams if encoding differs</h2>
 
