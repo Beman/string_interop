@@ -1,0 +1,1 @@
+g++ -I%BOOST_TRUNK% -std=c++0x -DBOOST_USE_UTF8 problem2.cpp ..\src\codepage_437.cpp

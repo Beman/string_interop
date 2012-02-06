@@ -887,7 +887,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 //-------------------------------  <char> from32_iterator  ---------------------------------//
 
-#if defined(BOOST_WINDOWS_API)
+#if defined(BOOST_WINDOWS_API) && !defined(BOOST_USE_UTF8)
 
   template <class InputIterator>
   class from32_iterator<InputIterator, char>
@@ -934,36 +934,120 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
   };
 
- # elif defined(BOOST_POSIX_API)  // POSIX; assumes char is UTF-8
+ # elif defined(BOOST_USE_UTF8) || defined(BOOST_POSIX_API)  // char is UTF-8
 
   template <class InputIterator>
   class from32_iterator<InputIterator, char>
    : public boost::iterator_facade<from32_iterator<InputIterator, char>,
        char, std::input_iterator_tag, const char>
   {
-     from32_iterator<InputIterator, u8_t>  m_iterator;
+     typedef boost::iterator_facade<from32_iterator<InputIterator, char>,
+       char, std::input_iterator_tag, const char> base_type;
+   
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
+
+     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
+     BOOST_STATIC_ASSERT(sizeof(char)*CHAR_BIT == 8);
 
   public:
-     char dereference() const
+
+     typename base_type::reference
+     dereference()const
      {
-       return static_cast<char>(*m_iterator);
+        if(m_current == 4)
+           extract_current();
+        return m_values[m_current];
+     }
+     bool equal(const from32_iterator& that)const
+     {
+        if(m_position == that.m_position)
+        {
+           // either the m_current's must be equal, or one must be 0 and 
+           // the other 4: which means neither must have bits 1 or 2 set:
+           return (m_current == that.m_current)
+              || (((m_current | that.m_current) & 3) == 0);
+        }
+        return false;
+     }
+     void increment()
+     {
+        // if we have a pending read then read now, so that we know whether
+        // to skip a position, or move to a low-surrogate:
+        if(m_current == 4)
+        {
+           // pending read:
+           extract_current();
+        }
+        // move to the next surrogate position:
+        ++m_current;
+        // if we've reached the end skip a position:
+        if(m_values[m_current] == 0)
+        {
+           m_current = 4;
+           ++m_position;
+        }
      }
 
-     bool equal(const from32_iterator& that) const
-     {
-       return m_iterator == that.m_iterator;
-     }
-
-     void increment()  { ++m_iterator; }
-
-     InputIterator& base() {return m_iterator;}
+     InputIterator& base() { return m_position; }
 
      // construct:
-     from32_iterator() : m_iterator() {}
-     from32_iterator(InputIterator b) : m_iterator(b)
+     from32_iterator() : m_position(), m_current(0)
      {
-        BOOST_XOP_LOG("char from utf-32");
+        m_values[0] = 0;
+        m_values[1] = 0;
+        m_values[2] = 0;
+        m_values[3] = 0;
+        m_values[4] = 0;
      }
+     from32_iterator(InputIterator b) : m_position(b), m_current(4)
+     {
+        m_values[0] = 0;
+        m_values[1] = 0;
+        m_values[2] = 0;
+        m_values[3] = 0;
+        m_values[4] = 0;
+        BOOST_XOP_LOG("char from utf-32");
+    }
+  private:
+
+     void extract_current()const
+     {
+        boost::uint32_t c = *m_position;
+        if(c > 0x10FFFFu)
+           detail::invalid_utf32_code_point(c);
+        if(c < 0x80u)
+        {
+           m_values[0] = static_cast<char>(c);
+           m_values[1] = static_cast<char>(0u);
+           m_values[2] = static_cast<char>(0u);
+           m_values[3] = static_cast<char>(0u);
+        }
+        else if(c < 0x800u)
+        {
+           m_values[0] = static_cast<char>(0xC0u + (c >> 6));
+           m_values[1] = static_cast<char>(0x80u + (c & 0x3Fu));
+           m_values[2] = static_cast<char>(0u);
+           m_values[3] = static_cast<char>(0u);
+        }
+        else if(c < 0x10000u)
+        {
+           m_values[0] = static_cast<char>(0xE0u + (c >> 12));
+           m_values[1] = static_cast<char>(0x80u + ((c >> 6) & 0x3Fu));
+           m_values[2] = static_cast<char>(0x80u + (c & 0x3Fu));
+           m_values[3] = static_cast<char>(0u);
+        }
+        else
+        {
+           m_values[0] = static_cast<char>(0xF0u + (c >> 18));
+           m_values[1] = static_cast<char>(0x80u + ((c >> 12) & 0x3Fu));
+           m_values[2] = static_cast<char>(0x80u + ((c >> 6) & 0x3Fu));
+           m_values[3] = static_cast<char>(0x80u + (c & 0x3Fu));
+        }
+        m_current= 0;
+     }
+     InputIterator m_position;
+     mutable char m_values[5];
+     mutable unsigned m_current;
   };
 
 # else
