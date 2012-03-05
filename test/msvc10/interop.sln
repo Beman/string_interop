@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop_unit_test", "intero
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stream_test", "stream_test\stream_test.vcxproj", "{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "problem2.cpp", "problem2.cpp\problem2.cpp.vcxproj", "{134577C0-467D-4BF0-A36B-ABA301BAEC92}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -49,6 +51,10 @@ Global
 		{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}.Debug|Win32.Build.0 = Debug|Win32
 		{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}.Release|Win32.ActiveCfg = Release|Win32
 		{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}.Release|Win32.Build.0 = Release|Win32
+		{134577C0-467D-4BF0-A36B-ABA301BAEC92}.Debug|Win32.ActiveCfg = Debug|Win32
+		{134577C0-467D-4BF0-A36B-ABA301BAEC92}.Debug|Win32.Build.0 = Debug|Win32
+		{134577C0-467D-4BF0-A36B-ABA301BAEC92}.Release|Win32.ActiveCfg = Release|Win32
+		{134577C0-467D-4BF0-A36B-ABA301BAEC92}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

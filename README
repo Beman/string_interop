@@ -9,22 +9,20 @@ Code is experimental and NOT SUITABLE FOR PRODUCTION WORK.
 To experiment with the library, various other boost libraries must be
 available. Here is one way to create such a setup:
 
+  cd boost-trunk/libs
   git clone git://github.com/Beman/string-interoperability.git interop
-  svn export --force http://svn.boost.org/svn/boost/trunk interop
+  cd boost-trunk/boost
+  mklink /d interop boost-trunk\libs\interop\include\boost\interop
   
 As a confidence test, the following should build bjam, build various
 libraries and then run the Boost.btree regression tests.
 
-Windows:
+Windows (assumes bootstrap has been run):
 
-  cd interop
-  bootstrap
-  cd libs\interop\test
+  cd boost-trunk\libs\interop\test
   ..\..\..\bjam
 
-POSIX-like systems:
+POSIX-like systems (assumes bootstrap has been run):
 
-  cd interop
-  ./bootstrap.sh
-  cd libs/interop/test
+  cd boost-trunk/libs/interop/test
   ../../../bjam

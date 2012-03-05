@@ -29,7 +29,6 @@ namespace detail
 template <class Ostream, class InputIterator>
 Ostream& inserter(Ostream& os, InputIterator begin)
 {
-  cout << "InputIterator stream inserter()\n";
   boost::xop::converting_iterator<InputIterator,
     typename std::iterator_traits<InputIterator>::value_type, ::boost::xop::by_null,
       typename Ostream::char_type>
@@ -55,15 +54,14 @@ Ostream& inserter(Ostream& os, InputIterator begin)
 namespace std
 {
 
+//  Character container (E.G. basic_string) overload
+
 template <class Ostream, class Ctr>
 typename boost::enable_if_c<boost::xop::is_character_container<Ctr>::value
     && !boost::is_same<typename Ctr::value_type, typename Ostream::char_type>::value,
   Ostream&>::type
 operator<<(Ostream& os, const Ctr& ctr)
 {
-  //cout << boost::xop::is_character_container<Ctr>::value << ' '
-  //     << boost::is_same<typename Ctr::value_type, typename Ostream::char_type>::value << ' ';
-  cout << "Ctr\n"; 
   boost::xop::converting_iterator<typename Ctr::const_iterator,
     typename Ctr::value_type, boost::xop::by_range,
     typename Ostream::char_type> itr(ctr.begin(), ctr.end());
@@ -72,12 +70,14 @@ operator<<(Ostream& os, const Ctr& ctr)
   return os;
 }
 
+//  Character pointer overloads
+//
 //  Standard basic_ostream supplies this overload:
 //
 //    basic_ostream<charT,traits>& operator<<(const void* p);
 //
-//  That means pointers to types other than charT will select this overload rather than
-//  a template <class Ostream, class InputIterator> overload.
+//  That means pointers to types other than charT will select the void* overload rather
+//  than a template <class Ostream, class InputIterator> overload.
 //
 //  As a fix, supply individual overloads for the ostreams and pointers we care about
 
