@@ -14,15 +14,15 @@
 using namespace std;
 using namespace std::tbd;
 
-//--------------------------------- recode_copy_test -----------------------------------//
+//------------------------------------ recode_test -------------------------------------//
 
-void recode_copy_test()
+void recode_test()
 {
   string src("abc");
 //  wstring target;
   wchar_t target[MB_LEN_MAX * 4];
 
-  recode_copy(src.c_str(), src.c_str()+src.size(), from_codec<char>(),
+  recode(src.c_str(), src.c_str()+src.size(), from_codec<char>(),
     target, to_codec<wchar_t>(), default_error_handler());
 }
 
@@ -32,7 +32,7 @@ void recode_copy_test()
 
 int cpp_main(int, char*[])
 {
-  recode_copy_test();
+  recode_test();
 
   //string s1(string_cast<string>(u16string(u"test 1")));
   //BOOST_TEST_EQ(s1, string("test 1"));

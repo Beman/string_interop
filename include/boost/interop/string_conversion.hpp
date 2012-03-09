@@ -186,13 +186,13 @@ namespace tbd
   };
 
 //--------------------------------------------------------------------------------------//
-//                              recode_copy algorithm                                   //
+//                                 recode algorithm                                     //
 //--------------------------------------------------------------------------------------//
 
   template <class CharT, class OutputIterator,
             class FromCodec, class ToCodec, class ErrorHandler>
     OutputIterator
-      recode_copy(const CharT* first, const CharT* last, FromCodec from_codec,
+      recode(const CharT* first, const CharT* last, FromCodec from_codec,
                   OutputIterator result, ToCodec to_codec, ErrorHandler eh)
   {
     typedef typename iterator_traits<OutputIterator>::value_type  result_value_type;
@@ -230,7 +230,7 @@ namespace tbd
   //                         ErrorHandler error_handler=default_error_handler())
   //{
   //  OutputString result;
-  //  recode_copy(from.cbegin(), from.cend(), from_codec,
+  //  recode(from.cbegin(), from.cend(), from_codec,
   //    std::back_insert_iterator(result), to_codec, error_handler);
   //  return result;
   //}
@@ -257,7 +257,7 @@ namespace tbd
   //                          ErrorHandler error_handler)
   //{
   //  OutputString result;
-  //  recode_copy(from.cbegin(), from.cend(), from_codec,
+  //  recode(from.cbegin(), from.cend(), from_codec,
   //    std::back_inserter(result), to_codec, error_handler);
   //  return result;
   //}
@@ -267,7 +267,7 @@ namespace tbd
   OutputString string_cast(const InputString& from)
   {
     OutputString result;
-    recode_copy(from.cbegin(), from.cend(), from_codec<InputString::value_type>(),
+    recode(from.cbegin(), from.cend(), from_codec<InputString::value_type>(),
       std::back_inserter(result), to_codec<OutputString::value_type>(),
       default_error_handler());
     return result;
