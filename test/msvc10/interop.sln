@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stream_test", "stream_test\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "problem2.cpp", "problem2.cpp\problem2.cpp.vcxproj", "{134577C0-467D-4BF0-A36B-ABA301BAEC92}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "string_cast_test", "string_cast_test\string_cast_test.vcxproj", "{B36EDF30-B1F9-4D43-A0F6-23D8E1047463}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -55,6 +57,10 @@ Global
 		{134577C0-467D-4BF0-A36B-ABA301BAEC92}.Debug|Win32.Build.0 = Debug|Win32
 		{134577C0-467D-4BF0-A36B-ABA301BAEC92}.Release|Win32.ActiveCfg = Release|Win32
 		{134577C0-467D-4BF0-A36B-ABA301BAEC92}.Release|Win32.Build.0 = Release|Win32
+		{B36EDF30-B1F9-4D43-A0F6-23D8E1047463}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B36EDF30-B1F9-4D43-A0F6-23D8E1047463}.Debug|Win32.Build.0 = Debug|Win32
+		{B36EDF30-B1F9-4D43-A0F6-23D8E1047463}.Release|Win32.ActiveCfg = Release|Win32
+		{B36EDF30-B1F9-4D43-A0F6-23D8E1047463}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
