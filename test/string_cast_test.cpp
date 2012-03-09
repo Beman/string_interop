@@ -22,8 +22,8 @@ void recode_copy_test()
 //  wstring target;
   wchar_t target[MB_LEN_MAX * 4];
 
-  recode_copy(src.cbegin(), src.cend(), from_char_codec, target, to_wchar_codec,
-    default_error_handler());
+  recode_copy(src.c_str(), src.c_str()+src.size(), from_codec<char>(),
+    target, to_codec<wchar_t>(), default_error_handler());
 }
 
 //--------------------------------------------------------------------------------------//
