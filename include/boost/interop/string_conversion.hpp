@@ -111,7 +111,7 @@ namespace tbd
   template <> class from_codec<char16_t>
   {
   public:
-    std::size_t operator()(const char16_t* first, const char* last16_t,
+    std::size_t operator()(const char16_t* first, const char16_t* last,
       char32_t* result, std::mbstate_t* ps)
     {
 // TODO: provide actual implementation 
@@ -136,6 +136,7 @@ namespace tbd
   template <> class to_codec<char>
   {
   public:
+    typedef char value_type;
     std::size_t operator()(char32_t src, char* result,  std::mbstate_t* ps)
     {
 // TODO: provide actual implementation 
@@ -147,6 +148,7 @@ namespace tbd
   template <> class to_codec<wchar_t>
   {
   public:
+    typedef wchar_t value_type;
     std::size_t operator()(char32_t src, wchar_t* result,  std::mbstate_t* ps)
     {
 // TODO: provide actual implementation 
@@ -158,6 +160,7 @@ namespace tbd
   template <> class to_codec<char16_t>
   {
   public:
+    typedef char16_t value_type;
     std::size_t operator()(char32_t src, char16_t* result,  std::mbstate_t* ps)
     {
 // TODO: provide actual implementation 
@@ -169,6 +172,7 @@ namespace tbd
   template <> class to_codec<char32_t>
   {
   public:
+    typedef char32_t value_type;
     std::size_t operator()(char32_t src, char32_t* result,  std::mbstate_t* ps)
     {
       *result = src;
@@ -195,7 +199,7 @@ namespace tbd
       recode(const CharT* first, const CharT* last, FromCodec from_codec,
                   OutputIterator result, ToCodec to_codec, ErrorHandler eh)
   {
-    typedef typename iterator_traits<OutputIterator>::value_type  result_value_type;
+    typedef typename ToCodec::value_type  result_value_type;
 
 // TODO: is mbsinit(0) needed?
     std::mbstate_t in_state;
@@ -267,8 +271,9 @@ namespace tbd
   OutputString string_cast(const InputString& from)
   {
     OutputString result;
-    recode(from.cbegin(), from.cend(), from_codec<InputString::value_type>(),
-      std::back_inserter(result), to_codec<OutputString::value_type>(),
+    recode(from.c_str(), from.c_str()+from.size(),
+      from_codec<typename InputString::value_type>(),
+      std::back_inserter(result), to_codec<typename OutputString::value_type>(),
       default_error_handler());
     return result;
   }

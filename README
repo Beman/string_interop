@@ -2,7 +2,7 @@ String Interoperability Experiments
 
 Includes support for the new C++11 character and string types.
 
-Code is suitable for both C++03 and C++0x compilers.
+Code is suitable for both C++03 and C++11 compilers.
 
 Code is experimental and NOT SUITABLE FOR PRODUCTION WORK.
 

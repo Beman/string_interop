@@ -79,9 +79,6 @@
     <ClCompile Include="..\..\..\src\codepage_437.cpp" />
     <ClCompile Include="..\..\interop_test.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\boost\interop\string.hpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

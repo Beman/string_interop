@@ -19,11 +19,16 @@ using namespace std::tbd;
 void recode_test()
 {
   string src("abc");
-//  wstring target;
-  wchar_t target[MB_LEN_MAX * 4];
 
+  //wchar_t target[MB_LEN_MAX * 4];
+  //recode(src.c_str(), src.c_str()+src.size(), from_codec<char>(),
+  //  target, to_codec<wchar_t>(), default_error_handler());
+
+  wstring target;
   recode(src.c_str(), src.c_str()+src.size(), from_codec<char>(),
-    target, to_codec<wchar_t>(), default_error_handler());
+    std::back_inserter(target), to_codec<wchar_t>(), default_error_handler());
+
+  //string_cast<wstring>(src);
 }
 
 //--------------------------------------------------------------------------------------//
