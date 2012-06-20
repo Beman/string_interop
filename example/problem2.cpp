@@ -11,7 +11,7 @@
 
 int main()
 {
-  std::u32string s32(U"您好世界");
+  std::u32string s32(U"您好世界");  // Hello World
 
   std::cout << U"您好世界" << std::endl;
   std::cout << s32 << std::endl;
