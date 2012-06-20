@@ -16,7 +16,7 @@
 #define BOOST_INTEROP_ITERATOR_ADAPTER_HPP
 
 #include <boost/interop/detail/config.hpp>
-#include <boost/interop/string_0x.hpp>
+#include <boost/interop/string_types.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/assert.hpp>
 #include <boost/iterator/iterator_facade.hpp>
@@ -41,7 +41,6 @@ namespace detail
 /*  TODO:
 
   *  For char, provide:
-      -- compile time selection of codec
       -- runtime selection of codec
   
   *  by_null should do the character_traits eof dance
@@ -166,9 +165,10 @@ public:
 
   // primary template; partial specializations *may* be provided
   template <class InputIterator, class FromCharT, template<class> class EndPolicy,
-    class ToCharT>  
+    class ToCharT, template <class, class> class ResultIterator = from32_iterator,
+    template <class, class, template<class> class> class SourceIterator = to32_iterator>
   class converting_iterator
-    : public from32_iterator<to32_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>
+    : public ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>
   {
   public:
     explicit converting_iterator(InputIterator begin)
