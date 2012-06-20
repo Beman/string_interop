@@ -10,7 +10,7 @@
 
 namespace boost
 {
-namespace xop
+namespace interop
 {
 namespace detail
 {

@@ -26,11 +26,11 @@ namespace interop
   ToString make_string(const FromString& x)
   {
     ToString tmp;
-    for converting_iterator<FromString::const_iterator, FromString::value_type,
+    for (boost::interop::converting_iterator<FromString::const_iterator, FromString::value_type,
                             by_range, ToString::value_type>
-       itr(x.cbegin(), x.cend());
-       *itr != 0; ++itr)
-         std::back_insert_iterator(tmp);
+         itr(x.cbegin(), x.cend());
+         *itr != 0; ++itr)
+           std::back_inserter<ToString>(tmp);
 
        return tmp;
   }

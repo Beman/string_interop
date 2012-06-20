@@ -12,7 +12,7 @@
 
 using std::cout; using std::endl; using std::hex;
 
-using namespace boost::xop;
+using namespace boost::interop;
 using boost::u8_t;
 using boost::u16_t;
 using boost::u32_t;
