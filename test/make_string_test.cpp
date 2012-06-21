@@ -11,7 +11,14 @@
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
-using namespace boost;
+using std::string;
+using std::wstring;
+using boost::u8string;
+using boost::u16string;
+using boost::u32string;
+using boost::u8_t;
+using boost::u16_t;
+using boost::u32_t;
 using namespace boost::interop;
 
 namespace
@@ -20,9 +27,14 @@ namespace
   //  U+1F60A SMILING FACE WITH SMILING EYES
   //  U+1F60E SMILING FACE WITH SUNGLASSES
 
-  u32_t utf32[] = {0x1F60A, 0x1F60E, 0};
-  u16_t utf16[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
-  u8_t  utf8[] = {0xF0, 0x9F, 0x98, 0x8A, 0xF0, 0x9F, 0x98, 0x8E, 0};
+  // build test strings character by character so they work with C++03 compilers
+  const u32_t u32c[] = {0x1F60A, 0x1F60E, 0};
+  const u16_t u16c[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
+  const u8_t  u8c[] = {0xF0, 0x9F, 0x98, 0x8A, 0xF0, 0x9F, 0x98, 0x8E, 0};
+
+  const u32string u32s(u32c);
+  const u16string u16s(u16c);
+  const u8string u8s(u8c);
 
 //------------------------------------ simple_test -------------------------------------//
 
@@ -30,8 +42,9 @@ namespace
   {
     std::cout << "simple_test..." << std::endl;
 
-    std::string s = make_string<std::string>(u32string(utf32));
+    u8string s = make_string<u8string>(u32s);
     BOOST_TEST_EQ(s.size(), 8);
+    BOOST_TEST(s == u8s);
   }
 
 }
@@ -42,6 +55,14 @@ namespace
 
 int cpp_main(int, char*[])
 {
+  // verify test constants
+  BOOST_TEST_EQ(u32s.size(), 2);
+  BOOST_TEST_EQ(u16s.size(), 4);
+  BOOST_TEST_EQ(u8s.size(), 8);
+  BOOST_TEST(std::memcmp(u32s.c_str(), u32c, u32s.size())==0);
+  BOOST_TEST(std::memcmp(u16s.c_str(), u16c, u16s.size())==0);
+  BOOST_TEST(std::memcmp(u8s.c_str(), u8c, u8s.size())==0);
+
   simple_test();
 
   return ::boost::report_errors();

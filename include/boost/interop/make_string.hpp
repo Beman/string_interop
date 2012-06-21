@@ -25,14 +25,13 @@ namespace interop
   template <class ToString, class FromString>
   ToString make_string(const FromString& x)
   {
+    typedef boost::interop::converting_iterator<
+      FromString::const_iterator, FromString::value_type, by_range, ToString::value_type>
+       iter_type;
     ToString tmp;
-    for (boost::interop::converting_iterator<FromString::const_iterator, FromString::value_type,
-                            by_range, ToString::value_type>
-         itr(x.cbegin(), x.cend());
-         *itr != 0; ++itr)
-           std::back_inserter<ToString>(tmp);
-
-       return tmp;
+    for (iter_type itr(x.cbegin(), x.cend()); itr != iter_type(); ++itr)
+      std::back_inserter<ToString>(tmp);
+    return tmp;
   }
 
   //  TODO:

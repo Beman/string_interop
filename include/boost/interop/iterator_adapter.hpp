@@ -21,6 +21,8 @@
 #include <boost/assert.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/static_assert.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_same.hpp>
 #include <stdexcept>
 #include <sstream>
 #include <ios>
@@ -67,15 +69,20 @@ namespace detail
 
 //---------------------------  end-detection policy classes  ---------------------------//
 
-//  from_iterators need to know when the end of the sequence is reached. There are
+//  to32_iterator needs to know when the end of the sequence is reached. There are
 //  several approaches to determine this; by half-open range, by size, and by
 //  null-termination. End-detection policies allow the end to be efficiently determined,
 //  and to do so without adding data members needed only for specific approaches.
+
+struct by_null_policy {};
+struct by_range_policy {};
+struct by_size_policy {};
 
 template <class InputIterator>
 class by_null
 {
 public:
+  typedef by_null_policy policy_type;
   bool is_end(InputIterator itr) const
   {
     return *itr ==
@@ -89,6 +96,7 @@ class by_range
 {
   InputIterator m_end;
 public:
+  typedef by_range_policy policy_type;
   by_range() {}
   by_range(InputIterator itr) : m_end(itr) {}
 
@@ -103,6 +111,7 @@ class by_size
 {
   mutable std::size_t m_size;
 public:
+  typedef by_size_policy policy_type;
   by_size() {}
   by_size(std::size_t n) : m_size(n) {}
 
@@ -112,7 +121,13 @@ public:
   void advance() const { --m_size; }
 };
 
+//-------------------------  ImplicitEndIterator Requirements  -------------------------//
+//
+//  For an iterator x of type T, x == T() is true if x is at the end of the sequence.
+
 //---------------------------------  to32_iterator  ------------------------------------//
+//
+//  to32_iterator meets the ImplicitEndIterator requirements.
 
   // primary template; partial specializations *must* be provided
   template <class InputIterator, class FromCharT, template<class> class EndPolicy>  
@@ -135,7 +150,8 @@ public:
 
 //--------------------------------  from32_iterator  -----------------------------------//
 //
-//  These iterators always identify the end by termination value
+//  from32_iterator meets the ImplicitEndIterator requirements.
+//  InputIterator must meet the ImplicitEndIterator requirements.
 
   // primary template; partial specializations *must* be provided
   template <class InputIterator, class ToCharT>  
@@ -162,6 +178,10 @@ public:
   class policy_iterator;
 
 //-------------------------------  converting_iterator  --------------------------------//
+//
+//  converting_iterator meets the ImplicitEndIterator requirements.
+//  SourceIterator and ResultIterator must meet the ImplicitEndIterator requirements.
+ 
 
   // primary template; partial specializations *may* be provided
   template <class InputIterator, class FromCharT, template<class> class EndPolicy,
@@ -171,21 +191,25 @@ public:
     : public ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>
   {
   public:
+    converting_iterator()
+      : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>()
+      {} 
+
     explicit converting_iterator(InputIterator begin)
-      : from32_iterator<to32_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
+      : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
     // Requires: An EndPolicy that requires no initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by_null");
     }
     converting_iterator(InputIterator begin, InputIterator end)
-      : from32_iterator<to32_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
+      : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
     // Requires: An EndPolicy that supplies end iterator initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by range");
       this->base().end(end);
     }
     converting_iterator(InputIterator begin, std::size_t sz)
-      : from32_iterator<to32_iterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
+      : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
     // Requires: An EndPolicy that supplies size initialization
     {
       BOOST_XOP_LOG("converting_iterator primary template, by size");
@@ -861,8 +885,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
   public:
      u32_t dereference() const
      {
-       if (this->is_end(m_iterator))
-         return 0;
+       BOOST_ASSERT_MSG(m_iterator != InputIterator(),
+         "Attempt to dereference end iterator");
        unsigned char c = static_cast<unsigned char>(*m_iterator);
        return static_cast<u32_t>(interop::detail::to_utf16[c]);
      }
@@ -872,16 +896,48 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
      void increment()
      { 
-       BOOST_ASSERT_MSG(!this->is_end(m_iterator), "Attempt to increment past end");
+       BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to increment end iterator");
        ++m_iterator;
        this->advance();
+       if (this->is_end(m_iterator))
+         m_iterator = InputIterator();
      }
 
      // construct:
      to32_iterator() : m_iterator() {}
-     to32_iterator(InputIterator b) : m_iterator(b)
+
+     // by_null
+     to32_iterator(InputIterator begin)
+       : m_iterator(begin) 
      {
        BOOST_XOP_LOG("char to utf-32");
+       if (this->is_end(m_iterator))
+         m_iterator = InputIterator();
+     }
+
+     // by range
+     template <class T>
+     to32_iterator(InputIterator begin, T end,
+       // enable_if ensures 2nd argument of 0 is treated as size, not range end
+       typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
+       : m_iterator(begin) 
+     {
+       BOOST_XOP_LOG("char to utf-32");
+//       this->base().end(end);
+       this->end(end);
+       if (this->is_end(m_iterator))
+         m_iterator = InputIterator();
+     }
+
+     // by_size
+     to32_iterator(InputIterator begin, std::size_t sz)
+       : m_iterator(begin) 
+     {
+       BOOST_XOP_LOG("char to utf-32");
+//       this->base().end(sz);
+       this->size(sz);
+       if (this->is_end(m_iterator))
+         m_iterator = InputIterator();
      }
   };
 
@@ -907,6 +963,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
   public:
      char dereference() const
      {
+       BOOST_ASSERT_MSG(m_iterator != InputIterator(),
+         "Attempt to dereference end iterator");
        u32_t c = *m_iterator;
        //cout << "*** c is " << hex << c << '\n';
        //cout << "    to_slice[c >> 7] << 7 is "
@@ -922,13 +980,17 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
        return m_iterator == that.m_iterator;
      }
 
-     void increment()  { ++m_iterator; }
+     void increment()
+     { 
+       BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to increment end iterator");
+       ++m_iterator;  // may change m_iterator to end iterator
+     }
 
      InputIterator& base() {return m_iterator;}
 
      // construct:
      from32_iterator() : m_iterator() {}
-     from32_iterator(InputIterator b) : m_iterator(b)
+     from32_iterator(InputIterator begin) : m_iterator(begin)  // may be end iterator
      {
        BOOST_XOP_LOG("char from utf-32");
      }
