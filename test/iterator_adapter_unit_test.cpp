@@ -70,26 +70,52 @@ namespace
     implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_size>(meow16, 0), 0);
     implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_range>(meow16, meow16), 0);
 
-    //implicit_end_iterator_test(to32_iterator<const wchar_t*, wchar_t, by_null>(meoww), 4);
-    //implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_null>(meow8), 4);
-    //implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_null>(meow16), 4);
+    cout << "  u32_t" << endl;
+    implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_null>(meow32), 4);
+    implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_size>(meow32, 3), 3);
+    implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_range>(meow32, meow32+2), 2);
+    implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_null>(meow32+4), 0);
+    implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_size>(meow32, 0), 0);
+    implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_range>(meow32, meow32), 0);
 
-    //implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_null>(meow32), 4);
-    //implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_size>(meow32, 3), 3);
-    //implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_range>(meow32, meow32+2), 2);
-    //implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_null>(meow32+4), 0);
-    //implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_size>(meow32, 0), 0);
-    //implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_range>(meow32, meow32), 0);
+    //cout << "  wchar_t" << endl;
+    //implicit_end_iterator_test(to32_iterator<const wchar_t*, wchar_t, by_null>(meoww), 4);
   }
 
   void from32_iterator_test()
   {
     cout << "from32_iterator_test..." << endl;
+
+    cout << "  char" << endl;
     implicit_end_iterator_test(
       from32_iterator<to32_iterator<const char*, char, by_null>, char>(
         to32_iterator<const char*, char, by_null>(meow)), 4);
     implicit_end_iterator_test(
       from32_iterator<to32_iterator<const char*, char, by_null>, char>(
+        to32_iterator<const char*, char, by_null>(meow+4)), 0);
+
+    cout << "  u8_t" << endl;
+    implicit_end_iterator_test(
+      from32_iterator<to32_iterator<const char*, char, by_null>, u8_t>(
+        to32_iterator<const char*, char, by_null>(meow)), 4);
+    implicit_end_iterator_test(
+      from32_iterator<to32_iterator<const char*, char, by_null>, u8_t>(
+        to32_iterator<const char*, char, by_null>(meow+4)), 0);
+
+    cout << "  u16_t" << endl;
+    implicit_end_iterator_test(
+      from32_iterator<to32_iterator<const char*, char, by_null>, u16_t>(
+        to32_iterator<const char*, char, by_null>(meow)), 4);
+    implicit_end_iterator_test(
+      from32_iterator<to32_iterator<const char*, char, by_null>, u16_t>(
+        to32_iterator<const char*, char, by_null>(meow+4)), 0);
+
+    cout << "  u32_t" << endl;
+    implicit_end_iterator_test(
+      from32_iterator<to32_iterator<const char*, char, by_null>, u32_t>(
+        to32_iterator<const char*, char, by_null>(meow)), 4);
+    implicit_end_iterator_test(
+      from32_iterator<to32_iterator<const char*, char, by_null>, u32_t>(
         to32_iterator<const char*, char, by_null>(meow+4)), 0);
   }
 
@@ -119,7 +145,7 @@ namespace
   void generate_1(const String& str)
   {
     // each target type
-    generate_2<String, char>(str);
+    //generate_2<String, char>(str);
     //generate_2<String, wchar_t>(str);
     //generate_2<String, u8_t>(str);
     //generate_2<String, u16_t>(str);
@@ -128,7 +154,7 @@ namespace
 
   void value_tests()
   {
-    cout << "-----------------  value_tests  -----------------\n";
+    cout << "value_tests..." << endl;
 
     //  Test with cases that require UTF-16 surrogate pairs
     //  U+1F60A SMILING FACE WITH SMILING EYES
@@ -138,29 +164,31 @@ namespace
     u16_t utf16[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
     u8_t  utf8[] = {0xF0, 0x9F, 0x98, 0x8A, 0xF0, 0x9F, 0x98, 0x8E, 0};
 
+    //  utf-32 to utf-16
     int i = 0;
-    for (converting_iterator<const u32_t*, u32_t, by_null, u16_t>
-      it(utf32); *it; ++it, ++i)
+    typedef converting_iterator<const u32_t*, u32_t, by_null, u16_t> type_32_16;
+    for (type_32_16 it(utf32); it != type_32_16(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf16[i]);
     BOOST_TEST_EQ(i, 4);
 
+    // utf-32 to utf-8
     i = 0;
-    for (converting_iterator<const u32_t*, u32_t, by_null, u8_t>
-      it(utf32); *it; ++it, ++i)
+    typedef converting_iterator<const u32_t*, u32_t, by_null, u8_t> type_32_8;
+    for (type_32_8 it(utf32); it != type_32_8(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf8[i]);
     BOOST_TEST_EQ(i, 8);
 
     // utf-8 to utf-16, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
-    for (converting_iterator<const u8_t*, u8_t, by_null, u16_t>
-      it(utf8); *it; ++it, ++i)
+    typedef converting_iterator<const u8_t*, u8_t, by_null, u16_t> type_8_16;
+    for (type_8_16 it(utf8); it != type_8_16(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf16[i]);
     BOOST_TEST_EQ(i, 4);
 
     // utf-16 to utf-8, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
-    for (converting_iterator<const u16_t*, u16_t, by_null, u8_t>
-      it(utf16); *it; ++it, ++i)
+    typedef converting_iterator<const u16_t*, u16_t, by_null, u8_t> type_16_8;
+    for (type_16_8 it(utf16); it != type_16_8(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf8[i]);
     BOOST_TEST_EQ(i, 8);
   }
@@ -194,7 +222,7 @@ int cpp_main(int, char*[])
   //u32_t u32src[] = { 'M', 'e', 'o', 'w', 0 };
   //generate_1(std::basic_string<u32_t>(u32src));
 
-  //value_tests();
+  value_tests();
 
 
   return ::boost::report_errors();
