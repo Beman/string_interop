@@ -9,7 +9,7 @@
 //--------------------------------------------------------------------------------------//
 //  John Maddock's boost/regex/pending/unicode_iterator.hpp introduced me to the idea   //
 //  of performing conversion via iterator adapters. The code below for the UTF-8        //
-//  to/from UTF-32 and UTF-16 <--> UTF-32 adapers was based on that header.             //
+//  to/from UTF-32 and UTF-16 to/from UTF-32 adapers was based on that header.          //
 //--------------------------------------------------------------------------------------//
 
 #if !defined(BOOST_INTEROP_ITERATOR_ADAPTER_HPP)
@@ -47,13 +47,13 @@ namespace detail
   
   *  by_null should do the character_traits eof dance
 
-  *  Shouldn't it be possible to support BidirectionalIterator rather than just
-     InputIterator?
-
   *  John's code in <u8_t> to32_iterator has been modified enough that it needs a
      complete test of its own.
      See Markus Kuhn's http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt as a
      possible test file.
+
+  *  John's "Checked constructor" adds safety. Apply it to the range case? (But we don't
+     support BidirectionalIterators.) 
 
 */
 
@@ -88,7 +88,7 @@ public:
     return *itr ==
       static_cast<typename std::iterator_traits<InputIterator>::value_type>(0);
   }
-  void advance() const {}
+  void advance(std::size_t sz=1) const {}
 };
 
 template <class InputIterator>
@@ -103,7 +103,7 @@ public:
   void end(InputIterator e) { m_end = e; }
 
   bool is_end(InputIterator itr) const { return itr == m_end; }
-  void advance() const {}
+  void advance(std::size_t sz=1) const {}
 };
 
 template <class InputIterator>
@@ -113,12 +113,12 @@ class by_size
 public:
   typedef by_size_policy policy_type;
   by_size() {}
-  by_size(std::size_t n) : m_size(n) {}
+  by_size(std::ptrdiff_t n) : m_size(n) {}
 
   void size(std::size_t sz) { m_size = sz; }
 
-  bool is_end(InputIterator itr) const { return m_size == 0U; }
-  void advance() const { --m_size; }
+  bool is_end(InputIterator itr) const { return m_size <= 0; }
+  void advance(std::size_t sz=1) const { m_size -= sz; }
 };
 
 //-------------------------  ImplicitEndIterator Requirements  -------------------------//
@@ -195,7 +195,7 @@ public:
       : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>()
       {} 
 
-    explicit converting_iterator(InputIterator begin)
+    converting_iterator(InputIterator begin)
       : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
     // Requires: An EndPolicy that requires no initialization
     {
@@ -378,7 +378,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      typedef boost::iterator_facade<to32_iterator<InputIterator, u8_t, EndPolicy>,
        u32_t, std::input_iterator_tag, const u32_t> base_type;
      // special values for pending iterator reads:
-     BOOST_STATIC_CONSTANT(u32_t, pending_read = 0xffffffffu);
+     BOOST_STATIC_CONSTANT(u32_t, read_pending = 0xffffffffu);
 
      typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
@@ -387,36 +387,62 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
      // UTF-8 is a multi-character encoding, so invariants are a bit different than for
      // single character encodings:
-     mutable InputIterator  m_position;    // points to the next input character
-     mutable u32_t          m_value;       // the current value, which may be read_pending
+     InputIterator  m_iterator;  // current start byte, or InputIterator() for end
+     mutable u32_t  m_value;     // current value or read_pending if not yet known
+   public:
 
-  public:
+    // end iterator
+    to32_iterator() : m_iterator() {}  // m_value immaterial for end iterator
+
+    // by_null
+    to32_iterator(InputIterator begin) : m_iterator(begin) 
+    {
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
+      m_value = read_pending;
+    }
+
+    // by range
+    template <class T>
+    to32_iterator(InputIterator begin, T end,
+      // enable_if ensures 2nd argument of 0 is treated as size, not range end
+      typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
+      : m_iterator(begin) 
+    {
+      this->end(end);
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
+      m_value = read_pending;
+    }
+
+    // by_size
+    to32_iterator(InputIterator begin, std::size_t sz)
+      : m_iterator(begin) 
+    {
+      this->size(sz);
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
+      m_value = read_pending;
+    }
+
      typename base_type::reference
         dereference() const
      {
-        if(m_value == pending_read)
+        BOOST_ASSERT_MSG(m_iterator, "Attempt to dereference end iterator");
+        if (m_value == read_pending)
            extract_current();
         return m_value;
      }
-     bool equal(const to32_iterator& that)const
-     {
-        return m_position == that.m_position;
-     }
+     bool equal(const to32_iterator& that)const {return m_iterator == that.m_iterator;}
      void increment()
      {
-        BOOST_ASSERT_MSG(m_value, "Attempt to increment past the end");
-        m_value = pending_read;
-     }
-
-     // construct:
-     to32_iterator() : m_position()
-     {
-        m_value = pending_read;
-     }
-     to32_iterator(InputIterator b) : m_position(b)
-     {
-        m_value = pending_read;
-        BOOST_XOP_LOG("utf-8 to utf-32");
+        BOOST_ASSERT_MSG(m_iterator, "Attempt to increment end iterator");
+        unsigned count = detail::utf8_byte_count(*m_iterator);
+        std::advance(m_iterator, count);
+        this->advance(count);
+        if (this->is_end(m_iterator))
+          m_iterator = InputIterator();
+        m_value = read_pending;
      }
   private:
      static void invalid_sequence()
@@ -424,31 +450,23 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         std::out_of_range e("Invalid UTF-8 sequence encountered while trying to encode UTF-32 character");
         BOOST_INTEROP_THROW(e);
      }
-     void extract_current() const
+     void extract_current()const
      {
-        if (this->is_end(m_position))
-        {
-          m_value = 0U;
-          return;
-        }
-        m_value = static_cast<u32_t>(static_cast< ::boost::uint8_t>(*m_position));
+        BOOST_ASSERT_MSG(m_iterator, "Internal logic error: extracting from end iterator");
+        m_value = static_cast<u32_t>(static_cast< ::boost::uint8_t>(*m_iterator));
         // we must not have a continuation character:
         if((m_value & 0xC0u) == 0x80u)
            invalid_sequence();
         // see how many extra byts we have:
-        unsigned extra = detail::utf8_trailing_byte_count(*m_position);
+        unsigned extra = detail::utf8_trailing_byte_count(*m_iterator);
         // extract the extra bits, 6 from each extra byte:
+        InputIterator next(m_iterator);
         for(unsigned c = 0; c < extra; ++c)
         {
-           ++m_position;
-           this->advance();
-           if (this->is_end(m_position))
-             invalid_sequence();
+           ++next;
            m_value <<= 6;
-           m_value += static_cast<boost::uint8_t>(*m_position) & 0x3Fu;
+           m_value += static_cast<boost::uint8_t>(*next) & 0x3Fu;
         }
-        ++m_position;  // satisfy the invariant that m_position
-        this->advance();     //   points to next input character
         // we now need to remove a few of the leftmost bits, but how many depends
         // upon how many extra bytes we've extracted:
         static const boost::uint32_t masks[4] = 
@@ -476,7 +494,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      typedef boost::iterator_facade<to32_iterator<InputIterator, u16_t, EndPolicy>,
        u32_t, std::input_iterator_tag, const u32_t> base_type;
      // special values for pending iterator reads:
-     BOOST_STATIC_CONSTANT(u32_t, pending_read = 0xffffffffu);
+     BOOST_STATIC_CONSTANT(u32_t, read_pending = 0xffffffffu);
 
      typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
@@ -485,37 +503,71 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
      // UTF-16 is a multi-character encoding, so invariants are a bit different than for
      // single character encodings:
-     mutable InputIterator  m_position;  // points to first byte of next input character
-     mutable u32_t          m_value;     // the current value, which may be read_pending
+     InputIterator  m_iterator;  // current start character, or InputIterator() for end
+     mutable u32_t  m_value;     // current value or read_pending if not yet known
+   public:
 
-  public:
+    // end iterator
+    to32_iterator() : m_iterator() {}  // m_value immaterial for end iterator
+
+    // by_null
+    to32_iterator(InputIterator begin) : m_iterator(begin) 
+    {
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
+      m_value = read_pending;
+    }
+
+    // by range
+    template <class T>
+    to32_iterator(InputIterator begin, T end,
+      // enable_if ensures 2nd argument of 0 is treated as size, not range end
+      typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
+      : m_iterator(begin) 
+    {
+      this->end(end);
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
+      m_value = read_pending;
+    }
+
+    // by_size
+    to32_iterator(InputIterator begin, std::size_t sz)
+      : m_iterator(begin) 
+    {
+      this->size(sz);
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
+      m_value = read_pending;
+    }
+
      typename base_type::reference
-     dereference()const
+        dereference() const
      {
-        if(m_value == pending_read)
+        BOOST_ASSERT_MSG(m_iterator, "Attempt to dereference end iterator");
+        if (m_value == read_pending)
            extract_current();
         return m_value;
      }
-     bool equal(const to32_iterator& that)const
-     {
-        return m_position == that.m_position;
-     }
+
+     bool equal(const to32_iterator& that)const {return m_iterator == that.m_iterator;}
+
      void increment()
      {
-        BOOST_ASSERT_MSG(m_value, "Attempt to increment past the end");
-        m_value = pending_read;
+       BOOST_ASSERT_MSG(m_iterator, "Attempt to increment end iterator");
+       // skip high surrogate first if there is one:
+       if(detail::is_high_surrogate(*m_iterator))
+       {
+         ++m_iterator;
+         this->advance();
+       }
+       ++m_iterator;
+       this->advance();
+       if (this->is_end(m_iterator))
+          m_iterator = InputIterator();
+        m_value = read_pending;
      }
 
-     // construct:
-     to32_iterator() : m_position()
-     {
-        m_value = pending_read;
-     }
-     to32_iterator(InputIterator b) : m_position(b)
-     {
-        m_value = pending_read;
-        BOOST_XOP_LOG("utf-16 to utf-32");
-     }
   private:
      static void invalid_code_point(::boost::uint16_t val)
      {
@@ -530,35 +582,24 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         std::out_of_range e("Invalid UTF-16 sequence encountered while trying to encode UTF-32 character");
         BOOST_INTEROP_THROW(e);
      }
-     void extract_current()const
+     void extract_current() const
      {
-        if (this->is_end(m_position))
-        {
-          m_value = 0U;
-          return;
-        }
-        m_value = static_cast<u32_t>(static_cast< ::boost::uint16_t>(*m_position));
-        // if the last value is a high surrogate then adjust m_position and m_value as needed:
-        if(detail::is_high_surrogate(*m_position))
+        m_value = static_cast<u32_t>(static_cast< ::boost::uint16_t>(*m_iterator));
+        // if the last value is a high surrogate then adjust m_iterator and m_value as needed:
+        if(detail::is_high_surrogate(*m_iterator))
         {
            // precondition; next value must have be a low-surrogate:
-           ++m_position;
-           this->advance();
-           if (this->is_end(m_position))
-             invalid_sequence();
-           ::boost::uint16_t t = *m_position;
+           InputIterator next(m_iterator);
+           u16_t t = *++next;
            if((t & 0xFC00u) != 0xDC00u)
               invalid_code_point(t);
            m_value = (m_value - detail::high_surrogate_base) << 10;
-           m_value |= (static_cast<u32_t>(static_cast< ::boost::uint16_t>(t))
-             & detail::ten_bit_mask);
+           m_value |= (static_cast<u32_t>(
+             static_cast<u16_t>(t)) & detail::ten_bit_mask);
         }
-        ++m_position;  // satisfy the invariant that m_position
-        this->advance();     //   points to next input character
-
         // postcondition; result must not be a surrogate:
         if(detail::is_surrogate(m_value))
-           invalid_code_point(static_cast< ::boost::uint16_t>(m_value));
+           invalid_code_point(static_cast<u16_t>(m_value));
      }
   };
 
@@ -571,25 +612,51 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
       public EndPolicy<InputIterator>
 
   {
-    InputIterator m_itr;
+    InputIterator m_iterator;
   public:
-    to32_iterator() {}
-    to32_iterator(InputIterator itr) : m_itr(itr)
+    to32_iterator() : m_iterator() {}
+
+    // by_null
+    to32_iterator(InputIterator begin) : m_iterator(begin) 
     {
-        BOOST_XOP_LOG("utf-32 to utf-32");
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
     }
+
+    // by range
+    template <class T>
+    to32_iterator(InputIterator begin, T end,
+      // enable_if ensures 2nd argument of 0 is treated as size, not range end
+      typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
+      : m_iterator(begin) 
+    {
+      this->end(end);
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
+    }
+
+    // by_size
+    to32_iterator(InputIterator begin, std::size_t sz)
+      : m_iterator(begin) 
+    {
+      this->size(sz);
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
+    }
+
     u32_t dereference() const
     {
-      if (this->is_end(m_itr))
-        return 0;
-      return *m_itr;
+      BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to dereference end iterator");
+      return *m_iterator;
     }
-    bool equal(const to32_iterator& that) const {return m_itr == that.m_itr;}
+    bool equal(const to32_iterator& that) const {return m_iterator == that.m_iterator;}
     void increment()
     {
-      BOOST_ASSERT_MSG(!this->is_end(m_itr), "Attempt to increment past end");
-      ++m_itr;
+      BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to increment end iterator");
+      ++m_iterator;
       this->advance();
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
     }
   };
 
@@ -619,7 +686,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
      bool equal(const from32_iterator& that)const
      {
-        if(m_position == that.m_position)
+        if(m_iterator == that.m_iterator)
         {
            // either the m_current's must be equal, or one must be 0 and 
            // the other 4: which means neither must have bits 1 or 2 set:
@@ -643,14 +710,14 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         if(m_values[m_current] == 0)
         {
            m_current = 4;
-           ++m_position;
+           ++m_iterator;
         }
      }
 
-     InputIterator& base() { return m_position; }
+     InputIterator& base() { return m_iterator; }
 
      // construct:
-     from32_iterator() : m_position(), m_current(0)
+     from32_iterator() : m_iterator(), m_current(0)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -658,7 +725,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         m_values[3] = 0;
         m_values[4] = 0;
      }
-     from32_iterator(InputIterator b) : m_position(b), m_current(4)
+     from32_iterator(InputIterator b) : m_iterator(b), m_current(4)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -671,7 +738,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
      void extract_current()const
      {
-        boost::uint32_t c = *m_position;
+        boost::uint32_t c = *m_iterator;
         if(c > 0x10FFFFu)
            detail::invalid_utf32_code_point(c);
         if(c < 0x80u)
@@ -704,7 +771,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         }
         m_current= 0;
      }
-     InputIterator m_position;
+     InputIterator m_iterator;
      mutable u8_t m_values[5];
      mutable unsigned m_current;
   };
@@ -735,7 +802,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
      bool equal(const from32_iterator& that)const
      {
-        if(m_position == that.m_position)
+        if(m_iterator == that.m_iterator)
         {
            // Both m_currents must be equal, or both even
            // this is the same as saying their sum must be even:
@@ -758,20 +825,20 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         if(m_values[m_current] == 0)
         {
            m_current = 2;
-           ++m_position;
+           ++m_iterator;
         }
      }
 
-     InputIterator& base() {return m_position;}
+     InputIterator& base() {return m_iterator;}
 
      // construct:
-     from32_iterator() : m_position(), m_current(0)
+     from32_iterator() : m_iterator(), m_current(0)
      {
         m_values[0] = 0;
         m_values[1] = 0;
         m_values[2] = 0;
      }
-     from32_iterator(InputIterator b) : m_position(b), m_current(2)
+     from32_iterator(InputIterator b) : m_iterator(b), m_current(2)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -783,11 +850,11 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      void extract_current()const
      {
         // begin by checking for a code point out of range:
-        ::boost::uint32_t v = *m_position;
+        ::boost::uint32_t v = *m_iterator;
         if(v >= 0x10000u)
         {
            if(v > 0x10FFFFu)
-              detail::invalid_utf32_code_point(*m_position);
+              detail::invalid_utf32_code_point(*m_iterator);
            // split into two surrogates:
            m_values[0] = static_cast<u16_t>(v >> 10) + detail::high_surrogate_base;
            m_values[1] = static_cast<u16_t>(v & detail::ten_bit_mask) + detail::low_surrogate_base;
@@ -798,15 +865,15 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         else
         {
            // 16-bit code point:
-           m_values[0] = static_cast<u16_t>(*m_position);
+           m_values[0] = static_cast<u16_t>(*m_iterator);
            m_values[1] = 0;
            m_current = 0;
            // value must not be a surrogate:
            if(detail::is_surrogate(m_values[0]))
-              detail::invalid_utf32_code_point(*m_position);
+              detail::invalid_utf32_code_point(*m_iterator);
         }
      }
-     InputIterator m_position;
+     InputIterator m_iterator;
      mutable u16_t m_values[3];
      mutable unsigned m_current;
   };
@@ -872,73 +939,63 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
        u32_t, std::input_iterator_tag, const u32_t>,
      public EndPolicy<InputIterator>
   {
-     typedef boost::iterator_facade<to32_iterator<InputIterator, char, EndPolicy>,
-       u32_t, std::input_iterator_tag, const u32_t> base_type;
+    typedef boost::iterator_facade<to32_iterator<InputIterator, char, EndPolicy>,
+      u32_t, std::input_iterator_tag, const u32_t> base_type;
 
-     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
+    typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
-     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
-     BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
+    BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
+    BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
 
-     InputIterator m_iterator;
+    InputIterator m_iterator;
 
   public:
-     u32_t dereference() const
-     {
-       BOOST_ASSERT_MSG(m_iterator != InputIterator(),
-         "Attempt to dereference end iterator");
-       unsigned char c = static_cast<unsigned char>(*m_iterator);
-       return static_cast<u32_t>(interop::detail::to_utf16[c]);
-     }
-     bool equal(const to32_iterator& that) const
-     {
-       return m_iterator == that.m_iterator;
-     }
-     void increment()
-     { 
-       BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to increment end iterator");
-       ++m_iterator;
-       this->advance();
-       if (this->is_end(m_iterator))
-         m_iterator = InputIterator();
-     }
+    // construct:
+    to32_iterator() : m_iterator() {}
 
-     // construct:
-     to32_iterator() : m_iterator() {}
+    // by_null
+    to32_iterator(InputIterator begin) : m_iterator(begin) 
+    {
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
+    }
 
-     // by_null
-     to32_iterator(InputIterator begin)
-       : m_iterator(begin) 
-     {
-       BOOST_XOP_LOG("char to utf-32");
-       if (this->is_end(m_iterator))
-         m_iterator = InputIterator();
-     }
+    // by range
+    template <class T>
+    to32_iterator(InputIterator begin, T end,
+      // enable_if ensures 2nd argument of 0 is treated as size, not range end
+      typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
+      : m_iterator(begin) 
+    {
+      this->end(end);
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
+    }
 
-     // by range
-     template <class T>
-     to32_iterator(InputIterator begin, T end,
-       // enable_if ensures 2nd argument of 0 is treated as size, not range end
-       typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
-       : m_iterator(begin) 
-     {
-       BOOST_XOP_LOG("char to utf-32");
-//       this->base().end(end);
-       this->end(end);
-       if (this->is_end(m_iterator))
-         m_iterator = InputIterator();
-     }
+    // by_size
+    to32_iterator(InputIterator begin, std::size_t sz)
+      : m_iterator(begin) 
+    {
+      this->size(sz);
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
+    }
 
-     // by_size
-     to32_iterator(InputIterator begin, std::size_t sz)
-       : m_iterator(begin) 
-     {
-       BOOST_XOP_LOG("char to utf-32");
-//       this->base().end(sz);
-       this->size(sz);
-       if (this->is_end(m_iterator))
-         m_iterator = InputIterator();
-     }
+    u32_t dereference() const
+    {
+      BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to dereference end iterator");
+      unsigned char c = static_cast<unsigned char>(*m_iterator);
+      return static_cast<u32_t>(interop::detail::to_utf16[c]);
+    }
+    bool equal(const to32_iterator& that) const {return m_iterator == that.m_iterator;}
+    void increment()
+    { 
+      BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to increment end iterator");
+      ++m_iterator;
+      this->advance();
+      if (this->is_end(m_iterator))
+        m_iterator = InputIterator();
+    }
   };
 
 //-------------------------------  <char> from32_iterator  ---------------------------------//
@@ -961,10 +1018,15 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      InputIterator m_iterator;
 
   public:
+     // construct:
+     from32_iterator() : m_iterator() {}
+     from32_iterator(InputIterator begin) : m_iterator(begin)  // may be end iterator
+     {
+       BOOST_XOP_LOG("char from utf-32");
+     }
      char dereference() const
      {
-       BOOST_ASSERT_MSG(m_iterator != InputIterator(),
-         "Attempt to dereference end iterator");
+       BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to dereference end iterator");
        u32_t c = *m_iterator;
        //cout << "*** c is " << hex << c << '\n';
        //cout << "    to_slice[c >> 7] << 7 is "
@@ -988,12 +1050,6 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
      InputIterator& base() {return m_iterator;}
 
-     // construct:
-     from32_iterator() : m_iterator() {}
-     from32_iterator(InputIterator begin) : m_iterator(begin)  // may be end iterator
-     {
-       BOOST_XOP_LOG("char from utf-32");
-     }
   };
 
  # elif defined(BOOST_USE_UTF8) || defined(BOOST_POSIX_API)  // char is UTF-8
@@ -1022,7 +1078,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
      bool equal(const from32_iterator& that)const
      {
-        if(m_position == that.m_position)
+        if(m_iterator == that.m_iterator)
         {
            // either the m_current's must be equal, or one must be 0 and 
            // the other 4: which means neither must have bits 1 or 2 set:
@@ -1046,14 +1102,14 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         if(m_values[m_current] == 0)
         {
            m_current = 4;
-           ++m_position;
+           ++m_iterator;
         }
      }
 
-     InputIterator& base() { return m_position; }
+     InputIterator& base() { return m_iterator; }
 
      // construct:
-     from32_iterator() : m_position(), m_current(0)
+     from32_iterator() : m_iterator(), m_current(0)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -1061,7 +1117,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         m_values[3] = 0;
         m_values[4] = 0;
      }
-     from32_iterator(InputIterator b) : m_position(b), m_current(4)
+     from32_iterator(InputIterator b) : m_iterator(b), m_current(4)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -1074,7 +1130,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
      void extract_current()const
      {
-        boost::uint32_t c = *m_position;
+        boost::uint32_t c = *m_iterator;
         if(c > 0x10FFFFu)
            detail::invalid_utf32_code_point(c);
         if(c < 0x80u)
@@ -1107,7 +1163,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
         }
         m_current= 0;
      }
-     InputIterator m_position;
+     InputIterator m_iterator;
      mutable char m_values[5];
      mutable unsigned m_current;
   };

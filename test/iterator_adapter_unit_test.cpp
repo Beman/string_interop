@@ -45,6 +45,8 @@ namespace
   void to32_iterator_test()
   {
     cout << "to32_iterator_test..." << endl;
+
+    cout << "  char" << endl;
     implicit_end_iterator_test(to32_iterator<const char*, char, by_null>(meow), 4);
     implicit_end_iterator_test(to32_iterator<const char*, char, by_size>(meow, 3), 3);
     implicit_end_iterator_test(to32_iterator<const char*, char, by_range>(meow, meow+2), 2);
@@ -52,10 +54,32 @@ namespace
     implicit_end_iterator_test(to32_iterator<const char*, char, by_size>(meow, 0), 0);
     implicit_end_iterator_test(to32_iterator<const char*, char, by_range>(meow, meow), 0);
 
-    implicit_end_iterator_test(to32_iterator<const wchar_t*, wchar_t, by_null>(meoww), 4);
+    cout << "  u8_t" << endl;
     implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_null>(meow8), 4);
+    implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_size>(meow8, 3), 3);
+    implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_range>(meow8, meow8+2), 2);
+    implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_null>(meow8+4), 0);
+    implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_size>(meow8, 0), 0);
+    implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_range>(meow8, meow8), 0);
+
+    cout << "  u16_t" << endl;
     implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_null>(meow16), 4);
-    implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_null>(meow32), 4);
+    implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_size>(meow16, 3), 3);
+    implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_range>(meow16, meow16+2), 2);
+    implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_null>(meow16+4), 0);
+    implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_size>(meow16, 0), 0);
+    implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_range>(meow16, meow16), 0);
+
+    //implicit_end_iterator_test(to32_iterator<const wchar_t*, wchar_t, by_null>(meoww), 4);
+    //implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_null>(meow8), 4);
+    //implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_null>(meow16), 4);
+
+    //implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_null>(meow32), 4);
+    //implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_size>(meow32, 3), 3);
+    //implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_range>(meow32, meow32+2), 2);
+    //implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_null>(meow32+4), 0);
+    //implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_size>(meow32, 0), 0);
+    //implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_range>(meow32, meow32), 0);
   }
 
   void from32_iterator_test()
@@ -152,21 +176,21 @@ int cpp_main(int, char*[])
   to32_iterator_test();
   from32_iterator_test();
 
-  cout << "-----------------  testing with char...  -----------------\n";
+  cout << "-----------------  testing with char...  -----------------" << endl;
   generate_1(std::string("Meow"));
 
-  //cout << "-----------------  testing with wchar_t...  -----------------\n";
+  //cout << "-----------------  testing with wchar_t...  -----------------" << endl;
   //generate_1(std::wstring(L"Meow"));
 
-  //cout << "-----------------  testing with u8_t...  -----------------\n";
+  //cout << "-----------------  testing with u8_t...  -----------------" << endl;
   //u8_t u8src[] = { 'M', 'e', 'o', 'w', 0 };
   //generate_1(std::basic_string<u8_t>(u8src));
 
-  //cout << "-----------------  testing with u16_t...  -----------------\n";
+  //cout << "-----------------  testing with u16_t...  -----------------" << endl;
   //u16_t u16src[] = { 'M', 'e', 'o', 'w', 0 };
   //generate_1(std::basic_string<u16_t>(u16src));
 
-  //cout << "-----------------  testing with u32_t...  -----------------\n";
+  //cout << "-----------------  testing with u32_t...  -----------------" << endl;
   //u32_t u32src[] = { 'M', 'e', 'o', 'w', 0 };
   //generate_1(std::basic_string<u32_t>(u32src));
 
