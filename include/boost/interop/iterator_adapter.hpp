@@ -191,12 +191,14 @@ public:
     : public ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>
   {
   public:
+    typedef typename SourceIterator<InputIterator, FromCharT, EndPolicy> Source;
+
     converting_iterator()
-      : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>()
+      : ResultIterator<Source, ToCharT>()
       {} 
 
     converting_iterator(InputIterator begin)
-      : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
+      : ResultIterator<Source, ToCharT>(Source(begin))
     // Requires: An EndPolicy that requires no initialization
     {}
 
@@ -204,13 +206,12 @@ public:
     converting_iterator(InputIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
       typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
-      : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>
-        (begin,end)
+      : ResultIterator<Source, ToCharT>(Source(begin, end))
     // Requires: An EndPolicy that supplies end iterator initialization
     {}
 
     converting_iterator(InputIterator begin, std::size_t sz)
-      : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin, sz)
+      : ResultIterator<Source, ToCharT>(Source(begin, sz))
     // Requires: An EndPolicy that supplies size initialization
     {}
   };
@@ -1020,8 +1021,6 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
     from32_iterator() : m_iterator() {}
     from32_iterator(InputIterator begin) : m_iterator(begin) {}
     from32_iterator(InputIterator begin, std::size_t sz) : m_iterator(begin, sz) {}
-    template <class T>
-    from32_iterator(T begin, std::size_t sz) : m_iterator(begin, sz) {}
 
     template <class T>
      from32_iterator(InputIterator begin, T end,

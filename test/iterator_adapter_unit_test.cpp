@@ -147,9 +147,9 @@ namespace
     // each target type
     generate_2<String, char>(str);
     //generate_2<String, wchar_t>(str);
-    //generate_2<String, u8_t>(str);
-    //generate_2<String, u16_t>(str);
-    //generate_2<String, u32_t>(str);
+    generate_2<String, u8_t>(str);
+    generate_2<String, u16_t>(str);
+    generate_2<String, u32_t>(str);
   }
 
   void value_tests()
