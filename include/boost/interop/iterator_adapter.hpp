@@ -191,7 +191,7 @@ public:
     : public ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>
   {
   public:
-    typedef typename SourceIterator<InputIterator, FromCharT, EndPolicy> Source;
+    typedef SourceIterator<InputIterator, FromCharT, EndPolicy> Source;
 
     converting_iterator()
       : ResultIterator<Source, ToCharT>()
