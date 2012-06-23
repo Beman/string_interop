@@ -200,7 +200,7 @@ public:
     converting_iterator(InputIterator begin)
       : ResultIterator<Source, ToCharT>(Source(begin))
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_null_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_null_policy>::value,
           "Constructor not valid unless EndPolicy is by_null");
     }
 
@@ -210,14 +210,14 @@ public:
       typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
       : ResultIterator<Source, ToCharT>(Source(begin, end))
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_range_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_range_policy>::value,
           "Constructor not valid unless EndPolicy is by_range");
     }
 
     converting_iterator(InputIterator begin, std::size_t sz)
       : ResultIterator<Source, ToCharT>(Source(begin, sz))
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_size_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_size_policy>::value,
           "Constructor not valid unless EndPolicy is by_size");
     }
   };
@@ -402,7 +402,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
     // by_null
     to32_iterator(InputIterator begin) : m_iterator(begin) 
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_null_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_null_policy>::value,
           "Constructor not valid unless EndPolicy is by_null");
       if (this->is_end(m_iterator))
         m_iterator = InputIterator();
@@ -416,7 +416,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
       typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
       : m_iterator(begin) 
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_range_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_range_policy>::value,
           "Constructor not valid unless EndPolicy is by_range");
       this->end(end);
       if (this->is_end(m_iterator))
@@ -428,7 +428,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
     to32_iterator(InputIterator begin, std::size_t sz)
       : m_iterator(begin) 
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_size_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_size_policy>::value,
           "Constructor not valid unless EndPolicy is by_size");
       this->size(sz);
       if (this->is_end(m_iterator))
@@ -439,7 +439,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      typename base_type::reference
         dereference() const
      {
-        BOOST_ASSERT_MSG(m_iterator, "Attempt to dereference end iterator");
+        BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to dereference end iterator");
         if (m_value == read_pending)
            extract_current();
         return m_value;
@@ -447,7 +447,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      bool equal(const to32_iterator& that)const {return m_iterator == that.m_iterator;}
      void increment()
      {
-        BOOST_ASSERT_MSG(m_iterator, "Attempt to increment end iterator");
+        BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to increment end iterator");
         unsigned count = detail::utf8_byte_count(*m_iterator);
         std::advance(m_iterator, count);
         this->advance(count);
@@ -463,7 +463,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      }
      void extract_current()const
      {
-        BOOST_ASSERT_MSG(m_iterator, "Internal logic error: extracting from end iterator");
+        BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Internal logic error: extracting from end iterator");
         m_value = static_cast<u32_t>(static_cast< ::boost::uint8_t>(*m_iterator));
         // we must not have a continuation character:
         if((m_value & 0xC0u) == 0x80u)
@@ -524,7 +524,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
     // by_null
     to32_iterator(InputIterator begin) : m_iterator(begin) 
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_null_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_null_policy>::value,
           "Constructor not valid unless EndPolicy is by_null");
       if (this->is_end(m_iterator))
         m_iterator = InputIterator();
@@ -538,7 +538,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
       typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
       : m_iterator(begin) 
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_range_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_range_policy>::value,
           "Constructor not valid unless EndPolicy is by_range");
       this->end(end);
       if (this->is_end(m_iterator))
@@ -550,7 +550,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
     to32_iterator(InputIterator begin, std::size_t sz)
       : m_iterator(begin) 
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_size_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_size_policy>::value,
           "Constructor not valid unless EndPolicy is by_size");
       this->size(sz);
       if (this->is_end(m_iterator))
@@ -561,7 +561,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      typename base_type::reference
         dereference() const
      {
-        BOOST_ASSERT_MSG(m_iterator, "Attempt to dereference end iterator");
+        BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to dereference end iterator");
         if (m_value == read_pending)
            extract_current();
         return m_value;
@@ -571,7 +571,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
      void increment()
      {
-       BOOST_ASSERT_MSG(m_iterator, "Attempt to increment end iterator");
+       BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to increment end iterator");
        // skip high surrogate first if there is one:
        if(detail::is_high_surrogate(*m_iterator))
        {
@@ -636,7 +636,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
     // by_null
     to32_iterator(InputIterator begin) : m_iterator(begin) 
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_null_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_null_policy>::value,
           "Constructor not valid unless EndPolicy is by_null");
       if (this->is_end(m_iterator))
         m_iterator = InputIterator();
@@ -649,7 +649,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
       typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
       : m_iterator(begin) 
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_range_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_range_policy>::value,
           "Constructor not valid unless EndPolicy is by_range");
       this->end(end);
       if (this->is_end(m_iterator))
@@ -660,7 +660,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
     to32_iterator(InputIterator begin, std::size_t sz)
       : m_iterator(begin) 
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_size_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_size_policy>::value,
           "Constructor not valid unless EndPolicy is by_size");
       this->size(sz);
       if (this->is_end(m_iterator))
@@ -979,7 +979,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
     // by_null
     to32_iterator(InputIterator begin) : m_iterator(begin) 
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_null_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_null_policy>::value,
           "Constructor not valid unless EndPolicy is by_null");
       if (this->is_end(m_iterator))
         m_iterator = InputIterator();
@@ -992,7 +992,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
       typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
       : m_iterator(begin) 
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_range_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_range_policy>::value,
           "Constructor not valid unless EndPolicy is by_range");
       this->end(end);
       if (this->is_end(m_iterator))
@@ -1003,7 +1003,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
     to32_iterator(InputIterator begin, std::size_t sz)
       : m_iterator(begin) 
     {
-      static_assert(is_same<EndPolicy<InputIterator>::policy_type, by_size_policy>::value,
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type, by_size_policy>::value,
           "Constructor not valid unless EndPolicy is by_size");
       this->size(sz);
       if (this->is_end(m_iterator))
