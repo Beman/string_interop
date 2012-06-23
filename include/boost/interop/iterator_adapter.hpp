@@ -198,23 +198,21 @@ public:
     converting_iterator(InputIterator begin)
       : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
     // Requires: An EndPolicy that requires no initialization
-    {
-      BOOST_XOP_LOG("converting_iterator primary template, by_null");
-    }
-    converting_iterator(InputIterator begin, InputIterator end)
-      : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
+    {}
+
+    template <class T>
+    converting_iterator(InputIterator begin, T end,
+      // enable_if ensures 2nd argument of 0 is treated as size, not range end
+      typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
+      : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>
+        (begin,end)
     // Requires: An EndPolicy that supplies end iterator initialization
-    {
-      BOOST_XOP_LOG("converting_iterator primary template, by range");
-      this->base().end(end);
-    }
+    {}
+
     converting_iterator(InputIterator begin, std::size_t sz)
-      : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin)
+      : ResultIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>(begin, sz)
     // Requires: An EndPolicy that supplies size initialization
-    {
-      BOOST_XOP_LOG("converting_iterator primary template, by size");
-      this->base().size(sz);
-    }
+    {}
   };
 
   ////  case of FromCharT is u32_t
@@ -1018,37 +1016,44 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
      InputIterator m_iterator;
 
   public:
-     // construct:
-     from32_iterator() : m_iterator() {}
-     from32_iterator(InputIterator begin) : m_iterator(begin)  // may be end iterator
-     {
-       BOOST_XOP_LOG("char from utf-32");
-     }
-     char dereference() const
-     {
-       BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to dereference end iterator");
-       u32_t c = *m_iterator;
-       //cout << "*** c is " << hex << c << '\n';
-       //cout << "    to_slice[c >> 7] << 7 is "
-       //  << unsigned int(interop::detail::slice_index[c >> 7] << 7) << '\n';
-       return static_cast<char>(interop::detail::to_char
-         [
-           (interop::detail::slice_index[c >> 7] << 7) | (c & 0x7f)
-         ]);
-     }
+    // construct:
+    from32_iterator() : m_iterator() {}
+    from32_iterator(InputIterator begin) : m_iterator(begin) {}
+    from32_iterator(InputIterator begin, std::size_t sz) : m_iterator(begin, sz) {}
+    template <class T>
+    from32_iterator(T begin, std::size_t sz) : m_iterator(begin, sz) {}
 
-     bool equal(const from32_iterator& that) const
-     {
-       return m_iterator == that.m_iterator;
-     }
+    template <class T>
+     from32_iterator(InputIterator begin, T end,
+      // enable_if ensures 2nd argument of 0 is treated as size, not range end
+      typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
+       : m_iterator(begin, end) {}
 
-     void increment()
-     { 
-       BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to increment end iterator");
-       ++m_iterator;  // may change m_iterator to end iterator
-     }
+    char dereference() const
+    {
+      BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to dereference end iterator");
+      u32_t c = *m_iterator;
+      //cout << "*** c is " << hex << c << '\n';
+      //cout << "    to_slice[c >> 7] << 7 is "
+      //  << unsigned int(interop::detail::slice_index[c >> 7] << 7) << '\n';
+      return static_cast<char>(interop::detail::to_char
+        [
+          (interop::detail::slice_index[c >> 7] << 7) | (c & 0x7f)
+        ]);
+    }
 
-     InputIterator& base() {return m_iterator;}
+    bool equal(const from32_iterator& that) const
+    {
+      return m_iterator == that.m_iterator;
+    }
+
+    void increment()
+    { 
+      BOOST_ASSERT_MSG(m_iterator != InputIterator(), "Attempt to increment end iterator");
+      ++m_iterator;  // may change m_iterator to end iterator
+    }
+
+    InputIterator& base() {return m_iterator;}
 
   };
 
