@@ -14,7 +14,7 @@
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-#include <boost/interop/iterator_adapter.hpp>
+#include <boost/interop/codex_iterator.hpp>
 #include <algorithm>
 
 namespace boost
@@ -25,7 +25,7 @@ namespace interop
   template <class ToString, class FromString>
   ToString make_string(const FromString& x)
   {
-    typedef boost::interop::converting_iterator<
+    typedef boost::interop::codex_iterator<
       FromString::const_iterator, FromString::value_type, by_range, ToString::value_type>
        iter_type;
     ToString tmp;

@@ -7,7 +7,7 @@
 
 #include <boost/config/warning_disable.hpp>  // must precede other headers
 
-#include <boost/interop/make_string.hpp>
+#include <boost/interop/convert.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
