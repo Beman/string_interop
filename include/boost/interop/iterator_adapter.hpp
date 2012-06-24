@@ -1,10 +1,16 @@
-﻿//  boost/interop/conversion_iterator_adapters.hpp  ------------------------------------//
+﻿//  boost/interop/codex_iterator.hpp  --------------------------------------------------//
 
 //  Copyright Beman Dawes 2011
 //  Copyright (c) 2004 John Maddock
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
+
+//--------------------------------------------------------------------------------------//
+//                                                                                      //
+//        Iterator adapters that perform string type and encoding conversion            //
+//                                                                                      //
+//--------------------------------------------------------------------------------------//
 
 //--------------------------------------------------------------------------------------//
 //  John Maddock's boost/regex/pending/unicode_iterator.hpp introduced me to the idea   //
@@ -43,7 +49,7 @@ namespace detail
 /*  TODO:
 
   *  For char, provide:
-      -- runtime selection of codec
+      -- Windows runtime selection of codec
   
   *  by_null should do the character_traits eof dance
 
