@@ -134,11 +134,11 @@ namespace
 
     implicit_end_iterator_test(itr2, str.size()-1);
 
-    //converting_iterator<typename String::const_iterator,
-    //  typename String::value_type,
-    //  by_range, To>  itr3(str.begin(), str.end()-2);
+    converting_iterator<typename String::const_iterator,
+      typename String::value_type,
+      by_range, To>  itr3(str.begin(), str.end()-2);
 
-    //implicit_end_iterator_test(itr3, str.size()-2);
+    implicit_end_iterator_test(itr3, str.size()-2);
   }
 
   template <class String>
