@@ -1,4 +1,4 @@
-//  interop/testmake_string_test.cpp  --------------------------------------------------//
+//  interop/convert_test.cpp  ----------------------------------------------------------//
 
 //  Copyright Beman Dawes 2012
 
@@ -42,7 +42,7 @@ namespace
   {
     std::cout << "simple_test..." << std::endl;
 
-    u8string s = make_string<u8string>(u32s);
+    u8string s = convert<u8string>(u32s);
     BOOST_TEST_EQ(s.size(), 8);
     BOOST_TEST(s == u8s);
   }

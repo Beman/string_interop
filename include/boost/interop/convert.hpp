@@ -22,15 +22,16 @@ namespace boost
 namespace interop
 {
 
-  template <class ToString, class FromString>
-  ToString make_string(const FromString& x)
+  template <class ToContainer, class FromContainer>
+  ToContainer convert(const FromContainer& x)
   {
     typedef boost::interop::codex_iterator<
-      FromString::const_iterator, FromString::value_type, by_range, ToString::value_type>
+      FromContainer::const_iterator,
+      FromContainer::value_type, by_range, ToContainer::value_type>
        iter_type;
-    ToString tmp;
+    ToContainer tmp;
     for (iter_type itr(x.cbegin(), x.cend()); itr != iter_type(); ++itr)
-      std::back_inserter<ToString>(tmp);
+      std::back_inserter<ToContainer>(tmp);
     return tmp;
   }
 
