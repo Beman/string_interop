@@ -42,99 +42,99 @@ namespace
   const u16_t meow16[] = { 'M', 'e', 'o', 'w', 0 };
   const u32_t meow32[] = { 'M', 'e', 'o', 'w', 0 };
 
-  void to32_iterator_test()
+  void source_codex_iterator_test()
   {
-    cout << "to32_iterator_test..." << endl;
+    cout << "source_codex_iterator_test..." << endl;
 
     cout << "  char" << endl;
-    implicit_end_iterator_test(to32_iterator<const char*, char, by_null>(meow), 4);
-    implicit_end_iterator_test(to32_iterator<const char*, char, by_size>(meow, 3), 3);
-    implicit_end_iterator_test(to32_iterator<const char*, char, by_range>(meow, meow+2), 2);
-    implicit_end_iterator_test(to32_iterator<const char*, char, by_null>(meow+4), 0);
-    implicit_end_iterator_test(to32_iterator<const char*, char, by_size>(meow, 0), 0);
-    implicit_end_iterator_test(to32_iterator<const char*, char, by_range>(meow, meow), 0);
+    implicit_end_iterator_test(source_codex_iterator<const char*, char, by_null>(meow), 4);
+    implicit_end_iterator_test(source_codex_iterator<const char*, char, by_size>(meow, 3), 3);
+    implicit_end_iterator_test(source_codex_iterator<const char*, char, by_range>(meow, meow+2), 2);
+    implicit_end_iterator_test(source_codex_iterator<const char*, char, by_null>(meow+4), 0);
+    implicit_end_iterator_test(source_codex_iterator<const char*, char, by_size>(meow, 0), 0);
+    implicit_end_iterator_test(source_codex_iterator<const char*, char, by_range>(meow, meow), 0);
 
     cout << "  u8_t" << endl;
-    implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_null>(meow8), 4);
-    implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_size>(meow8, 3), 3);
-    implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_range>(meow8, meow8+2), 2);
-    implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_null>(meow8+4), 0);
-    implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_size>(meow8, 0), 0);
-    implicit_end_iterator_test(to32_iterator<const u8_t*, u8_t, by_range>(meow8, meow8), 0);
+    implicit_end_iterator_test(source_codex_iterator<const u8_t*, u8_t, by_null>(meow8), 4);
+    implicit_end_iterator_test(source_codex_iterator<const u8_t*, u8_t, by_size>(meow8, 3), 3);
+    implicit_end_iterator_test(source_codex_iterator<const u8_t*, u8_t, by_range>(meow8, meow8+2), 2);
+    implicit_end_iterator_test(source_codex_iterator<const u8_t*, u8_t, by_null>(meow8+4), 0);
+    implicit_end_iterator_test(source_codex_iterator<const u8_t*, u8_t, by_size>(meow8, 0), 0);
+    implicit_end_iterator_test(source_codex_iterator<const u8_t*, u8_t, by_range>(meow8, meow8), 0);
 
     cout << "  u16_t" << endl;
-    implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_null>(meow16), 4);
-    implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_size>(meow16, 3), 3);
-    implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_range>(meow16, meow16+2), 2);
-    implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_null>(meow16+4), 0);
-    implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_size>(meow16, 0), 0);
-    implicit_end_iterator_test(to32_iterator<const u16_t*, u16_t, by_range>(meow16, meow16), 0);
+    implicit_end_iterator_test(source_codex_iterator<const u16_t*, u16_t, by_null>(meow16), 4);
+    implicit_end_iterator_test(source_codex_iterator<const u16_t*, u16_t, by_size>(meow16, 3), 3);
+    implicit_end_iterator_test(source_codex_iterator<const u16_t*, u16_t, by_range>(meow16, meow16+2), 2);
+    implicit_end_iterator_test(source_codex_iterator<const u16_t*, u16_t, by_null>(meow16+4), 0);
+    implicit_end_iterator_test(source_codex_iterator<const u16_t*, u16_t, by_size>(meow16, 0), 0);
+    implicit_end_iterator_test(source_codex_iterator<const u16_t*, u16_t, by_range>(meow16, meow16), 0);
 
     cout << "  u32_t" << endl;
-    implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_null>(meow32), 4);
-    implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_size>(meow32, 3), 3);
-    implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_range>(meow32, meow32+2), 2);
-    implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_null>(meow32+4), 0);
-    implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_size>(meow32, 0), 0);
-    implicit_end_iterator_test(to32_iterator<const u32_t*, u32_t, by_range>(meow32, meow32), 0);
+    implicit_end_iterator_test(source_codex_iterator<const u32_t*, u32_t, by_null>(meow32), 4);
+    implicit_end_iterator_test(source_codex_iterator<const u32_t*, u32_t, by_size>(meow32, 3), 3);
+    implicit_end_iterator_test(source_codex_iterator<const u32_t*, u32_t, by_range>(meow32, meow32+2), 2);
+    implicit_end_iterator_test(source_codex_iterator<const u32_t*, u32_t, by_null>(meow32+4), 0);
+    implicit_end_iterator_test(source_codex_iterator<const u32_t*, u32_t, by_size>(meow32, 0), 0);
+    implicit_end_iterator_test(source_codex_iterator<const u32_t*, u32_t, by_range>(meow32, meow32), 0);
 
     //cout << "  wchar_t" << endl;
-    //implicit_end_iterator_test(to32_iterator<const wchar_t*, wchar_t, by_null>(meoww), 4);
+    //implicit_end_iterator_test(source_codex_iterator<const wchar_t*, wchar_t, by_null>(meoww), 4);
   }
 
-  void from32_iterator_test()
+  void target_codex_iterator_test()
   {
-    cout << "from32_iterator_test..." << endl;
+    cout << "target_codex_iterator_test..." << endl;
 
     cout << "  char" << endl;
     implicit_end_iterator_test(
-      from32_iterator<to32_iterator<const char*, char, by_null>, char>(
-        to32_iterator<const char*, char, by_null>(meow)), 4);
+      target_codex_iterator<source_codex_iterator<const char*, char, by_null>, char>(
+        source_codex_iterator<const char*, char, by_null>(meow)), 4);
     implicit_end_iterator_test(
-      from32_iterator<to32_iterator<const char*, char, by_null>, char>(
-        to32_iterator<const char*, char, by_null>(meow+4)), 0);
+      target_codex_iterator<source_codex_iterator<const char*, char, by_null>, char>(
+        source_codex_iterator<const char*, char, by_null>(meow+4)), 0);
 
     cout << "  u8_t" << endl;
     implicit_end_iterator_test(
-      from32_iterator<to32_iterator<const char*, char, by_null>, u8_t>(
-        to32_iterator<const char*, char, by_null>(meow)), 4);
+      target_codex_iterator<source_codex_iterator<const char*, char, by_null>, u8_t>(
+        source_codex_iterator<const char*, char, by_null>(meow)), 4);
     implicit_end_iterator_test(
-      from32_iterator<to32_iterator<const char*, char, by_null>, u8_t>(
-        to32_iterator<const char*, char, by_null>(meow+4)), 0);
+      target_codex_iterator<source_codex_iterator<const char*, char, by_null>, u8_t>(
+        source_codex_iterator<const char*, char, by_null>(meow+4)), 0);
 
     cout << "  u16_t" << endl;
     implicit_end_iterator_test(
-      from32_iterator<to32_iterator<const char*, char, by_null>, u16_t>(
-        to32_iterator<const char*, char, by_null>(meow)), 4);
+      target_codex_iterator<source_codex_iterator<const char*, char, by_null>, u16_t>(
+        source_codex_iterator<const char*, char, by_null>(meow)), 4);
     implicit_end_iterator_test(
-      from32_iterator<to32_iterator<const char*, char, by_null>, u16_t>(
-        to32_iterator<const char*, char, by_null>(meow+4)), 0);
+      target_codex_iterator<source_codex_iterator<const char*, char, by_null>, u16_t>(
+        source_codex_iterator<const char*, char, by_null>(meow+4)), 0);
 
     cout << "  u32_t" << endl;
     implicit_end_iterator_test(
-      from32_iterator<to32_iterator<const char*, char, by_null>, u32_t>(
-        to32_iterator<const char*, char, by_null>(meow)), 4);
+      target_codex_iterator<source_codex_iterator<const char*, char, by_null>, u32_t>(
+        source_codex_iterator<const char*, char, by_null>(meow)), 4);
     implicit_end_iterator_test(
-      from32_iterator<to32_iterator<const char*, char, by_null>, u32_t>(
-        to32_iterator<const char*, char, by_null>(meow+4)), 0);
+      target_codex_iterator<source_codex_iterator<const char*, char, by_null>, u32_t>(
+        source_codex_iterator<const char*, char, by_null>(meow+4)), 0);
   }
 
   template <class String, class To>
   void generate_2(const String& str)
   {
-    converting_iterator<const typename String::value_type*,
+    codex_iterator<const typename String::value_type*,
       typename String::value_type,
       by_null, To>  itr1(str.c_str());
 
     implicit_end_iterator_test(itr1, str.size());
 
-    converting_iterator<const typename String::value_type*,
+    codex_iterator<const typename String::value_type*,
       typename String::value_type,
       by_size, To>  itr2(str.c_str(), str.size()-1);
 
     implicit_end_iterator_test(itr2, str.size()-1);
 
-    converting_iterator<typename String::const_iterator,
+    codex_iterator<typename String::const_iterator,
       typename String::value_type,
       by_range, To>  itr3(str.begin(), str.end()-2);
 
@@ -166,28 +166,28 @@ namespace
 
     //  utf-32 to utf-16
     int i = 0;
-    typedef converting_iterator<const u32_t*, u32_t, by_null, u16_t> type_32_16;
+    typedef codex_iterator<const u32_t*, u32_t, by_null, u16_t> type_32_16;
     for (type_32_16 it(utf32); it != type_32_16(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf16[i]);
     BOOST_TEST_EQ(i, 4);
 
     // utf-32 to utf-8
     i = 0;
-    typedef converting_iterator<const u32_t*, u32_t, by_null, u8_t> type_32_8;
+    typedef codex_iterator<const u32_t*, u32_t, by_null, u8_t> type_32_8;
     for (type_32_8 it(utf32); it != type_32_8(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf8[i]);
     BOOST_TEST_EQ(i, 8);
 
     // utf-8 to utf-16, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
-    typedef converting_iterator<const u8_t*, u8_t, by_null, u16_t> type_8_16;
+    typedef codex_iterator<const u8_t*, u8_t, by_null, u16_t> type_8_16;
     for (type_8_16 it(utf8); it != type_8_16(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf16[i]);
     BOOST_TEST_EQ(i, 4);
 
     // utf-16 to utf-8, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
-    typedef converting_iterator<const u16_t*, u16_t, by_null, u8_t> type_16_8;
+    typedef codex_iterator<const u16_t*, u16_t, by_null, u8_t> type_16_8;
     for (type_16_8 it(utf16); it != type_16_8(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf8[i]);
     BOOST_TEST_EQ(i, 8);
@@ -201,8 +201,8 @@ int cpp_main(int, char*[])
 {
   cout << "iterator_adapter_unit_test...\n" << hex;
 
-  to32_iterator_test();
-  from32_iterator_test();
+  source_codex_iterator_test();
+  target_codex_iterator_test();
 
   cout << "-----------------  testing with char...  -----------------" << endl;
   generate_1(std::string("Meow"));
