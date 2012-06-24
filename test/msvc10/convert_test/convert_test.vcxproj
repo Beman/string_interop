@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B36EDF30-B1F9-4D43-A0F6-23D8E1047463}</ProjectGuid>
+    <ProjectGuid>{937CE364-BDFE-491D-B06A-E25BBD297594}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>string_cast_test</RootNamespace>
+    <RootNamespace>convert_test</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -76,7 +76,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\string_cast_test.cpp" />
+    <ClCompile Include="..\..\..\src\codepage_437.cpp" />
+    <ClCompile Include="..\..\convert_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
