@@ -29,8 +29,8 @@ namespace interop
   ToContainer>::type convert(const FromContainer& x)
   {
     typedef boost::interop::codex_iterator<
-      FromContainer::const_iterator,
-      FromContainer::value_type, by_range, ToContainer::value_type>
+      typename FromContainer::const_iterator,
+      typename FromContainer::value_type, by_range, typename ToContainer::value_type>
         iter_type;
     ToContainer tmp;
     iter_type itr(x.cbegin(), x.cend());
@@ -47,7 +47,8 @@ namespace interop
   {
     typedef boost::interop::codex_iterator<
       InputIterator,
-      std::iterator_traits<InputIterator>::value_type, by_null, ToContainer::value_type>
+      typename std::iterator_traits<InputIterator>::value_type, by_null,
+      typename ToContainer::value_type>
         iter_type;
     ToContainer tmp;
     iter_type itr(begin);
@@ -62,7 +63,8 @@ namespace interop
   {
     typedef boost::interop::codex_iterator<
       InputIterator,
-      std::iterator_traits<InputIterator>::value_type, by_size, ToContainer::value_type>
+      typename std::iterator_traits<InputIterator>::value_type, by_size,
+      typename ToContainer::value_type>
         iter_type;
     ToContainer tmp;
     iter_type itr(begin, sz);
@@ -79,7 +81,8 @@ namespace interop
   {
     typedef boost::interop::codex_iterator<
       InputIterator,
-      std::iterator_traits<InputIterator>::value_type, by_range, ToContainer::value_type>
+      typename std::iterator_traits<InputIterator>::value_type, by_range,
+      typename ToContainer::value_type>
         iter_type;
     ToContainer tmp;
     iter_type itr(begin, end);

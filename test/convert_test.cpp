@@ -8,6 +8,7 @@
 #include <boost/config/warning_disable.hpp>  // must precede other headers
 
 #include <boost/interop/convert.hpp>
+#include <cstring>  // for memcmp
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
@@ -47,7 +48,7 @@ namespace
     BOOST_TEST_EQ(s1.size(), 8);
     BOOST_TEST(s1 == u8s);
 
-    // iterator, null terminated
+    // null terminated iterator
     u8string s2 = convert<u8string>(u32s.c_str());
     BOOST_TEST_EQ(s2.size(), 8);
     BOOST_TEST(s2 == u8s);
