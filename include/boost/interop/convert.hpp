@@ -91,11 +91,6 @@ namespace interop
     return tmp;
   }
 
-  //  TODO:
-  //  * Two iterators
-  //  * One iterator
-  //  * Iterator, size
-
 }  // namespace interop
 }  // namespace boost
 
