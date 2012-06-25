@@ -42,9 +42,13 @@ namespace
   {
     std::cout << "simple_test..." << std::endl;
 
-    u8string s = convert<u8string>(u32s);
-    BOOST_TEST_EQ(s.size(), 8);
-    BOOST_TEST(s == u8s);
+    u8string s1 = convert<u8string>(u32s);
+    BOOST_TEST_EQ(s1.size(), 8);
+    BOOST_TEST(s1 == u8s);
+
+    u8string s2 = convert<u8string>(u32s.c_str(), u32s.size());
+    BOOST_TEST_EQ(s2.size(), 8);
+    BOOST_TEST(s2 == u8s);
   }
 
 }

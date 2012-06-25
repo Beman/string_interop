@@ -22,6 +22,7 @@ namespace boost
 namespace interop
 {
 
+  //  container
   template <class ToContainer, class FromContainer>
   ToContainer convert(const FromContainer& x)
   {
@@ -30,8 +31,24 @@ namespace interop
       FromContainer::value_type, by_range, ToContainer::value_type>
        iter_type;
     ToContainer tmp;
-    for (iter_type itr(x.cbegin(), x.cend()); itr != iter_type(); ++itr)
-      std::back_inserter<ToContainer>(tmp);
+    iter_type itr(x.cbegin(), x.cend());
+    for (; itr != iter_type(); ++itr)
+      tmp.push_back(*itr);
+    return tmp;
+  }
+
+  //  iterator, size
+  template <class ToContainer, class InputIterator>
+  ToContainer convert(InputIterator begin, std::size_t sz)
+  {
+    typedef boost::interop::codex_iterator<
+      InputIterator,
+      std::iterator_traits<InputIterator>::value_type, by_size, ToContainer::value_type>
+       iter_type;
+    ToContainer tmp;
+    iter_type itr(begin, sz);
+    for (; itr != iter_type(); ++itr)
+      tmp.push_back(*itr);
     return tmp;
   }
 
