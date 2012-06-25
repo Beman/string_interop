@@ -15,7 +15,7 @@
 //--------------------------------------------------------------------------------------//
 
 #include <boost/interop/codex_iterator.hpp>
-#include <algorithm>
+#include <boost/interop/detail/is_iterator.hpp>
 
 namespace boost
 {
@@ -24,14 +24,33 @@ namespace interop
 
   //  container
   template <class ToContainer, class FromContainer>
-  ToContainer convert(const FromContainer& x)
+    // enable_if resolves ambiguity with single iterator overload
+  typename boost::disable_if<boost::is_iterator<FromContainer>,
+  ToContainer>::type convert(const FromContainer& x)
   {
     typedef boost::interop::codex_iterator<
       FromContainer::const_iterator,
       FromContainer::value_type, by_range, ToContainer::value_type>
-       iter_type;
+        iter_type;
     ToContainer tmp;
     iter_type itr(x.cbegin(), x.cend());
+    for (; itr != iter_type(); ++itr)
+      tmp.push_back(*itr);
+    return tmp;
+  }
+
+  //  iterator, null terminated
+  template <class ToContainer, class InputIterator>
+    // enable_if resolves ambiguity with FromContainer overload
+  typename boost::enable_if<boost::is_iterator<InputIterator>,
+  ToContainer>::type convert(InputIterator begin)
+  {
+    typedef boost::interop::codex_iterator<
+      InputIterator,
+      std::iterator_traits<InputIterator>::value_type, by_null, ToContainer::value_type>
+        iter_type;
+    ToContainer tmp;
+    iter_type itr(begin);
     for (; itr != iter_type(); ++itr)
       tmp.push_back(*itr);
     return tmp;
@@ -44,9 +63,26 @@ namespace interop
     typedef boost::interop::codex_iterator<
       InputIterator,
       std::iterator_traits<InputIterator>::value_type, by_size, ToContainer::value_type>
-       iter_type;
+        iter_type;
     ToContainer tmp;
     iter_type itr(begin, sz);
+    for (; itr != iter_type(); ++itr)
+      tmp.push_back(*itr);
+    return tmp;
+  }
+
+  //  iterator range
+  template <class ToContainer, class InputIterator, class InputIterator2>
+    // enable_if ensures 2nd argument of 0 is treated as size, not range end
+  typename boost::enable_if<boost::is_iterator<InputIterator2>,
+  ToContainer>::type convert(InputIterator begin, InputIterator2 end)
+  {
+    typedef boost::interop::codex_iterator<
+      InputIterator,
+      std::iterator_traits<InputIterator>::value_type, by_range, ToContainer::value_type>
+        iter_type;
+    ToContainer tmp;
+    iter_type itr(begin, end);
     for (; itr != iter_type(); ++itr)
       tmp.push_back(*itr);
     return tmp;

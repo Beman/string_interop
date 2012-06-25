@@ -42,13 +42,25 @@ namespace
   {
     std::cout << "simple_test..." << std::endl;
 
+    // container
     u8string s1 = convert<u8string>(u32s);
     BOOST_TEST_EQ(s1.size(), 8);
     BOOST_TEST(s1 == u8s);
 
-    u8string s2 = convert<u8string>(u32s.c_str(), u32s.size());
+    // iterator, null terminated
+    u8string s2 = convert<u8string>(u32s.c_str());
     BOOST_TEST_EQ(s2.size(), 8);
     BOOST_TEST(s2 == u8s);
+
+    // iterator, size
+    u8string s3 = convert<u8string>(u32s.c_str(), u32s.size());
+    BOOST_TEST_EQ(s3.size(), 8);
+    BOOST_TEST(s3 == u8s);
+
+    // iterator range
+    u8string s4 = convert<u8string>(u32s.begin(), u32s.end());
+    BOOST_TEST_EQ(s4.size(), 8);
+    BOOST_TEST(s4 == u8s);
   }
 
 }
