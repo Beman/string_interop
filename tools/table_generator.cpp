@@ -14,7 +14,7 @@ using namespace std;
 
 //--------------------------------------------------------------------------------------//
 //
-//   Generate codec tables from unicode.org Format A
+//   Generate codec tables from http://unicode.org/Public/MAPPINGS/ Format A
 //
 //     Format: Three tab-separated columns
 //        Column #1 is the cp437_DOSLatinUS code (in hex)
