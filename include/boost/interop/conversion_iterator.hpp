@@ -1,4 +1,4 @@
-﻿//  boost/interop/codex_iterator.hpp  --------------------------------------------------//
+﻿//  boost/interop/conversion_iterator.hpp  --------------------------------------------------//
 
 //  Copyright Beman Dawes 2011
 //  Copyright (c) 2004 John Maddock
@@ -69,9 +69,9 @@ namespace detail
 
 //  For n encodings, it is desirable to provide 2n rather than n squared adapters.
 //  This is achieved conceptually by converting to and from UTF-32 as
-//  an intermediate encoding, and then composing a codex_iterator from one
+//  an intermediate encoding, and then composing a conversion_iterator from one
 //  from_iterator and one to_iterator. For efficiency, specializations of
-//  codex_iterator can provide direct conversion without an intermedate UTF32 step.
+//  conversion_iterator can provide direct conversion without an intermedate UTF32 step.
 
 //--------------------------------------------------------------------------------------//
 
@@ -184,11 +184,11 @@ public:
 
 //--------------------------------  utf-8 iterators  -----------------------------------//
 
-  template <class InputIterator, template<class> class EndPolicy>  
+  template <class InputIterator, class FromCharT, template<class> class EndPolicy>  
   //  iterator_traits<InputIterator>::value_type must be char
   class from_utf8;  // value_type is c32_t
 
-  template <class InputIterator, class ToCharT>
+  template <class InputIterator, class ToCharT = charT>
   //  iterator_traits<InputIterator>::value_type must be c32_t
   //  ToCharT must be char
   class to_utf8;  // value_type is char
@@ -198,9 +198,9 @@ public:
   template <class InputIterator, template<class> class EndPolicy>
   class policy_iterator;
 
-//--------------------------------  codex_iterator  ------------------------------------//
+//--------------------------------  conversion_iterator  ------------------------------------//
 //
-//  codex_iterator meets the DefaultCtorEndIterator requirements.
+//  conversion_iterator meets the DefaultCtorEndIterator requirements.
 //  SourceIterator and ToIterator must meet the DefaultCtorEndIterator requirements.
 
   // primary template; partial specializations *may* be provided
@@ -208,17 +208,17 @@ public:
     class ToCharT, template <class, class> class ToIterator = to_iterator,
     template <class, class,
       template<class> class> class SourceIterator = from_iterator>
-  class codex_iterator
+  class conversion_iterator
     : public ToIterator<SourceIterator<InputIterator, FromCharT, EndPolicy>, ToCharT>
   {
   public:
     typedef SourceIterator<InputIterator, FromCharT, EndPolicy> Source;
 
-    codex_iterator()
+    conversion_iterator()
       : ToIterator<Source, ToCharT>()
       {} 
 
-    codex_iterator(InputIterator begin)
+    conversion_iterator(InputIterator begin)
       : ToIterator<Source, ToCharT>(Source(begin))
     {
       static_assert(is_same<typename EndPolicy<InputIterator>::policy_type,
@@ -226,7 +226,7 @@ public:
     }
 
     template <class T>
-    codex_iterator(InputIterator begin, T end,
+    conversion_iterator(InputIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
       typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
       : ToIterator<Source, ToCharT>(Source(begin, end))
@@ -235,7 +235,7 @@ public:
         by_range_policy>::value,"Constructor not valid unless EndPolicy is by_range");
     }
 
-    codex_iterator(InputIterator begin, std::size_t sz)
+    conversion_iterator(InputIterator begin, std::size_t sz)
       : ToIterator<Source, ToCharT>(Source(begin, sz))
     {
       static_assert(is_same<typename EndPolicy<InputIterator>::policy_type,

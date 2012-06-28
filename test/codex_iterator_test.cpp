@@ -6,7 +6,7 @@
 //  See http://www.boost.org/LICENSE_1_0.txt
 
 #include <iostream>
-#include <boost/interop/codex_iterator.hpp>
+#include <boost/interop/conversion_iterator.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
@@ -122,19 +122,19 @@ namespace
   template <class String, class To>
   void generate_2(const String& str)
   {
-    codex_iterator<const typename String::value_type*,
+    conversion_iterator<const typename String::value_type*,
       typename String::value_type,
       by_null, To>  itr1(str.c_str());
 
     default_ctor_end_iterator_test(itr1, str.size());
 
-    codex_iterator<const typename String::value_type*,
+    conversion_iterator<const typename String::value_type*,
       typename String::value_type,
       by_size, To>  itr2(str.c_str(), str.size()-1);
 
     default_ctor_end_iterator_test(itr2, str.size()-1);
 
-    codex_iterator<typename String::const_iterator,
+    conversion_iterator<typename String::const_iterator,
       typename String::value_type,
       by_range, To>  itr3(str.begin(), str.end()-2);
 
@@ -166,28 +166,28 @@ namespace
 
     //  utf-32 to utf-16
     int i = 0;
-    typedef codex_iterator<const u32_t*, u32_t, by_null, u16_t> type_32_16;
+    typedef conversion_iterator<const u32_t*, u32_t, by_null, u16_t> type_32_16;
     for (type_32_16 it(utf32); it != type_32_16(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf16[i]);
     BOOST_TEST_EQ(i, 4);
 
     // utf-32 to utf-8
     i = 0;
-    typedef codex_iterator<const u32_t*, u32_t, by_null, u8_t> type_32_8;
+    typedef conversion_iterator<const u32_t*, u32_t, by_null, u8_t> type_32_8;
     for (type_32_8 it(utf32); it != type_32_8(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf8[i]);
     BOOST_TEST_EQ(i, 8);
 
     // utf-8 to utf-16, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
-    typedef codex_iterator<const u8_t*, u8_t, by_null, u16_t> type_8_16;
+    typedef conversion_iterator<const u8_t*, u8_t, by_null, u16_t> type_8_16;
     for (type_8_16 it(utf8); it != type_8_16(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf16[i]);
     BOOST_TEST_EQ(i, 4);
 
     // utf-16 to utf-8, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
-    typedef codex_iterator<const u16_t*, u16_t, by_null, u8_t> type_16_8;
+    typedef conversion_iterator<const u16_t*, u16_t, by_null, u8_t> type_16_8;
     for (type_16_8 it(utf16); it != type_16_8(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf8[i]);
     BOOST_TEST_EQ(i, 8);

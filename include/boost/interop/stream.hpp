@@ -9,7 +9,7 @@
 # define BOOST_INTEROP_STREAM_HPP
 
 #include <boost/interop/string_types.hpp>
-#include <boost/interop/codex_iterator.hpp>
+#include <boost/interop/conversion_iterator.hpp>
 #include <boost/interop/detail/is_iterator.hpp>
 #include <boost/interop/detail/iterator_value.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -29,7 +29,7 @@ namespace detail
 template <class Ostream, class InputIterator>
 Ostream& inserter(Ostream& os, InputIterator begin)
 {
-  typedef boost::interop::codex_iterator<InputIterator,
+  typedef boost::interop::conversion_iterator<InputIterator,
     typename std::iterator_traits<InputIterator>::value_type, ::boost::interop::by_null,
       typename Ostream::char_type>
     iter_type;
@@ -63,7 +63,7 @@ typename boost::enable_if_c<!boost::is_same<charT, typename Ostream::char_type>:
 operator<<(Ostream& os, const basic_string<charT, Traits, Allocator>& str)
 {
   typedef const basic_string<charT, Traits, Allocator> string_type;
-  typedef boost::interop::codex_iterator<typename string_type::const_iterator,
+  typedef boost::interop::conversion_iterator<typename string_type::const_iterator,
     typename string_type::value_type, boost::interop::by_range,
     typename Ostream::char_type> iter_type;
 
