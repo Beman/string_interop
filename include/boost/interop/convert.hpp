@@ -33,7 +33,6 @@ namespace interop
     // enable_if resolves ambiguity with single iterator overload
   typename boost::disable_if<boost::is_iterator<FromContainer>,
   ToContainer>::type convert(const FromContainer& x)
-//  ToContainer convert(const FromContainer& x)
   {
     typedef boost::interop::codex_iterator<
       typename FromContainer::const_iterator, typename FromContainer::value_type, by_range,

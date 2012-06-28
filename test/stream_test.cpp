@@ -34,7 +34,7 @@ namespace
   u32_t    u32meow[]   = { 'M', 'e', 'o', 'w', 0 };
 
   template <class T>
-  void test_insertion(T x)
+  void test_inserter(T x)
   {
     cout << "      test...\n";
     std::stringstream ss;
@@ -54,38 +54,38 @@ namespace
 
     cout << "    standard libary overloads...\n";
 
-    test_insertion(pipsqueek);
-    test_insertion("Pipsqueek");
-    test_insertion(std::string(pipsqueek));
-    test_insertion(xop::string(pipsqueek));
+    test_inserter(pipsqueek);
+    test_inserter("Pipsqueek");
+    test_inserter(std::string(pipsqueek));
+//    test_inserter(xop::string(pipsqueek));
 
     cout << "    boost container overloads in namespace std...\n";
 
-    test_insertion(std::wstring(wpipsqueek));
-    test_insertion(boost::u8string(u8pipsqueek));
-    test_insertion(boost::u16string(u16pipsqueek));
-    test_insertion(boost::u32string(u32pipsqueek));
-    test_insertion(xop::wstring(wpipsqueek));
-    test_insertion(xop::u8string(u8pipsqueek));
-    test_insertion(xop::u16string(u16pipsqueek));
-    test_insertion(xop::u32string(u32pipsqueek));
+    //test_inserter(std::wstring(wpipsqueek));
+    test_inserter(boost::u8string(u8pipsqueek));
+    test_inserter(boost::u16string(u16pipsqueek));
+    test_inserter(boost::u32string(u32pipsqueek));
+    //test_inserter(xop::wstring(wpipsqueek));
+    //test_inserter(xop::u8string(u8pipsqueek));
+    //test_inserter(xop::u16string(u16pipsqueek));
+    //test_inserter(xop::u32string(u32pipsqueek));
 
     cout << "    boost pointer overloads in namespace std...\n";
 
-    test_insertion(L"Pipsqueek");
-    test_insertion(wpipsqueek);
+    //test_inserter(L"Pipsqueek");
+    //test_inserter(wpipsqueek);
 
 #ifndef BOOST_NO_CHAR16_T
-    test_insertion(u16pipsqueek);
+    test_inserter(u16pipsqueek);
 #endif
 
 #ifndef BOOST_NO_CHAR32_T
-    test_insertion(u32pipsqueek);
+    test_inserter(u32pipsqueek);
 #endif
 
 #ifndef BOOST_NO_UNICODE_LITERALS
-    test_insertion(u"Pipsqueek");
-    test_insertion(U"Pipsqueek");
+    test_inserter(u"Pipsqueek");
+    test_inserter(U"Pipsqueek");
 #endif
   }
 

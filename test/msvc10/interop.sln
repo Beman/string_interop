@@ -7,10 +7,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sweet_dreams", "sweet_dream
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "is_iterator_test", "is_iterator_test\is_iterator_test.vcxproj", "{675C7F09-E581-4A5E-872E-E167BD365145}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop_test", "interop_test\interop_test.vcxproj", "{0421F975-5BAE-4F15-90B6-3631ABAE055F}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop_unit_test", "interop_unit_test\interop_unit_test.vcxproj", "{52BC227A-5EBE-4293-B4B3-751F62CAC23A}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stream_test", "stream_test\stream_test.vcxproj", "{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "problem2.cpp", "problem2.cpp\problem2.cpp.vcxproj", "{134577C0-467D-4BF0-A36B-ABA301BAEC92}"
@@ -37,14 +33,6 @@ Global
 		{675C7F09-E581-4A5E-872E-E167BD365145}.Debug|Win32.Build.0 = Debug|Win32
 		{675C7F09-E581-4A5E-872E-E167BD365145}.Release|Win32.ActiveCfg = Release|Win32
 		{675C7F09-E581-4A5E-872E-E167BD365145}.Release|Win32.Build.0 = Release|Win32
-		{0421F975-5BAE-4F15-90B6-3631ABAE055F}.Debug|Win32.ActiveCfg = Debug|Win32
-		{0421F975-5BAE-4F15-90B6-3631ABAE055F}.Debug|Win32.Build.0 = Debug|Win32
-		{0421F975-5BAE-4F15-90B6-3631ABAE055F}.Release|Win32.ActiveCfg = Release|Win32
-		{0421F975-5BAE-4F15-90B6-3631ABAE055F}.Release|Win32.Build.0 = Release|Win32
-		{52BC227A-5EBE-4293-B4B3-751F62CAC23A}.Debug|Win32.ActiveCfg = Debug|Win32
-		{52BC227A-5EBE-4293-B4B3-751F62CAC23A}.Debug|Win32.Build.0 = Debug|Win32
-		{52BC227A-5EBE-4293-B4B3-751F62CAC23A}.Release|Win32.ActiveCfg = Release|Win32
-		{52BC227A-5EBE-4293-B4B3-751F62CAC23A}.Release|Win32.Build.0 = Release|Win32
 		{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}.Debug|Win32.ActiveCfg = Debug|Win32
 		{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}.Debug|Win32.Build.0 = Debug|Win32
 		{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}.Release|Win32.ActiveCfg = Release|Win32

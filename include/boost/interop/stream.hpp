@@ -8,8 +8,8 @@
 #if !defined(BOOST_INTEROP_STREAM_HPP)
 # define BOOST_INTEROP_STREAM_HPP
 
-#include <boost/interop/string.hpp>
-#include <boost/interop/iterator_adapter.hpp>
+#include <boost/interop/string_types.hpp>
+#include <boost/interop/codex_iterator.hpp>
 #include <boost/interop/detail/is_iterator.hpp>
 #include <boost/interop/detail/iterator_value.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -21,7 +21,7 @@
 
 namespace boost
 {
-namespace xop
+namespace interop
 {
 namespace detail
 {
@@ -29,17 +29,18 @@ namespace detail
 template <class Ostream, class InputIterator>
 Ostream& inserter(Ostream& os, InputIterator begin)
 {
-  boost::xop::converting_iterator<InputIterator,
-    typename std::iterator_traits<InputIterator>::value_type, ::boost::xop::by_null,
+  typedef boost::interop::codex_iterator<InputIterator,
+    typename std::iterator_traits<InputIterator>::value_type, ::boost::interop::by_null,
       typename Ostream::char_type>
-    itr(begin);
-  for (; *itr; ++itr)
+    iter_type;
+
+  for (iter_type itr(begin); itr != iter_type(); ++itr)
     os << *itr;
   return os;
 }
 
 } // namespace detail
-} // namespace xop
+} // namespace interop
 } // namespace boost
 
 
@@ -54,18 +55,20 @@ Ostream& inserter(Ostream& os, InputIterator begin)
 namespace std
 {
 
-//  Character container (E.G. basic_string) overload
+//  basic_string overload
 
-template <class Ostream, class Ctr>
-typename boost::enable_if_c<boost::xop::is_character_container<Ctr>::value
-    && !boost::is_same<typename Ctr::value_type, typename Ostream::char_type>::value,
+template <class Ostream, class charT, class Traits, class Allocator>
+typename boost::enable_if_c<!boost::is_same<charT, typename Ostream::char_type>::value,
   Ostream&>::type
-operator<<(Ostream& os, const Ctr& ctr)
+operator<<(Ostream& os, const basic_string<charT, Traits, Allocator>& str)
 {
-  boost::xop::converting_iterator<typename Ctr::const_iterator,
-    typename Ctr::value_type, boost::xop::by_range,
-    typename Ostream::char_type> itr(ctr.begin(), ctr.end());
-  for (; *itr; ++itr)
+  typedef const basic_string<charT, Traits, Allocator> string_type;
+  typedef boost::interop::codex_iterator<typename string_type::const_iterator,
+    typename string_type::value_type, boost::interop::by_range,
+    typename Ostream::char_type> iter_type;
+
+  iter_type itr(str.begin(), str.end());
+  for (; itr != iter_type(); ++itr)
     os << *itr;
   return os;
 }
@@ -83,20 +86,20 @@ operator<<(Ostream& os, const Ctr& ctr)
 
 basic_ostream<char>& operator<<(basic_ostream<char>& os, const wchar_t* p)
 {
-  return boost::xop::detail::inserter(os, p);
+  return boost::interop::detail::inserter(os, p);
 }
 
 #ifndef BOOST_NO_CHAR16_T
 basic_ostream<char>& operator<<(basic_ostream<char>& os, const char16_t* p)
 {
-  return boost::xop::detail::inserter(os, p);
+  return boost::interop::detail::inserter(os, p);
 }
 #endif
 
 #ifndef BOOST_NO_CHAR32_T
 basic_ostream<char>& operator<<(basic_ostream<char>& os, const char32_t* p)
 {
-  return boost::xop::detail::inserter(os, p);
+  return boost::interop::detail::inserter(os, p);
 }
 #endif
 
