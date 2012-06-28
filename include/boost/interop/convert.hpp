@@ -25,9 +25,9 @@ namespace interop
   //  container
   template <class ToContainer,
 # ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
-    template <class, class> class ToIterator = target_codex_iterator,
+    template <class, class> class ToIterator = to_iterator,
     template <class, class,
-      template<class> class> class FromIterator = source_codex_iterator,
+      template<class> class> class FromIterator = from_iterator,
 # endif
     class FromContainer>
     // enable_if resolves ambiguity with single iterator overload
