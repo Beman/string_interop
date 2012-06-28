@@ -7,6 +7,7 @@
 
 #include <boost/config/warning_disable.hpp>  // must precede other headers
 
+#include <iostream>
 #include <boost/interop/convert.hpp>
 #include <cstring>  // for memcmp
 #include <boost/detail/lightweight_test.hpp>
@@ -36,6 +37,7 @@ namespace
   const u32string u32s(u32c);
   const u16string u16s(u16c);
   const u8string u8s(u8c);
+  const string chars("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
 
 //------------------------------------ simple_test -------------------------------------//
 
@@ -64,6 +66,36 @@ namespace
     BOOST_TEST(s4 == u8s);
   }
 
+//------------------------------------ to_utf8_test ------------------------------------//
+
+  void to_utf8_test()
+  {
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+    std::cout << "to_utf8_test..." << std::endl;
+
+    // container
+//    string s1 = convert<string, u32string, to_utf8>(u32s);
+    string s1 = convert<string, to_utf8>(u32s);
+    BOOST_TEST_EQ(s1.size(), 8);
+    BOOST_TEST(s1 == chars);
+
+    //// null terminated iterator
+    //string s2 = convert<string>(u32s.c_str());
+    //BOOST_TEST_EQ(s2.size(), 8);
+    //BOOST_TEST(s2 == chars);
+
+    //// iterator, size
+    //string s3 = convert<string>(u32s.c_str(), u32s.size());
+    //BOOST_TEST_EQ(s3.size(), 8);
+    //BOOST_TEST(s3 == chars);
+
+    //// iterator range
+    //string s4 = convert<string>(u32s.begin(), u32s.end());
+    //BOOST_TEST_EQ(s4.size(), 8);
+    //BOOST_TEST(s4 == chars);
+# endif
+  }
+
 }
 
 //--------------------------------------------------------------------------------------//
@@ -81,6 +113,7 @@ int cpp_main(int, char*[])
   BOOST_TEST(std::memcmp(u8s.c_str(), u8c, u8s.size())==0);
 
   simple_test();
+  to_utf8_test();
 
   return ::boost::report_errors();
 }

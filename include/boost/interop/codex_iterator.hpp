@@ -134,6 +134,7 @@ public:
 //-----------------------------  source_codex_iterator  --------------------------------//
 //
 //  source_codex_iterator meets the DefaultCtorEndIterator requirements.
+//  iterator_traits<InputIterator>::value_type must be FromCharT
 
   // primary template; partial specializations *must* be provided
   template <class InputIterator, class FromCharT, template<class> class EndPolicy>  
@@ -158,6 +159,7 @@ public:
 //
 //  target_codex_iterator meets the DefaultCtorEndIterator requirements.
 //  InputIterator must meet the DefaultCtorEndIterator requirements.
+//  iterator_traits<InputIterator>::value_type must be c32_t
 
   // primary template; partial specializations *must* be provided
   template <class InputIterator, class ToCharT>  
@@ -177,6 +179,17 @@ public:
 
   template <class InputIterator>
   class target_codex_iterator<InputIterator, wchar_t>;
+
+//--------------------------------  utf-8 iterators  -----------------------------------//
+
+  template <class InputIterator, template<class> class EndPolicy>  
+  //  iterator_traits<InputIterator>::value_type must be char
+  class from_utf8;  // value_type is c32_t
+
+  template <class InputIterator, class ToCharT>
+  //  iterator_traits<InputIterator>::value_type must be c32_t
+  //  ToCharT must be char
+  class to_utf8;  // value_type is char
 
 //--------------------------------  policy_iterator  -----------------------------------//
 
@@ -1366,7 +1379,133 @@ namespace detail
 #   error Sorry, not implemented for other than 16 or 32 bit wchar_t
 # endif
 
-//---------------------------------  policy_iterator  ----------------------------------//
+//------------------------------------  from_utf8  ---------------------------------------//
+
+  //template <class InputIterator, template<class> class EndPolicy>  
+  ////  iterator_traits<InputIterator>::value_type must be char
+  //class from_utf8;  // value_type is c32_t
+
+//-------------------------------------  to_utf8  ----------------------------------------//
+
+  template <class InputIterator, class ToCharT>
+  //  iterator_traits<InputIterator>::value_type must be c32_t
+  //  ToCharT must be char
+  class to_utf8  // value_type is char
+   : public boost::iterator_facade<to_utf8<InputIterator, ToCharT>,
+       char, std::input_iterator_tag, const char>
+  {
+     typedef boost::iterator_facade<to_utf8<InputIterator, ToCharT>,
+       char, std::input_iterator_tag, const char> base_type;
+   
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
+
+     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
+     BOOST_STATIC_ASSERT(sizeof(char)*CHAR_BIT == 8);
+
+     InputIterator m_iterator;
+     mutable char m_values[5];
+     mutable unsigned m_current;
+
+  public:
+
+     // construct:
+     to_utf8() : m_iterator(), m_current(0)
+     {
+        m_values[0] = 0;
+        m_values[1] = 0;
+        m_values[2] = 0;
+        m_values[3] = 0;
+        m_values[4] = 0;
+     }
+     to_utf8(InputIterator begin) : m_iterator(begin), m_current(4)
+     {
+        m_values[0] = 0;
+        m_values[1] = 0;
+        m_values[2] = 0;
+        m_values[3] = 0;
+        m_values[4] = 0;
+std::cout << "to_utf8 constructor" << std::endl;
+    }
+
+     typename base_type::reference
+     dereference()const
+     {
+        if(m_current == 4)
+           extract_current();
+        return m_values[m_current];
+     }
+     bool equal(const to_utf8& that)const
+     {
+        if(m_iterator == that.m_iterator)
+        {
+           // either the m_current's must be equal, or one must be 0 and 
+           // the other 4: which means neither must have bits 1 or 2 set:
+           return (m_current == that.m_current)
+              || (((m_current | that.m_current) & 3) == 0);
+        }
+        return false;
+     }
+     void increment()
+     {
+        // if we have a pending read then read now, so that we know whether
+        // to skip a position, or move to a low-surrogate:
+        if(m_current == 4)
+        {
+           // pending read:
+           extract_current();
+        }
+        // move to the next surrogate position:
+        ++m_current;
+        // if we've reached the end skip a position:
+        if(m_values[m_current] == 0)
+        {
+           m_current = 4;
+           ++m_iterator;
+        }
+     }
+
+     InputIterator& base() { return m_iterator; }
+
+  private:
+
+     void extract_current()const
+     {
+        boost::uint32_t c = *m_iterator;
+        if(c > 0x10FFFFu)
+           detail::invalid_utf32_code_point(c);
+        if(c < 0x80u)
+        {
+           m_values[0] = static_cast<char>(c);
+           m_values[1] = static_cast<char>(0u);
+           m_values[2] = static_cast<char>(0u);
+           m_values[3] = static_cast<char>(0u);
+        }
+        else if(c < 0x800u)
+        {
+           m_values[0] = static_cast<char>(0xC0u + (c >> 6));
+           m_values[1] = static_cast<char>(0x80u + (c & 0x3Fu));
+           m_values[2] = static_cast<char>(0u);
+           m_values[3] = static_cast<char>(0u);
+        }
+        else if(c < 0x10000u)
+        {
+           m_values[0] = static_cast<char>(0xE0u + (c >> 12));
+           m_values[1] = static_cast<char>(0x80u + ((c >> 6) & 0x3Fu));
+           m_values[2] = static_cast<char>(0x80u + (c & 0x3Fu));
+           m_values[3] = static_cast<char>(0u);
+        }
+        else
+        {
+           m_values[0] = static_cast<char>(0xF0u + (c >> 18));
+           m_values[1] = static_cast<char>(0x80u + ((c >> 12) & 0x3Fu));
+           m_values[2] = static_cast<char>(0x80u + ((c >> 6) & 0x3Fu));
+           m_values[3] = static_cast<char>(0x80u + (c & 0x3Fu));
+        }
+        m_current= 0;
+     }
+  };
+
+  //---------------------------------  policy_iterator  ----------------------------------//
 
   template <class InputIterator, template<class> class EndPolicy>
   class policy_iterator

@@ -23,14 +23,25 @@ namespace interop
 {
 
   //  container
-  template <class ToContainer, class FromContainer>
+  template <class ToContainer,
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+    template <class, class> class ToIterator = target_codex_iterator,
+    template <class, class,
+      template<class> class> class FromIterator = source_codex_iterator,
+# endif
+    class FromContainer>
     // enable_if resolves ambiguity with single iterator overload
   typename boost::disable_if<boost::is_iterator<FromContainer>,
   ToContainer>::type convert(const FromContainer& x)
+//  ToContainer convert(const FromContainer& x)
   {
     typedef boost::interop::codex_iterator<
-      typename FromContainer::const_iterator,
-      typename FromContainer::value_type, by_range, typename ToContainer::value_type>
+      typename FromContainer::const_iterator, typename FromContainer::value_type, by_range,
+      typename ToContainer::value_type
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+      , ToIterator, FromIterator 
+# endif
+      >
         iter_type;
     ToContainer tmp;
     iter_type itr(x.cbegin(), x.cend());
