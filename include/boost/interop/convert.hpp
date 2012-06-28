@@ -49,7 +49,7 @@ namespace interop
     return tmp;
   }
 
-  //  iterator, null terminated
+  //  null terminated iterator
   template <class ToContainer, class InputIterator>
     // enable_if resolves ambiguity with FromContainer overload
   typename boost::enable_if<boost::is_iterator<InputIterator>,
