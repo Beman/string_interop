@@ -256,12 +256,12 @@ template <class ToCodec, class FromCodec,
   class InputIterator, template<class> class EndPolicy>
 class conversion_iterator
   : public 
-      ToCodec::template to_iterator<FromCodec::template from_iterator<InputIterator,
+      ToCodec::template to_iterator<typename FromCodec::template from_iterator<InputIterator,
         EndPolicy> >
 {
 public:
-  typedef typename FromCodec::from_iterator<InputIterator, EndPolicy> from_iterator_type;
-  typedef typename ToCodec::to_iterator<from_iterator_type>           to_iterator_type;
+  typedef typename FromCodec::template from_iterator<InputIterator, EndPolicy> from_iterator_type;
+  typedef typename ToCodec::template to_iterator<from_iterator_type>           to_iterator_type;
 
   conversion_iterator() : to_iterator_type() {}
 
