@@ -315,7 +315,7 @@ ToContainer convert(const FromContainer& x)
 {
   typedef conversion_iterator<
     ToCodec,
-    typename FromCodec::codec<typename FromContainer::value_type>::type,
+    typename FromCodec::template codec<typename FromContainer::value_type>::type,
     typename FromContainer::const_iterator, by_range>  iter_type;
   ToContainer tmp;
   iter_type itr(x.cbegin(), x.cend());
