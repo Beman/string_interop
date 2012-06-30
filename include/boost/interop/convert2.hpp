@@ -244,10 +244,20 @@ struct utf32
   struct codec { typedef utf32 type; };
 };
 
+namespace detail
+{
+  template <class CharT> struct auto_codec;
+  template <> struct auto_codec<char> { typedef native type; };
+}
+
 struct auto_detect
 {
-  template <class CharT> struct codec { typedef void type; };
-  template <> struct codec<char> { typedef native type; };
+  template <class CharT>
+  struct codec
+  { 
+    typedef typename detail::auto_codec<CharT>::type type; 
+  };
+
 };
 
 //------------------------------  conversion_iterator  ---------------------------------//
