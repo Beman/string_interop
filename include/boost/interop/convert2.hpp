@@ -256,7 +256,8 @@ template <class ToCodec, class FromCodec,
   class InputIterator, template<class> class EndPolicy>
 class conversion_iterator
   : public 
-      ToCodec::template to_iterator<FromCodec::from_iterator<InputIterator, EndPolicy> >
+      ToCodec::template to_iterator<FromCodec::template from_iterator<InputIterator,
+        EndPolicy> >
 {
 public:
   typedef typename FromCodec::from_iterator<InputIterator, EndPolicy> from_iterator_type;
@@ -294,7 +295,7 @@ public:
 template <class ToCodec,
 # ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
           class FromCodec = auto_detect,
-          class ToContainer = std::basic_string<ToCodec::value_type>,
+          class ToContainer = std::basic_string<typename ToCodec::value_type>,
 # else
           class FromCodec,
           class ToContainer,
