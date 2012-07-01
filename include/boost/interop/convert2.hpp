@@ -187,17 +187,15 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 } // namespace detail
 
-//----------------------------  auto_detect pseudo codec  ------------------------------//
+//------------------------------  auto_codec type selector  ----------------------------//
 
-//  specializations need to be at namespace scope, at least for gcc 4.6.2
-namespace detail
-{
   template <class CharT> struct auto_codec;
   template <> struct auto_codec<char> { typedef narrow type; };
   template <> struct auto_codec<wchar_t> { typedef wide type; };
   template <> struct auto_codec<u16_t> { typedef utf16 type; };
   template <> struct auto_codec<u32_t> { typedef utf32 type; };
-}
+
+//----------------------------  auto_detect pseudo codec  ------------------------------//
 
 class auto_detect
 {
@@ -205,7 +203,7 @@ public:
   template <class CharT>
   struct codec
   { 
-    typedef typename detail::auto_codec<CharT>::type type; 
+    typedef typename auto_codec<CharT>::type type; 
   };
 
 };
