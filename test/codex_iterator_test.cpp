@@ -6,7 +6,7 @@
 //  See http://www.boost.org/LICENSE_1_0.txt
 
 #include <iostream>
-#include <boost/interop/conversion_iterator.hpp>
+#include <boost/interop/convert2.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
