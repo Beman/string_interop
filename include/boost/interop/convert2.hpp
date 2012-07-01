@@ -744,8 +744,22 @@ public:
     }
   };
 
-
   //  to_iterator
+
+  template <class InputIterator>
+  class to_iterator
+   : public boost::iterator_facade<to_iterator<InputIterator>,
+      u32_t, std::input_iterator_tag, const u32_t>
+  {
+    InputIterator m_itr;
+  public:
+    to_iterator() {}
+    to_iterator(InputIterator itr) : m_itr(itr) {}
+    u32_t dereference() const { return *m_itr; }
+    bool equal(const to_iterator& that) const {return m_itr == that.m_itr;}
+    void increment() { ++m_itr; }
+    InputIterator& base() {return m_itr;}
+  };
 
 };
 
