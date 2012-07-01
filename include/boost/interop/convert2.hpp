@@ -138,7 +138,88 @@ public:
 //                                      codecs                                          //
 //--------------------------------------------------------------------------------------//
 
-//------------------------------------  codecs  ----------------------------------------//
+//------------------------------------  helpers  ---------------------------------------//
+
+namespace detail{
+
+static const ::boost::uint16_t high_surrogate_base = 0xD7C0u;
+static const ::boost::uint16_t low_surrogate_base = 0xDC00u;
+static const ::boost::uint32_t ten_bit_mask = 0x3FFu;
+
+inline bool is_high_surrogate(::boost::uint16_t v)
+{
+   return (v & 0xFFFFFC00u) == 0xd800u;
+}
+inline bool is_low_surrogate(::boost::uint16_t v)
+{
+   return (v & 0xFFFFFC00u) == 0xdc00u;
+}
+template <class T>
+inline bool is_surrogate(T v)
+{
+   return (v & 0xFFFFF800u) == 0xd800;
+}
+
+inline unsigned utf8_byte_count(boost::uint8_t c)
+{
+   // if the most significant bit with a zero in it is in position
+   // 8-N then there are N bytes in this UTF-8 sequence:
+   boost::uint8_t mask = 0x80u;
+   unsigned result = 0;
+   while(c & mask)
+   {
+      ++result;
+      mask >>= 1;
+   }
+   return (result == 0) ? 1 : ((result > 4) ? 4 : result);
+}
+
+inline unsigned utf8_trailing_byte_count(boost::uint8_t c)
+{
+   return utf8_byte_count(c) - 1;
+}
+
+#ifdef BOOST_MSVC
+#pragma warning(push)
+#pragma warning(disable:4100)
+#endif
+inline void invalid_utf32_code_point(::boost::uint32_t val)
+{
+   std::stringstream ss;
+   ss << "Invalid UTF-32 code point U+" << std::showbase << std::hex << val << " encountered while trying to encode UTF-16 sequence";
+   std::out_of_range e(ss.str());
+   BOOST_INTEROP_THROW(e);
+}
+#ifdef BOOST_MSVC
+#pragma warning(pop)
+#endif
+
+} // namespace detail
+
+//----------------------------  auto_detect pseudo codec  ------------------------------//
+
+//  specializations need to be at namespace scope, at least for gcc 4.6.2
+namespace detail
+{
+  template <class CharT> struct auto_codec;
+  template <> struct auto_codec<char> { typedef narrow type; };
+  template <> struct auto_codec<wchar_t> { typedef wide type; };
+  template <> struct auto_codec<u16_t> { typedef utf16 type; };
+  template <> struct auto_codec<u32_t> { typedef utf32 type; };
+}
+
+class auto_detect
+{
+public:
+  template <class CharT>
+  struct codec
+  { 
+    typedef typename detail::auto_codec<CharT>::type type; 
+  };
+
+};
+
+//----------------------------------  narrow codec  ------------------------------------//
 
 namespace detail
 {
@@ -155,6 +236,8 @@ public:
 
   template <class CharT>
   struct codec { typedef narrow type; };
+
+  //  from_iterator
 
   template <class InputIterator, template<class> class EndPolicy>  
   class from_iterator
@@ -239,6 +322,8 @@ public:
     }
   };
 
+  //  to_iterator
+
   template <class InputIterator>  
   class to_iterator
    : public boost::iterator_facade<to_iterator<InputIterator>,
@@ -295,44 +380,372 @@ public:
     InputIterator& base() {return m_iterator;}
 
   };  // to_iterator
-};  // native
+};  // narrow
+
+//-----------------------------------  wide codec  -------------------------------------//
+
+class wide
+{
+public:
+  typedef wchar_t value_type;
+  template <class CharT> struct codec { typedef wide type; };
+
+  //  from_iterator
+
+
+  //  to_iterator
+
+};
+
+//-----------------------------------  utf8 codec  -------------------------------------//
 
 class utf8
 {
 public:
-  template <class CharT>
-  struct codec { typedef utf8 type; };
+  typedef char value_type;
+  template <class CharT> struct codec { typedef utf8 type; };
+
+  //  from_iterator
+
+
+  //  to_iterator
+
 };
+
+//----------------------------------  utf16 codec  -------------------------------------//
 
 class utf16
 {
 public:
-  template <class CharT>
-  struct codec { typedef utf16 type; };
+  typedef u16_t value_type;
+  template <class CharT> struct codec { typedef utf16 type; };
+
+  //  from_iterator
+
+  template <class InputIterator, template<class> class EndPolicy>
+  class from_iterator
+   : public boost::iterator_facade<from_iterator<InputIterator, EndPolicy>,
+       u32_t, std::input_iterator_tag, const u32_t>,
+     public EndPolicy<InputIterator>
+  {
+     typedef boost::iterator_facade<from_iterator<InputIterator, EndPolicy>,
+       u32_t, std::input_iterator_tag, const u32_t> base_type;
+     // special values for pending iterator reads:
+     BOOST_STATIC_CONSTANT(u32_t, read_pending = 0xffffffffu);
+
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
+
+     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
+     BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
+
+     // for the end itorator (i.e. m_is_end == true), other values are unspecified
+     InputIterator  m_iterator;  // current position
+     mutable u32_t  m_value;     // current value or read_pending
+     mutable bool   m_is_end;    // true iff this is the end iterator
+    // note: InputIterator is not require to be default construtable [iterator.iterators],
+    // so m_iterator == InputIterator() cannot be used to denote the end iterator.
+
+   public:
+
+    // end iterator
+    from_iterator() : m_is_end(true) {} // construct end iterator
+
+    // by_null
+    from_iterator(InputIterator begin) : m_iterator(begin) 
+    {
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type,
+        by_null_policy>::value, "Constructor not valid unless EndPolicy is by_null");
+      m_is_end = this->is_end(m_iterator);
+      m_value = read_pending;
+    }
+
+    // by range
+    template <class T>
+    from_iterator(InputIterator begin, T end,
+      // enable_if ensures 2nd argument of 0 is treated as size, not range end
+      typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
+      : m_iterator(begin) 
+    {
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type,
+        by_range_policy>::value, "Constructor not valid unless EndPolicy is by_range");
+      this->end(end);
+      m_is_end = this->is_end(m_iterator);
+      m_value = read_pending;
+    }
+
+    // by_size
+    from_iterator(InputIterator begin, std::size_t sz)
+      : m_iterator(begin) 
+    {
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type,
+        by_size_policy>::value, "Constructor not valid unless EndPolicy is by_size");
+      this->size(sz);
+      m_is_end = this->is_end(m_iterator);
+      m_value = read_pending;
+    }
+
+     typename base_type::reference
+        dereference() const
+     {
+        BOOST_ASSERT_MSG(!m_is_end, 
+          "Attempt to dereference end iterator");
+        if (m_value == read_pending)
+           extract_current();
+        return m_value;
+     }
+
+     bool equal(const from_iterator& that) const 
+     {
+       if (m_is_end)
+         return that.m_is_end;
+       if (that.m_is_end)
+         return false;
+       return m_iterator == that.m_iterator;
+     }
+
+     void increment()
+     {
+       BOOST_ASSERT_MSG(!m_is_end,
+         "Attempt to increment end iterator");
+       // skip high surrogate first if there is one:
+       if(detail::is_high_surrogate(*m_iterator))
+       {
+         ++m_iterator;
+         this->advance();
+       }
+       ++m_iterator;
+       this->advance();
+       if (this->is_end(m_iterator))
+          m_is_end = true;
+        m_value = read_pending;
+     }
+
+  private:
+     static void invalid_code_point(::boost::uint16_t val)
+     {
+        std::stringstream ss;
+        ss << "Misplaced UTF-16 surrogate U+" << std::showbase << std::hex << val
+           << " encountered while trying to encode UTF-32 sequence";
+        std::out_of_range e(ss.str());
+        BOOST_INTEROP_THROW(e);
+     }
+     static void invalid_sequence()
+     {
+        std::out_of_range e(
+          "Invalid UTF-16 sequence encountered while trying to encode UTF-32 character");
+        BOOST_INTEROP_THROW(e);
+     }
+     void extract_current() const
+     {
+        m_value = static_cast<u32_t>(static_cast< ::boost::uint16_t>(*m_iterator));
+        // if the last value is a high surrogate then adjust m_iterator and m_value as needed:
+        if(detail::is_high_surrogate(*m_iterator))
+        {
+           // precondition; next value must have be a low-surrogate:
+           InputIterator next(m_iterator);
+           u16_t t = *++next;
+           if((t & 0xFC00u) != 0xDC00u)
+              invalid_code_point(t);
+           m_value = (m_value - detail::high_surrogate_base) << 10;
+           m_value |= (static_cast<u32_t>(
+             static_cast<u16_t>(t)) & detail::ten_bit_mask);
+        }
+        // postcondition; result must not be a surrogate:
+        if(detail::is_surrogate(m_value))
+           invalid_code_point(static_cast<u16_t>(m_value));
+     }
+  };
+
+  //  to_iterator
+
+  template <class InputIterator>
+  class to_iterator
+   : public boost::iterator_facade<to_iterator<InputIterator>,
+      u16_t, std::input_iterator_tag, const u16_t>
+  {
+     typedef boost::iterator_facade<to_iterator<InputIterator>,
+       u16_t, std::input_iterator_tag, const u16_t> base_type;
+
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
+
+     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
+     BOOST_STATIC_ASSERT(sizeof(u16_t)*CHAR_BIT == 16);
+
+  public:
+
+     typename base_type::reference
+     dereference()const
+     {
+        if(m_current == 2)
+           extract_current();
+        return m_values[m_current];
+     }
+     bool equal(const to_iterator& that)const
+     {
+        if(m_iterator == that.m_iterator)
+        {
+           // Both m_currents must be equal, or both even
+           // this is the same as saying their sum must be even:
+           return (m_current + that.m_current) & 1u ? false : true;
+        }
+        return false;
+     }
+     void increment()
+     {
+        // if we have a pending read then read now, so that we know whether
+        // to skip a position, or move to a low-surrogate:
+        if(m_current == 2)
+        {
+           // pending read:
+           extract_current();
+        }
+        // move to the next surrogate position:
+        ++m_current;
+        // if we've reached the end skip a position:
+        if(m_values[m_current] == 0)
+        {
+           m_current = 2;
+           ++m_iterator;
+        }
+     }
+
+     InputIterator& base() {return m_iterator;}
+
+     // construct:
+     to_iterator() : m_iterator(), m_current(0)
+     {
+        m_values[0] = 0;
+        m_values[1] = 0;
+        m_values[2] = 0;
+     }
+     to_iterator(InputIterator b) : m_iterator(b), m_current(2)
+     {
+        m_values[0] = 0;
+        m_values[1] = 0;
+        m_values[2] = 0;
+        BOOST_XOP_LOG("utf-16 from utf-32");
+    }
+  private:
+
+     void extract_current()const
+     {
+        // begin by checking for a code point out of range:
+        ::boost::uint32_t v = *m_iterator;
+        if(v >= 0x10000u)
+        {
+           if(v > 0x10FFFFu)
+              detail::invalid_utf32_code_point(*m_iterator);
+           // split into two surrogates:
+           m_values[0] = static_cast<u16_t>(v >> 10) + detail::high_surrogate_base;
+           m_values[1] = static_cast<u16_t>(v & detail::ten_bit_mask)
+             + detail::low_surrogate_base;
+           m_current = 0;
+           BOOST_ASSERT(detail::is_high_surrogate(m_values[0]));
+           BOOST_ASSERT(detail::is_low_surrogate(m_values[1]));
+        }
+        else
+        {
+           // 16-bit code point:
+           m_values[0] = static_cast<u16_t>(*m_iterator);
+           m_values[1] = 0;
+           m_current = 0;
+           // value must not be a surrogate:
+           if(detail::is_surrogate(m_values[0]))
+              detail::invalid_utf32_code_point(*m_iterator);
+        }
+     }
+     InputIterator m_iterator;
+     mutable u16_t m_values[3];
+     mutable unsigned m_current;
+  };
+
 };
+
+//----------------------------------  utf32 codec  -------------------------------------//
 
 class utf32
 {
 public:
-  template <class CharT>
-  struct codec { typedef utf32 type; };
-};
+  typedef u32_t value_type;
+  template <class CharT> struct codec { typedef utf32 type; };
 
-//  specializations need to be at namespace scope, at least for gcc 4.6.2
-namespace detail
-{
-  template <class CharT> struct auto_codec;
-  template <> struct auto_codec<char> { typedef narrow type; };
-}
+  //  from_iterator
 
-class auto_detect
-{
-public:
-  template <class CharT>
-  struct codec
-  { 
-    typedef typename detail::auto_codec<CharT>::type type; 
+  template <class InputIterator, template<class> class EndPolicy>
+  class from_iterator
+    : public boost::iterator_facade<from_iterator<InputIterator, EndPolicy>,
+        u32_t, std::input_iterator_tag, const u32_t>,
+      public EndPolicy<InputIterator>
+  {
+    // for the end itorator (i.e. m_is_end == true), value of m_iterator unspecified
+    InputIterator  m_iterator;
+    mutable bool   m_is_end;    // true iff this is the end iterator
+    // note: InputIterator is not require to be default construtable [iterator.iterators],
+    // so m_iterator == InputIterator() cannot be used to denote the end iterator.
+
+  public:
+    from_iterator() : m_is_end(true) {}  // construct end iterator
+
+    // by_null
+    from_iterator(InputIterator begin) : m_iterator(begin) 
+    {
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type,
+        by_null_policy>::value, "Constructor not valid unless EndPolicy is by_null");
+      m_is_end = this->is_end(m_iterator);
+    }
+
+    // by range
+    template <class T>
+    from_iterator(InputIterator begin, T end,
+      // enable_if ensures 2nd argument of 0 is treated as size, not range end
+      typename boost::enable_if<boost::is_same<InputIterator, T>, void >::type* x=0)
+      : m_iterator(begin) 
+    {
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type,
+        by_range_policy>::value, "Constructor not valid unless EndPolicy is by_range");
+      this->end(end);
+      m_is_end = this->is_end(m_iterator);
+   }
+
+    // by_size
+    from_iterator(InputIterator begin, std::size_t sz)
+      : m_iterator(begin) 
+    {
+      static_assert(is_same<typename EndPolicy<InputIterator>::policy_type,
+        by_size_policy>::value, "Constructor not valid unless EndPolicy is by_size");
+      this->size(sz);
+      m_is_end = this->is_end(m_iterator);
+    }
+
+    u32_t dereference() const
+    {
+      BOOST_ASSERT_MSG(!m_is_end,
+        "Attempt to dereference end iterator");
+      return *m_iterator;
+    }
+
+    bool equal(const from_iterator& that) const
+    {
+      if (m_is_end)
+        return that.m_is_end;
+      if (that.m_is_end)
+        return false;
+      return m_iterator == that.m_iterator;
+    }
+
+    void increment()
+    {
+      BOOST_ASSERT_MSG(!m_is_end,
+        "Attempt to increment end iterator");
+      ++m_iterator;
+      this->advance();
+      if (this->is_end(m_iterator))
+        m_is_end = true;
+    }
   };
+
+
+  //  to_iterator
 
 };
 
