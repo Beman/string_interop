@@ -58,21 +58,21 @@ int cpp_main(int, char*[])
   BOOST_TEST(std::memcmp(u8s.c_str(), u8c, u8s.size())==0);
 
   // look for smoke
-  typedef native::from_iterator<const char*, by_null> native_from_iterator;
+  typedef narrow::from_iterator<const char*, by_null> native_from_iterator;
   native_from_iterator begin1(chars.c_str());
 
-  typedef native::to_iterator<const u32_t*> native_to_iterator;
+  typedef narrow::to_iterator<const u32_t*> native_to_iterator;
   native_to_iterator begin2(u32c);
 
-  static_assert(boost::is_same<auto_detect::codec<char>::type, native>::value,
+  static_assert(boost::is_same<auto_detect::codec<char>::type, narrow>::value,
     "auto detected the wrong type");
 
-  typedef conversion_iterator<native, native, const char*, by_null>
+  typedef conversion_iterator<narrow, narrow, const char*, by_null>
     conversion_iterator_example;
   conversion_iterator_example cvn_iterator;
 
   string source("foo");
-  string result = convert<native, native, string>(source);
+  string result = convert<narrow, narrow, string>(source);
   BOOST_TEST_EQ(source, result);
 
   return ::boost::report_errors();

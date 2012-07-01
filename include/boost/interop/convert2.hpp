@@ -1,3 +1,27 @@
+//  boost/interop/string_interop.hpp  --------------------------------------------------//
+
+//  Copyright Beman Dawes 2011, 2012
+//  Copyright (c) 2004 John Maddock
+
+//  Distributed under the Boost Software License, Version 1.0.
+//  See http://www.boost.org/LICENSE_1_0.txt
+
+//--------------------------------------------------------------------------------------//
+//                                                                                      //
+//         Conversions to enable interoperation between character strings               //
+//                      of different types and encodings.                               //
+//                                                                                      //
+//--------------------------------------------------------------------------------------//
+
+//--------------------------------------------------------------------------------------//
+//  John Maddock's boost/regex/pending/unicode_iterator.hpp introduced me to the idea   //
+//  of performing conversion via iterator adapters. The code below for the UTF-8        //
+//  to/from UTF-32 and UTF-16 to/from UTF-32 adapers was based on that header.          //
+//--------------------------------------------------------------------------------------//
+
+#if !defined(BOOST_STRING_INTEROP_HPP)
+#define BOOST_STRING_INTEROP_HPP
+
 #include <boost/interop/detail/config.hpp>
 #include <boost/interop/string_types.hpp>
 //#include <boost/cstdint.hpp>
@@ -15,25 +39,57 @@ namespace boost
 {
 namespace interop
 {
-namespace detail
-{
-  // for this proof-of-concept, simply linking in codec tables is sufficient
-  extern const boost::u16_t  to_utf16[];  
-  extern const unsigned char to_char[];
-  extern const boost::uint8_t slice_index[];
-}
 
+//--------------------------------------------------------------------------------------//
+//                                     Synopsis                                         //
+//--------------------------------------------------------------------------------------//
 
-//---------------------------  end-detection policy classes  ---------------------------//
+//  end policies
+struct by_null_policy {};
+struct by_range_policy {};
+struct by_size_policy {};
+
+template <class InputIterator> class by_null;
+template <class InputIterator> class by_range;
+template <class InputIterator> class by_size;
+
+//  codecs
+class narrow;   // native encoding for char
+class wide;     // native encoding for wchar_t
+class utf8;     // UTF-8 encoding for char
+class utf16;    // UTF-16 encoding for char16_t
+class utf32;    // UTF-32 encoding for char32_t
+class auto_detect;
+
+//  conversion_iterator
+template <class ToCodec, class FromCodec, class InputIterator,
+  template<class> class EndPolicy>
+class conversion_iterator;
+
+//  convert() function
+template <class ToCodec,
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = auto_detect,
+          class ToContainer = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec,
+          class ToContainer,
+# endif
+          class FromContainer>
+ToContainer convert(const FromContainer& x);
+
+//--------------------------------------------------------------------------------------//
+//                                  Implementation                                      //
+//--------------------------------------------------------------------------------------//
+
+//--------------------------------------------------------------------------------------//
+//                             end-detection policy classes                             //
+//--------------------------------------------------------------------------------------//
 
 //  from_iterator needs to know when the end of the sequence is reached. There are
 //  several approaches to determine this; by half-open range, by size, and by
 //  null-termination. End-detection policies allow the end to be efficiently determined,
 //  and to do so without adding data members needed only for specific approaches.
-
-struct by_null_policy {};
-struct by_range_policy {};
-struct by_size_policy {};
 
 template <class InputIterator>
 class by_null
@@ -78,12 +134,27 @@ public:
   void advance(std::size_t sz=1) const { m_size -= sz; }
 };
 
+//--------------------------------------------------------------------------------------//
+//                                      codecs                                          //
+//--------------------------------------------------------------------------------------//
+
 //------------------------------------  codecs  ----------------------------------------//
 
-struct native
+namespace detail
 {
+  // for this proof-of-concept, simply linking in codec tables is sufficient
+  extern const boost::u16_t  to_utf16[];  
+  extern const unsigned char to_char[];
+  extern const boost::uint8_t slice_index[];
+}
+
+class narrow
+{
+public:
+  typedef char value_type;
+
   template <class CharT>
-  struct codec { typedef native type; };
+  struct codec { typedef narrow type; };
 
   template <class InputIterator, template<class> class EndPolicy>  
   class from_iterator
@@ -226,32 +297,37 @@ struct native
   };  // to_iterator
 };  // native
 
-struct utf8
+class utf8
 {
+public:
   template <class CharT>
   struct codec { typedef utf8 type; };
 };
 
-struct utf16
+class utf16
 {
+public:
   template <class CharT>
   struct codec { typedef utf16 type; };
 };
 
-struct utf32
+class utf32
 {
+public:
   template <class CharT>
   struct codec { typedef utf32 type; };
 };
 
+//  specializations need to be at namespace scope, at least for gcc 4.6.2
 namespace detail
 {
   template <class CharT> struct auto_codec;
-  template <> struct auto_codec<char> { typedef native type; };
+  template <> struct auto_codec<char> { typedef narrow type; };
 }
 
-struct auto_detect
+class auto_detect
 {
+public:
   template <class CharT>
   struct codec
   { 
@@ -260,7 +336,13 @@ struct auto_detect
 
 };
 
-//------------------------------  conversion_iterator  ---------------------------------//
+//--------------------------------------------------------------------------------------//
+//                                 conversion_iterator                                  //
+//--------------------------------------------------------------------------------------//
+
+//  A conversion_iterator composes a ToCodec's to_iterator and a FromCodec's from_iterator
+//  into a single iterator adapts an InputIterator to FromCodec's value_type to act as an
+//  iterator to the ToCodec's value_type.
 
 template <class ToCodec, class FromCodec,
   class InputIterator, template<class> class EndPolicy>
@@ -300,7 +382,9 @@ public:
   }
 };
 
-//----------------------------------  convert  -----------------------------------------//
+//--------------------------------------------------------------------------------------//
+//                                 convert function                                     //
+//--------------------------------------------------------------------------------------//
 
 template <class ToCodec,
 # ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
@@ -326,3 +410,5 @@ ToContainer convert(const FromContainer& x)
 
 }  // namespace interop
 }  // namespace boost
+
+#endif  // BOOST_STRING_INTEROP_HPP
