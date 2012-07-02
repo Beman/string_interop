@@ -8,7 +8,7 @@
 #include <boost/config/warning_disable.hpp>  // must precede other headers
 
 #include <iostream>
-#include <boost/interop/convert2.hpp>
+#include <boost/interop/convert.hpp>
 #include <cstring>  // for memcmp
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>

@@ -9,7 +9,7 @@
 # define BOOST_INTEROP_STREAM_HPP
 
 #include <boost/interop/string_types.hpp>
-#include <boost/interop/conversion_iterator.hpp>
+#include <boost/interop/convert.hpp>
 #include <boost/interop/detail/is_iterator.hpp>
 #include <boost/interop/detail/iterator_value.hpp>
 #include <boost/utility/enable_if.hpp>

@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "convert_test", "convert_tes
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "smoke_test2", "smoke_test2\smoke_test2.vcxproj", "{9E97DFBF-C1A6-4E30-81D2-F8CD01DC902E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "codec_iterator_test", "codec_iterator_test\codec_iterator_test.vcxproj", "{5B04DCCD-6BFA-4535-8A30-3AA7A7C477D2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -43,6 +45,10 @@ Global
 		{9E97DFBF-C1A6-4E30-81D2-F8CD01DC902E}.Debug|Win32.Build.0 = Debug|Win32
 		{9E97DFBF-C1A6-4E30-81D2-F8CD01DC902E}.Release|Win32.ActiveCfg = Release|Win32
 		{9E97DFBF-C1A6-4E30-81D2-F8CD01DC902E}.Release|Win32.Build.0 = Release|Win32
+		{5B04DCCD-6BFA-4535-8A30-3AA7A7C477D2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5B04DCCD-6BFA-4535-8A30-3AA7A7C477D2}.Debug|Win32.Build.0 = Debug|Win32
+		{5B04DCCD-6BFA-4535-8A30-3AA7A7C477D2}.Release|Win32.ActiveCfg = Release|Win32
+		{5B04DCCD-6BFA-4535-8A30-3AA7A7C477D2}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
