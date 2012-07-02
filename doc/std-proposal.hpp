@@ -1,5 +1,6 @@
-namespace tbd   // namespace to be decided
-{
+namespace std {
+namespace tbd {  //  to be decided
+
   typedef unsigned char    char8_t;
   
   //  End policies [str-x.end]
@@ -89,6 +90,8 @@ namespace tbd   // namespace to be decided
       class InputIterator, class InputIterator2>
     ToContainer convert(InputIterator begin, InputIterator2 end);
 
+}  // namespace tbd
+
   //  converting stream inserter [str-x.cvt.inserter]
   template <class Ostream, class charT, class Traits, class Allocator>
   Ostream& operator<<(Ostream& os, const basic_string<charT, Traits, Allocator>& str);
@@ -98,4 +101,4 @@ namespace tbd   // namespace to be decided
   basic_ostream<char>& operator<<(basic_ostream<char>& os, const char16_t* p);
   basic_ostream<char>& operator<<(basic_ostream<char>& os, const char32_t* p);
   
-}
+}  // namespace std
