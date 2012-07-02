@@ -67,7 +67,9 @@ template <class ToCodec, class FromCodec, class InputIterator,
   template<class> class EndPolicy>
 class conversion_iterator;
 
-//  see below for convert() functions
+//  see auto_codec trait below
+
+//  see convert() functions below 
 
 //--------------------------------------------------------------------------------------//
 //                                  Implementation                                      //
