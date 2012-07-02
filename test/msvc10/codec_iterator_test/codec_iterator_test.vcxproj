@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5B04DCCD-6BFA-4535-8A30-3AA7A7C477D2}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>codex_iterator_test</RootNamespace>
+    <RootNamespace>codec_iterator_test</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -77,7 +77,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\codepage_437.cpp" />
-    <ClCompile Include="..\..\codex_iterator_test.cpp" />
+    <ClCompile Include="..\..\codec_iterator_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

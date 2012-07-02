@@ -9,10 +9,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "is_iterator_test", "is_iter
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stream_test", "stream_test\stream_test.vcxproj", "{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "problem2.cpp", "problem2.cpp\problem2.cpp.vcxproj", "{134577C0-467D-4BF0-A36B-ABA301BAEC92}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "codex_iterator_test", "codex_iterator_test\codex_iterator_test.vcxproj", "{5B04DCCD-6BFA-4535-8A30-3AA7A7C477D2}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "convert_test", "convert_test\convert_test.vcxproj", "{937CE364-BDFE-491D-B06A-E25BBD297594}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "smoke_test2", "smoke_test2\smoke_test2.vcxproj", "{9E97DFBF-C1A6-4E30-81D2-F8CD01DC902E}"
@@ -39,14 +35,6 @@ Global
 		{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}.Debug|Win32.Build.0 = Debug|Win32
 		{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}.Release|Win32.ActiveCfg = Release|Win32
 		{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}.Release|Win32.Build.0 = Release|Win32
-		{134577C0-467D-4BF0-A36B-ABA301BAEC92}.Debug|Win32.ActiveCfg = Debug|Win32
-		{134577C0-467D-4BF0-A36B-ABA301BAEC92}.Debug|Win32.Build.0 = Debug|Win32
-		{134577C0-467D-4BF0-A36B-ABA301BAEC92}.Release|Win32.ActiveCfg = Release|Win32
-		{134577C0-467D-4BF0-A36B-ABA301BAEC92}.Release|Win32.Build.0 = Release|Win32
-		{5B04DCCD-6BFA-4535-8A30-3AA7A7C477D2}.Debug|Win32.ActiveCfg = Debug|Win32
-		{5B04DCCD-6BFA-4535-8A30-3AA7A7C477D2}.Debug|Win32.Build.0 = Debug|Win32
-		{5B04DCCD-6BFA-4535-8A30-3AA7A7C477D2}.Release|Win32.ActiveCfg = Release|Win32
-		{5B04DCCD-6BFA-4535-8A30-3AA7A7C477D2}.Release|Win32.Build.0 = Release|Win32
 		{937CE364-BDFE-491D-B06A-E25BBD297594}.Debug|Win32.ActiveCfg = Debug|Win32
 		{937CE364-BDFE-491D-B06A-E25BBD297594}.Debug|Win32.Build.0 = Debug|Win32
 		{937CE364-BDFE-491D-B06A-E25BBD297594}.Release|Win32.ActiveCfg = Release|Win32
