@@ -47,39 +47,39 @@ namespace
     cout << "codex_from_iterator_test..." << endl;
 
     cout << "  narrow codec" << endl;
-    default_ctor_end_iter_test(narrow::from_iterator<const char*, by_null>(meow), 4);
-    default_ctor_end_iter_test(narrow::from_iterator<const char*, by_size>(meow, 3), 3);
-    default_ctor_end_iter_test(narrow::from_iterator<const char*, by_range>(meow, meow+2), 2);
-    default_ctor_end_iter_test(narrow::from_iterator<const char*, by_null>(meow+4), 0);
-    default_ctor_end_iter_test(narrow::from_iterator<const char*, by_size>(meow, 0), 0);
-    default_ctor_end_iter_test(narrow::from_iterator<const char*, by_range>(meow, meow), 0);
+    default_ctor_end_iter_test(narrow::from_iterator<const char*>(meow), 4);
+    default_ctor_end_iter_test(narrow::from_iterator<const char*>(meow, 3), 3);
+    default_ctor_end_iter_test(narrow::from_iterator<const char*>(meow, meow+2), 2);
+    default_ctor_end_iter_test(narrow::from_iterator<const char*>(meow+4), 0);
+    default_ctor_end_iter_test(narrow::from_iterator<const char*>(meow, 0), 0);
+    default_ctor_end_iter_test(narrow::from_iterator<const char*>(meow, meow), 0);
 
     cout << "  utf8" << endl;
-    default_ctor_end_iter_test(utf8::from_iterator<const char*, by_null>(meow), 4);
-    default_ctor_end_iter_test(utf8::from_iterator<const char*, by_size>(meow, 3), 3);
-    default_ctor_end_iter_test(utf8::from_iterator<const char*, by_range>(meow, meow+2), 2);
-    default_ctor_end_iter_test(utf8::from_iterator<const char*, by_null>(meow+4), 0);
-    default_ctor_end_iter_test(utf8::from_iterator<const char*, by_size>(meow, 0), 0);
-    default_ctor_end_iter_test(utf8::from_iterator<const char*, by_range>(meow, meow), 0);
+    default_ctor_end_iter_test(utf8::from_iterator<const char*>(meow), 4);
+    default_ctor_end_iter_test(utf8::from_iterator<const char*>(meow, 3), 3);
+    default_ctor_end_iter_test(utf8::from_iterator<const char*>(meow, meow+2), 2);
+    default_ctor_end_iter_test(utf8::from_iterator<const char*>(meow+4), 0);
+    default_ctor_end_iter_test(utf8::from_iterator<const char*>(meow, 0), 0);
+    default_ctor_end_iter_test(utf8::from_iterator<const char*>(meow, meow), 0);
 
     cout << "  uft16" << endl;
-    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*, by_null>(meow16), 4);
-    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*, by_size>(meow16, 3), 3);
-    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*, by_range>(meow16, meow16+2), 2);
-    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*, by_null>(meow16+4), 0);
-    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*, by_size>(meow16, 0), 0);
-    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*, by_range>(meow16, meow16), 0);
+    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*>(meow16), 4);
+    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*>(meow16, 3), 3);
+    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*>(meow16, meow16+2), 2);
+    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*>(meow16+4), 0);
+    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*>(meow16, 0), 0);
+    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*>(meow16, meow16), 0);
 
     cout << "  utf32" << endl;
-    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*, by_null>(meow32), 4);
-    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*, by_size>(meow32, 3), 3);
-    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*, by_range>(meow32, meow32+2), 2);
-    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*, by_null>(meow32+4), 0);
-    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*, by_size>(meow32, 0), 0);
-    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*, by_range>(meow32, meow32), 0);
+    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*>(meow32), 4);
+    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*>(meow32, 3), 3);
+    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*>(meow32, meow32+2), 2);
+    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*>(meow32+4), 0);
+    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*>(meow32, 0), 0);
+    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*>(meow32, meow32), 0);
 
     //cout << "  wchar_t" << endl;
-    //default_ctor_end_iter_test(from_iterator<const wchar_t*, wchar_t, by_null>(meoww), 4);
+    //default_ctor_end_iter_test(from_iterator<const wchar_t*, wchar_t>(meoww), 4);
   }
 
   void codex_to_iterator_test()
@@ -88,35 +88,35 @@ namespace
 
     cout << "  narrow codec" << endl;
     default_ctor_end_iter_test(
-      narrow::to_iterator<narrow::from_iterator<const char*, by_null> >(
-        narrow::from_iterator<const char*, by_null>(meow)), 4);
+      narrow::to_iterator<narrow::from_iterator<const char*> >(
+        narrow::from_iterator<const char*>(meow)), 4);
     default_ctor_end_iter_test(
-      narrow::to_iterator<narrow::from_iterator<const char*, by_null> >(
-        narrow::from_iterator<const char*, by_null>(meow+4)), 0);
+      narrow::to_iterator<narrow::from_iterator<const char*> >(
+        narrow::from_iterator<const char*>(meow+4)), 0);
 
     cout << "  utf8" << endl;
     default_ctor_end_iter_test(
-      utf8::to_iterator<utf8::from_iterator<const char*, by_null> >(
-        utf8::from_iterator<const char*, by_null>(meow)), 4);
+      utf8::to_iterator<utf8::from_iterator<const char*> >(
+        utf8::from_iterator<const char*>(meow)), 4);
     default_ctor_end_iter_test(
-      utf8::to_iterator<utf8::from_iterator<const char*, by_null> >(
-        utf8::from_iterator<const char*, by_null>(meow+4)), 0);
+      utf8::to_iterator<utf8::from_iterator<const char*> >(
+        utf8::from_iterator<const char*>(meow+4)), 0);
 
     cout << "  utf16" << endl;
     default_ctor_end_iter_test(
-      utf16::to_iterator<narrow::from_iterator<const char*, by_null> >(
-        narrow::from_iterator<const char*, by_null>(meow)), 4);
+      utf16::to_iterator<narrow::from_iterator<const char*> >(
+        narrow::from_iterator<const char*>(meow)), 4);
     default_ctor_end_iter_test(
-      utf16::to_iterator<narrow::from_iterator<const char*, by_null> >(
-        narrow::from_iterator<const char*, by_null>(meow+4)), 0);
+      utf16::to_iterator<narrow::from_iterator<const char*> >(
+        narrow::from_iterator<const char*>(meow+4)), 0);
 
     cout << "  utf32" << endl;
     default_ctor_end_iter_test(
-      utf32::to_iterator<narrow::from_iterator<const char*, by_null> >(
-        narrow::from_iterator<const char*, by_null>(meow)), 4);
+      utf32::to_iterator<narrow::from_iterator<const char*> >(
+        narrow::from_iterator<const char*>(meow)), 4);
     default_ctor_end_iter_test(
-      utf32::to_iterator<narrow::from_iterator<const char*, by_null> >(
-        narrow::from_iterator<const char*, by_null>(meow+4)), 0);
+      utf32::to_iterator<narrow::from_iterator<const char*> >(
+        narrow::from_iterator<const char*>(meow+4)), 0);
   }
 
   template <class String, class ToCodec>
@@ -124,19 +124,19 @@ namespace
   {
     conversion_iterator<ToCodec,
       typename auto_codec<typename String::value_type>::type,
-      const typename String::value_type*, by_null>         itr1(str.c_str());
+      const typename String::value_type*>         itr1(str.c_str());
 
     default_ctor_end_iter_test(itr1, str.size());
 
     conversion_iterator<ToCodec,
       typename auto_codec<typename String::value_type>::type,
-      const typename String::value_type*, by_size>  itr2(str.c_str(), str.size()-1);
+      const typename String::value_type*>  itr2(str.c_str(), str.size()-1);
 
     default_ctor_end_iter_test(itr2, str.size()-1);
 
     conversion_iterator<ToCodec,
       typename auto_codec<typename String::value_type>::type,
-      typename String::const_iterator, by_range>  itr3(str.begin(), str.end()-2);
+      typename String::const_iterator>  itr3(str.begin(), str.end()-2);
 
     default_ctor_end_iter_test(itr3, str.size()-2);
   }
@@ -167,7 +167,7 @@ namespace
     //  utf-32 to utf-16
     int i = 0;
     typedef conversion_iterator<boost::interop::utf16, boost::interop::utf32,
-      const u32_t*, by_null> type_32_16;
+      const u32_t*> type_32_16;
     for (type_32_16 it(utf32s); it != type_32_16(); ++it, ++i)
         BOOST_TEST(*it == utf16s[i]);
     BOOST_TEST_EQ(i, 4);
@@ -175,7 +175,7 @@ namespace
     // utf-32 to utf-8
     i = 0;
     typedef conversion_iterator<boost::interop::utf8, boost::interop::utf32,
-      const u32_t*, by_null> type_32_8;
+      const u32_t*> type_32_8;
     for (type_32_8 it(utf32s); it != type_32_8(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf8s[i]);
     BOOST_TEST_EQ(i, 8);
@@ -183,7 +183,7 @@ namespace
     // utf-8 to utf-16, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
     typedef conversion_iterator<boost::interop::utf16, boost::interop::utf8,
-      const char*, by_null> type_8_16;
+      const char*> type_8_16;
     for (type_8_16 it(utf8s); it != type_8_16(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf16s[i]);
     BOOST_TEST_EQ(i, 4);
@@ -191,7 +191,7 @@ namespace
     // utf-16 to utf-8, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
     typedef conversion_iterator<boost::interop::utf8, boost::interop::utf16,
-      const u16_t*, by_null> type_16_8;
+      const u16_t*> type_16_8;
     for (type_16_8 it(utf16s); it != type_16_8(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf8s[i]);
     BOOST_TEST_EQ(i, 8);
