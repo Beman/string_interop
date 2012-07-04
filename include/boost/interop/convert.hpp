@@ -588,8 +588,8 @@ public:
 
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
-    static_assert(boost::is_same<base_value_type, char>::value,
-      "ForwardIterator value_type must be char for this from_iterator");
+    //static_assert(boost::is_same<base_value_type, char>::value,
+    //  "ForwardIterator value_type must be char for this from_iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
 

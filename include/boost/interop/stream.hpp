@@ -89,24 +89,20 @@ operator<<(Ostream& os, const basic_string<charT, Traits, Allocator>& str)
 //
 //  As a fix, supply individual overloads for the ostreams and pointers we care about
 
-//basic_ostream<char>& operator<<(basic_ostream<char>& os, const wchar_t* p)
-//{
-//  return boost::interop::detail::inserter(os, p);
-//}
-
-#ifndef BOOST_NO_CHAR16_T
-basic_ostream<char>& operator<<(basic_ostream<char>& os, const char16_t* p)
+basic_ostream<char>& operator<<(basic_ostream<char>& os, const wchar_t* p)
 {
   return boost::interop::detail::inserter(os, p);
 }
-#endif
 
-#ifndef BOOST_NO_CHAR32_T
-basic_ostream<char>& operator<<(basic_ostream<char>& os, const char32_t* p)
+basic_ostream<char>& operator<<(basic_ostream<char>& os, const boost::u16_t* p)
 {
   return boost::interop::detail::inserter(os, p);
 }
-#endif
+
+basic_ostream<char>& operator<<(basic_ostream<char>& os, const boost::u32_t* p)
+{
+  return boost::interop::detail::inserter(os, p);
+}
 
 }  // namespace std
 
