@@ -311,8 +311,6 @@ public:
       ++m_begin;  // may change m_begin to end iterator
     }
 
-    ForwardIterator& base() {return m_begin;}
-
   };  // to_iterator
 };  // narrow
 
@@ -520,8 +518,6 @@ public:
            ++m_begin;
         }
      }
-
-     ForwardIterator& base() { return m_begin; }
 
      // construct:
      to_iterator() : m_begin(), m_current(0)
@@ -764,8 +760,6 @@ public:
         }
      }
 
-     ForwardIterator& base() {return m_begin;}
-
      // construct:
      to_iterator() : m_begin(), m_current(0)
      {
@@ -897,7 +891,6 @@ public:
     u32_t dereference() const { return *m_itr; }
     bool equal(const to_iterator& that) const {return m_itr == that.m_itr;}
     void increment() { ++m_itr; }
-    ForwardIterator& base() {return m_itr;}
   };
 
 };
