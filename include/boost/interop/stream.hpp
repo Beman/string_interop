@@ -30,8 +30,8 @@ template <class Ostream, class InputIterator>
 Ostream& inserter(Ostream& os, InputIterator begin)
 {
   typedef boost::interop::conversion_iterator<
-    typename boost::interop::auto_codec<typename Ostream::char_type>::type,
-    typename boost::interop::auto_codec<
+    typename boost::interop::default_codec<typename Ostream::char_type>::type,
+    typename boost::interop::default_codec<
       typename std::iterator_traits<InputIterator>::value_type>::type,
     InputIterator>
       iter_type;
@@ -67,8 +67,8 @@ operator<<(Ostream& os, const basic_string<charT, Traits, Allocator>& str)
   typedef const basic_string<charT, Traits, Allocator> string_type;
 
   typedef boost::interop::conversion_iterator<
-    typename boost::interop::auto_codec<typename Ostream::char_type>::type,
-    typename boost::interop::auto_codec<charT>::type,
+    typename boost::interop::default_codec<typename Ostream::char_type>::type,
+    typename boost::interop::default_codec<charT>::type,
     typename string_type::const_iterator>
       iter_type;
 

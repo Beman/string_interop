@@ -57,13 +57,13 @@ class wide;     // native encoding for wchar_t
 class utf8;     // UTF-8 encoding for char
 class utf16;    // UTF-16 encoding for char16_t
 class utf32;    // UTF-32 encoding for char32_t
-class auto_detect;
+class auto_codec;
 
 //  conversion_iterator
 template <class ToCodec, class FromCodec, class ForwardIterator>
   class conversion_iterator;
 
-//  see auto_codec trait below
+//  see default_codec trait below
 
 //  see convert() functions below
 
@@ -151,24 +151,27 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 } // namespace detail
 
-//------------------------------  auto_codec type selector  ----------------------------//
+//----------------------------  default_codec type selector  ---------------------------//
 
-  template <class CharT> struct auto_codec;
-  template <> struct auto_codec<char> { typedef narrow type; };
-  template <> struct auto_codec<wchar_t> { typedef wide type; };
-  template <> struct auto_codec<u8_t> { typedef utf8 type; };
-  template <> struct auto_codec<u16_t> { typedef utf16 type; };
-  template <> struct auto_codec<u32_t> { typedef utf32 type; };
+  template <class CharT> struct default_codec;
+  template <> struct default_codec<char>    { typedef narrow type; };
+  template <> struct default_codec<wchar_t> { typedef wide type; };
+  template <> struct default_codec<u8_t>    { typedef utf8 type; };
+  template <> struct default_codec<u16_t>   { typedef utf16 type; };
+  template <> struct default_codec<u32_t>   { typedef utf32 type; };
 
-//----------------------------  auto_detect pseudo codec  ------------------------------//
+//-----------------------------  auto_codec pseudo codec  ------------------------------//
+//
+//  proivides lazy default_codec selection so that codec template parameters can appear
+//  before the CharT is known.
 
-class auto_detect
+class auto_codec
 {
 public:
   template <class CharT>
   struct codec
   { 
-    typedef typename auto_codec<CharT>::type type; 
+    typedef typename default_codec<CharT>::type type; 
   };
 
 };
@@ -935,7 +938,7 @@ public:
 //  container
 template <class ToCodec,
 # ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
-          class FromCodec = auto_detect,
+          class FromCodec = auto_codec,
           class ToContainer = std::basic_string<typename ToCodec::value_type>,
 # else
           class FromCodec,
@@ -964,7 +967,7 @@ ToContainer>::type convert(const FromString& x)
 //  null terminated iterator
 template <class ToCodec,
 # ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
-          class FromCodec = auto_detect,
+          class FromCodec = auto_codec,
           class ToContainer = std::basic_string<typename ToCodec::value_type>,
 # else
           class FromCodec,
@@ -991,7 +994,7 @@ ToContainer>::type convert(ForwardIterator begin)
 //  iterator, size
 template <class ToCodec,
 # ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
-          class FromCodec = auto_detect,
+          class FromCodec = auto_codec,
           class ToContainer = std::basic_string<typename ToCodec::value_type>,
 # else
           class FromCodec,
@@ -1016,7 +1019,7 @@ ToContainer convert(ForwardIterator begin, std::size_t sz)
 //  iterator range
 template <class ToCodec,
 # ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
-          class FromCodec = auto_detect,
+          class FromCodec = auto_codec,
           class ToContainer = std::basic_string<typename ToCodec::value_type>,
 # else
           class FromCodec,
