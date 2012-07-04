@@ -156,6 +156,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
   template <class CharT> struct auto_codec;
   template <> struct auto_codec<char> { typedef narrow type; };
   template <> struct auto_codec<wchar_t> { typedef wide type; };
+  template <> struct auto_codec<u8_t> { typedef utf8 type; };
   template <> struct auto_codec<u16_t> { typedef utf16 type; };
   template <> struct auto_codec<u32_t> { typedef utf32 type; };
 

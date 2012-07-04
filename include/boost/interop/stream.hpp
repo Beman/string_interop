@@ -29,10 +29,12 @@ namespace detail
 template <class Ostream, class InputIterator>
 Ostream& inserter(Ostream& os, InputIterator begin)
 {
-  typedef boost::interop::conversion_iterator<InputIterator,
-    typename std::iterator_traits<InputIterator>::value_type, ::boost::interop::by_null,
-      typename Ostream::char_type>
-    iter_type;
+  typedef boost::interop::conversion_iterator<
+    typename boost::interop::auto_codec<typename Ostream::char_type>::type,
+    typename boost::interop::auto_codec<
+      typename std::iterator_traits<InputIterator>::value_type>::type,
+    InputIterator>
+      iter_type;
 
   for (iter_type itr(begin); itr != iter_type(); ++itr)
     os << *itr;
@@ -63,11 +65,14 @@ typename boost::enable_if_c<!boost::is_same<charT, typename Ostream::char_type>:
 operator<<(Ostream& os, const basic_string<charT, Traits, Allocator>& str)
 {
   typedef const basic_string<charT, Traits, Allocator> string_type;
-  typedef boost::interop::conversion_iterator<typename string_type::const_iterator,
-    typename string_type::value_type, boost::interop::by_range,
-    typename Ostream::char_type> iter_type;
 
-  iter_type itr(str.begin(), str.end());
+  typedef boost::interop::conversion_iterator<
+    typename boost::interop::auto_codec<typename Ostream::char_type>::type,
+    typename boost::interop::auto_codec<charT>::type,
+    typename string_type::const_iterator>
+      iter_type;
+
+  iter_type itr(str.cbegin(), str.cend());
   for (; itr != iter_type(); ++itr)
     os << *itr;
   return os;
@@ -84,10 +89,10 @@ operator<<(Ostream& os, const basic_string<charT, Traits, Allocator>& str)
 //
 //  As a fix, supply individual overloads for the ostreams and pointers we care about
 
-basic_ostream<char>& operator<<(basic_ostream<char>& os, const wchar_t* p)
-{
-  return boost::interop::detail::inserter(os, p);
-}
+//basic_ostream<char>& operator<<(basic_ostream<char>& os, const wchar_t* p)
+//{
+//  return boost::interop::detail::inserter(os, p);
+//}
 
 #ifndef BOOST_NO_CHAR16_T
 basic_ostream<char>& operator<<(basic_ostream<char>& os, const char16_t* p)
