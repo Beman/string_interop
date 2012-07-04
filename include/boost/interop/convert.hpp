@@ -23,6 +23,11 @@
 #define BOOST_STRING_INTEROP_HPP
 
 #include <boost/interop/detail/config.hpp>
+
+#ifdef BOOST_POSIX_API
+#  error "Sorry, this proof-of-concept implementation is Windows only."
+# endif
+
 #include <boost/interop/string_types.hpp>
 #include <boost/interop/detail/is_iterator.hpp>
 //#include <boost/cstdint.hpp>
@@ -153,7 +158,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 //----------------------------  default_codec type selector  ---------------------------//
 
-  template <class CharT> struct default_codec;
+  template <class charT> struct default_codec;
   template <> struct default_codec<char>    { typedef narrow type; };
   template <> struct default_codec<wchar_t> { typedef wide type; };
   template <> struct default_codec<u8_t>    { typedef utf8 type; };
@@ -162,8 +167,8 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 //-----------------------------  auto_codec pseudo codec  ------------------------------//
 //
-//  proivides lazy default_codec selection so that codec template parameters can appear
-//  before the CharT is known.
+//  proivides lazy default_codec selection so that codec template parameters with defaults
+//  can appear before the template parameter that determines charT.  
 
 class auto_codec
 {
@@ -208,6 +213,8 @@ public:
 
     typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
+    static_assert(boost::is_same<base_value_type, char>::value,
+      "ForwardIterator value_type must be char for this from_iterator");
     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
     BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
     
@@ -279,6 +286,8 @@ public:
    
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
+     static_assert(boost::is_same<base_value_type, u32_t>::value,
+       "ForwardIterator value_type must be char32_t for this iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
      BOOST_STATIC_ASSERT(sizeof(char)*CHAR_BIT == 8);
 
@@ -318,20 +327,242 @@ public:
   };  // to_iterator
 };  // narrow
 
-////-----------------------------------  wide codec  -------------------------------------//
-//
-//class wide
-//{
-//public:
-//  typedef wchar_t value_type;
-//  template <class CharT> struct codec { typedef wide type; };
-//
-//  //  wide::from_iterator  -------------------------------------------------------------//
-//
-//
-//  //  wide::to_iterator  ---------------------------------------------------------------//
-//
-//};
+//-----------------------------------  wide codec  -------------------------------------//
+
+  //------------------------------------------------------------------------------------//
+  //  Warning: wide and utf16 duplicate each other. TODO: refactor out duplicate code.  // 
+  //------------------------------------------------------------------------------------//
+
+class wide
+{
+public:
+  typedef wchar_t value_type;
+  template <class CharT> struct codec { typedef wide type; };
+
+  //  wide::from_iterator  -------------------------------------------------------------//
+
+  template <class ForwardIterator>
+  class from_iterator
+   : public boost::iterator_facade<from_iterator<ForwardIterator>,
+       u32_t, std::input_iterator_tag, const u32_t>
+  {
+     typedef boost::iterator_facade<from_iterator<ForwardIterator>,
+       u32_t, std::input_iterator_tag, const u32_t> base_type;
+     // special values for pending iterator reads:
+     BOOST_STATIC_CONSTANT(u32_t, read_pending = 0xffffffffu);
+
+     typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
+
+     static_assert(boost::is_same<base_value_type, wchar_t>::value,
+       "ForwardIterator value_type must be wchar_t for this from_iterator");
+     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
+     BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
+
+     ForwardIterator  m_begin;   // current position
+     ForwardIterator  m_end;  
+     mutable u32_t    m_value;     // current value or read_pending
+     bool             m_default_end;
+
+   public:
+
+    // end iterator
+    from_iterator() : m_default_end(true) {}
+
+    // by_null
+    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin),
+      m_default_end(false) 
+    {
+      for (;
+           *m_end != typename std::iterator_traits<ForwardIterator>::value_type();
+           ++m_end) {}
+      m_value = read_pending;
+    }
+
+    // by range
+    template <class T>
+    from_iterator(ForwardIterator begin, T end,
+      // enable_if ensures 2nd argument of 0 is treated as size, not range end
+      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void >::type* x=0)
+      : m_begin(begin), m_end(end), m_default_end(false) { m_value = read_pending; }
+
+    // by_size
+    from_iterator(ForwardIterator begin, std::size_t sz)
+      : m_begin(begin), m_end(begin), m_default_end(false)
+    {
+      std::advance(m_end, sz);
+      m_value = read_pending;
+    }
+
+     typename base_type::reference
+        dereference() const
+     {
+        BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
+          "Attempt to dereference end iterator");
+        if (m_value == read_pending)
+           extract_current();
+        return m_value;
+     }
+
+     bool equal(const from_iterator& that) const 
+     {
+       if (m_default_end || m_begin == m_end)
+         return that.m_default_end || that.m_begin == that.m_end;
+       if (that.m_default_end || that.m_begin == that.m_end)
+         return false;
+       return m_begin == that.m_begin;
+     }
+
+     void increment()
+     {
+       BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
+         "Attempt to increment end iterator");
+       // skip high surrogate first if there is one:
+       if(detail::is_high_surrogate(*m_begin))
+         ++m_begin;
+       ++m_begin;
+       m_value = read_pending;
+     }
+
+  private:
+     static void invalid_code_point(::boost::uint16_t val)
+     {
+        std::stringstream ss;
+        ss << "Misplaced UTF-16 surrogate U+" << std::showbase << std::hex << val
+           << " encountered while trying to encode UTF-32 sequence";
+        std::out_of_range e(ss.str());
+        BOOST_INTEROP_THROW(e);
+     }
+     static void invalid_sequence()
+     {
+        std::out_of_range e(
+          "Invalid UTF-16 sequence encountered while trying to encode UTF-32 character");
+        BOOST_INTEROP_THROW(e);
+     }
+     void extract_current() const
+     {
+        m_value = static_cast<u32_t>(static_cast< ::boost::uint16_t>(*m_begin));
+        // if the last value is a high surrogate then adjust m_begin and m_value as needed:
+        if(detail::is_high_surrogate(*m_begin))
+        {
+           // precondition; next value must have be a low-surrogate:
+           ForwardIterator next(m_begin);
+           u16_t t = *++next;
+           if((t & 0xFC00u) != 0xDC00u)
+              invalid_code_point(t);
+           m_value = (m_value - detail::high_surrogate_base) << 10;
+           m_value |= (static_cast<u32_t>(
+             static_cast<u16_t>(t)) & detail::ten_bit_mask);
+        }
+        // postcondition; result must not be a surrogate:
+        if(detail::is_surrogate(m_value))
+           invalid_code_point(static_cast<u16_t>(m_value));
+     }
+  };
+
+  //  wide::to_iterator  ---------------------------------------------------------------//
+
+  template <class ForwardIterator>
+  class to_iterator
+   : public boost::iterator_facade<to_iterator<ForwardIterator>,
+      wchar_t, std::input_iterator_tag, const wchar_t>
+  {
+     typedef boost::iterator_facade<to_iterator<ForwardIterator>,
+       wchar_t, std::input_iterator_tag, const wchar_t> base_type;
+
+     typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
+
+     static_assert(boost::is_same<base_value_type, u32_t>::value,
+       "ForwardIterator value_type must be char32_t for this iterator");
+     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
+     BOOST_STATIC_ASSERT(sizeof(wchar_t)*CHAR_BIT == 16);
+
+     ForwardIterator   m_begin;
+     mutable wchar_t     m_values[3];
+     mutable unsigned  m_current;
+
+  public:
+
+     typename base_type::reference
+     dereference()const
+     {
+        if(m_current == 2)
+           extract_current();
+        return m_values[m_current];
+     }
+     bool equal(const to_iterator& that)const
+     {
+        if(m_begin == that.m_begin)
+        {
+           // Both m_currents must be equal, or both even
+           // this is the same as saying their sum must be even:
+           return (m_current + that.m_current) & 1u ? false : true;
+        }
+        return false;
+     }
+     void increment()
+     {
+        // if we have a pending read then read now, so that we know whether
+        // to skip a position, or move to a low-surrogate:
+        if(m_current == 2)
+        {
+           // pending read:
+           extract_current();
+        }
+        // move to the next surrogate position:
+        ++m_current;
+        // if we've reached the end skip a position:
+        if(m_values[m_current] == 0)
+        {
+           m_current = 2;
+           ++m_begin;
+        }
+     }
+
+     // construct:
+     to_iterator() : m_begin(), m_current(0)
+     {
+        m_values[0] = 0;
+        m_values[1] = 0;
+        m_values[2] = 0;
+     }
+     to_iterator(ForwardIterator b) : m_begin(b), m_current(2)
+     {
+        m_values[0] = 0;
+        m_values[1] = 0;
+        m_values[2] = 0;
+    }
+  private:
+
+     void extract_current()const
+     {
+        // begin by checking for a code point out of range:
+        ::boost::uint32_t v = *m_begin;
+        if(v >= 0x10000u)
+        {
+           if(v > 0x10FFFFu)
+              detail::invalid_utf32_code_point(*m_begin);
+           // split into two surrogates:
+           m_values[0] = static_cast<wchar_t>(v >> 10) + detail::high_surrogate_base;
+           m_values[1] = static_cast<wchar_t>(v & detail::ten_bit_mask)
+             + detail::low_surrogate_base;
+           m_current = 0;
+           BOOST_ASSERT(detail::is_high_surrogate(m_values[0]));
+           BOOST_ASSERT(detail::is_low_surrogate(m_values[1]));
+        }
+        else
+        {
+           // 16-bit code point:
+           m_values[0] = static_cast<wchar_t>(*m_begin);
+           m_values[1] = 0;
+           m_current = 0;
+           // value must not be a surrogate:
+           if(detail::is_surrogate(m_values[0]))
+              detail::invalid_utf32_code_point(*m_begin);
+        }
+     }
+  };
+
+};
 
 //-----------------------------------  utf8 codec  -------------------------------------//
 
@@ -357,6 +588,8 @@ public:
 
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
+    static_assert(boost::is_same<base_value_type, char>::value,
+      "ForwardIterator value_type must be char for this from_iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
 
@@ -477,6 +710,8 @@ public:
    
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
+     static_assert(boost::is_same<base_value_type, u32_t>::value,
+       "ForwardIterator value_type must be char32_t for this iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
      BOOST_STATIC_ASSERT(sizeof(char)*CHAR_BIT == 8);
 
@@ -583,6 +818,10 @@ public:
 
 //----------------------------------  utf16 codec  -------------------------------------//
 
+  //------------------------------------------------------------------------------------//
+  //  Warning: wide and utf16 duplicate each other. TODO: refactor out duplicate code.  // 
+  //------------------------------------------------------------------------------------//
+
 class utf16
 {
 public:
@@ -603,6 +842,8 @@ public:
 
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
+    static_assert(boost::is_same<base_value_type, u16_t>::value,
+      "ForwardIterator value_type must be char16_t for this from_iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
 
@@ -719,6 +960,8 @@ public:
 
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
+     static_assert(boost::is_same<base_value_type, u32_t>::value,
+       "ForwardIterator value_type must be char32_t for this iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
      BOOST_STATIC_ASSERT(sizeof(u16_t)*CHAR_BIT == 16);
 
@@ -825,6 +1068,9 @@ public:
     : public boost::iterator_facade<from_iterator<ForwardIterator>,
         u32_t, std::input_iterator_tag, const u32_t> 
   {
+    static_assert(boost::is_same<typename std::iterator_traits<ForwardIterator>::value_type,
+      u32_t>::value,
+      "ForwardIterator value_type must be char32_t for this from_iterator");
     ForwardIterator  m_begin;
     ForwardIterator  m_end;
     bool             m_default_end;

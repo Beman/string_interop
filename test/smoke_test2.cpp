@@ -39,6 +39,7 @@ namespace
   const u16string u16s(u16c);
   const u8string u8s(u8c);
   const string chars("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
+  const wstring wchars(L"\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
 
 }  // unnamed namespace
 
@@ -88,6 +89,37 @@ int cpp_main(int, char*[])
     string source("foo");
     string result = convert<narrow, narrow, string>(source);
     BOOST_TEST_EQ(source, result);
+  }
+
+  //  wide
+  {
+    std::cout << "wide..." << std::endl;
+    typedef wide::from_iterator<const wchar_t*> test_from_iterator;
+    test_from_iterator begin1(wchars.c_str());
+
+    test_from_iterator begin1end;
+    BOOST_TEST(begin1 != begin1end);
+
+    typedef wide::to_iterator<const u32_t*> test_to_iterator;
+    test_to_iterator begin2(u32c);
+
+    typedef wide::from_iterator<wstring::const_iterator> test_string_from_iterator;
+    test_string_from_iterator begin4(wchars.cbegin(), wchars.cbegin());
+    test_string_from_iterator begin4end;
+    BOOST_TEST(begin4 == begin4end); // will assert in VC++ <xstring> debug build
+                                     // if invalid assumptions made about default
+                                     // constructed iterator
+
+    static_assert(boost::is_same<auto_codec::codec<wchar_t>::type, wide>::value,
+      "auto detected the wrong type");
+
+    typedef conversion_iterator<wide, wide, const wchar_t*>
+      conversion_iterator_example;
+    conversion_iterator_example cvn_iterator;
+
+    wstring source(L"foo");
+    wstring result = convert<wide, wide, wstring>(source);
+    BOOST_TEST(source == result);
   }
 
   //  utf8
