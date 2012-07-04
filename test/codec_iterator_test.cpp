@@ -54,6 +54,14 @@ namespace
     default_ctor_end_iter_test(narrow::from_iterator<const char*>(meow, 0), 0);
     default_ctor_end_iter_test(narrow::from_iterator<const char*>(meow, meow), 0);
 
+    cout << "  wide" << endl;
+    default_ctor_end_iter_test(wide::from_iterator<const wchar_t*>(meoww), 4);
+    default_ctor_end_iter_test(wide::from_iterator<const wchar_t*>(meoww, 3), 3);
+    default_ctor_end_iter_test(wide::from_iterator<const wchar_t*>(meoww, meoww+2), 2);
+    default_ctor_end_iter_test(wide::from_iterator<const wchar_t*>(meoww+4), 0);
+    default_ctor_end_iter_test(wide::from_iterator<const wchar_t*>(meoww, 0), 0);
+    default_ctor_end_iter_test(wide::from_iterator<const wchar_t*>(meoww, meoww), 0);
+
     cout << "  utf8" << endl;
     default_ctor_end_iter_test(utf8::from_iterator<const char*>(meow), 4);
     default_ctor_end_iter_test(utf8::from_iterator<const char*>(meow, 3), 3);
@@ -93,6 +101,14 @@ namespace
     default_ctor_end_iter_test(
       narrow::to_iterator<narrow::from_iterator<const char*> >(
         narrow::from_iterator<const char*>(meow+4)), 0);
+
+    cout << "  wide" << endl;
+    default_ctor_end_iter_test(
+      wide::to_iterator<wide::from_iterator<const wchar_t*> >(
+        wide::from_iterator<const wchar_t*>(meoww)), 4);
+    default_ctor_end_iter_test(
+      wide::to_iterator<wide::from_iterator<const wchar_t*> >(
+        wide::from_iterator<const wchar_t*>(meoww+4)), 0);
 
     cout << "  utf8" << endl;
     default_ctor_end_iter_test(
@@ -146,7 +162,7 @@ namespace
   {
     // each target type
     generate_2<String, narrow>(str);
-    //generate_2<String, wide>(str);
+    generate_2<String, wide>(str);
     generate_2<String, utf8>(str);
     generate_2<String, utf16>(str);
     generate_2<String, utf32>(str);
@@ -162,6 +178,7 @@ namespace
 
     u32_t utf32s[] = {0x1F60A, 0x1F60E, 0};
     u16_t utf16s[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
+    wchar_t wides[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
     const char* utf8s = "\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E";
 
     //  utf-32 to utf-16
@@ -195,6 +212,22 @@ namespace
     for (type_16_8 it(utf16s); it != type_16_8(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf8s[i]);
     BOOST_TEST_EQ(i, 8);
+
+    // utf-8 to wide, demonstrating that utf-16 surrogate pairs are handled correctly
+    i = 0;
+    typedef conversion_iterator<boost::interop::wide, boost::interop::utf8,
+      const char*> type_8_wide;
+    for (type_8_wide it(utf8s); it != type_8_wide(); ++it, ++i)
+        BOOST_TEST(*it == wides[i]);
+    BOOST_TEST_EQ(i, 4);
+
+    // wide to utf-8, demonstrating that utf-16 surrogate pairs are handled correctly
+    i = 0;
+    typedef conversion_iterator<boost::interop::utf8, boost::interop::wide,
+      const wchar_t*> type_wide_8;
+    for (type_wide_8 it(wides); it != type_wide_8(); ++it, ++i)
+        BOOST_TEST(*it == utf8s[i]);
+    BOOST_TEST_EQ(i, 8);
   }
 
 }  // unnamed namespace
@@ -211,8 +244,8 @@ int cpp_main(int, char*[])
   cout << "-----------------  testing with char...  -----------------" << endl;
   generate_1(std::string("Meow"));
 
-  ////cout << "-----------------  testing with wchar_t...  -----------------" << endl;
-  ////generate_1(std::wstring(L"Meow"));
+  cout << "-----------------  testing with wchar_t...  -----------------" << endl;
+  generate_1(std::wstring(L"Meow"));
 
   //cout << "-----------------  testing with u8_t...  -----------------" << endl;
   //u8_t u8src[] = { 'M', 'e', 'o', 'w', 0 };
