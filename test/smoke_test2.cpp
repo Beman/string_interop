@@ -61,11 +61,22 @@ int cpp_main(int, char*[])
 
   //  narrow
   {
+    std::cout << "narrow..." << std::endl;
     typedef narrow::from_iterator<const char*> test_from_iterator;
     test_from_iterator begin1(chars.c_str());
 
+    test_from_iterator begin1end;
+    BOOST_TEST(begin1 != begin1end);
+
     typedef narrow::to_iterator<const u32_t*> test_to_iterator;
     test_to_iterator begin2(u32c);
+
+    typedef narrow::from_iterator<string::const_iterator> test_string_from_iterator;
+    test_string_from_iterator begin4(chars.cbegin(), chars.cbegin());
+    test_string_from_iterator begin4end;
+    BOOST_TEST(begin4 == begin4end); // will assert in VC++ <xstring> debug build
+                                     // if invalid assumptions made about default
+                                     // constructed iterator
 
     static_assert(boost::is_same<auto_detect::codec<char>::type, narrow>::value,
       "auto detected the wrong type");
@@ -81,11 +92,27 @@ int cpp_main(int, char*[])
 
   //  utf8
   {
+    std::cout << "utf8..." << std::endl;
     typedef utf8::from_iterator<const char*> test_from_iterator;
     test_from_iterator begin1(chars.c_str());
 
+    test_from_iterator begin1end;
+    BOOST_TEST(begin1 != begin1end);
+
     typedef utf8::to_iterator<const u32_t*> test_to_iterator;
     test_to_iterator begin2(u32c);
+
+    test_from_iterator begin3(chars.c_str(), chars.c_str());
+
+    test_from_iterator begin3end;
+    BOOST_TEST(begin3 == begin3end);
+
+    typedef utf8::from_iterator<string::const_iterator> test_string_from_iterator;
+    test_string_from_iterator begin4(chars.cbegin(), chars.cbegin());
+    test_string_from_iterator begin4end;
+    BOOST_TEST(begin4 == begin4end); // will assert in VC++ <xstring> debug build
+                                     // if invalid assumptions made about default
+                                     // constructed iterator
 
     //  utf8 is not auto-deteced from char, so don't do the usual static_assert
     //static_assert(boost::is_same<auto_detect::codec<char>::type, narrow>::value,
@@ -102,11 +129,19 @@ int cpp_main(int, char*[])
 
   //  utf16
   {
+    std::cout << "utf16..." << std::endl;
     typedef utf16::from_iterator<const u16_t*> test_from_iterator;
     test_from_iterator begin1(u16s.c_str());
 
     typedef utf16::to_iterator<const u32_t*> test_to_iterator;
     test_to_iterator begin2(u32c);
+
+    typedef utf16::from_iterator<u16string::const_iterator> test_string_from_iterator;
+    test_string_from_iterator begin4(u16s.cbegin(), u16s.cbegin());
+    test_string_from_iterator begin4end;
+    BOOST_TEST(begin4 == begin4end); // will assert in VC++ <xstring> debug build
+                                     // if invalid assumptions made about default
+                                     // constructed iterator
 
     static_assert(boost::is_same<auto_detect::codec<u16_t>::type, utf16>::value,
       "auto detected the wrong type");
@@ -122,11 +157,19 @@ int cpp_main(int, char*[])
 
   //  utf32
   {
+    std::cout << "utf32..." << std::endl;
     typedef utf32::from_iterator<const u32_t*> test_from_iterator;
     test_from_iterator begin1(u32s.c_str());
 
     typedef utf32::to_iterator<const u32_t*> test_to_iterator;
     test_to_iterator begin2(u32c);
+
+    typedef utf32::from_iterator<u32string::const_iterator> test_string_from_iterator;
+    test_string_from_iterator begin4(u32s.cbegin(), u32s.cbegin());
+    test_string_from_iterator begin4end;
+    BOOST_TEST(begin4 == begin4end); // will assert in VC++ <xstring> debug build
+                                     // if invalid assumptions made about default
+                                     // constructed iterator
 
     static_assert(boost::is_same<auto_detect::codec<u32_t>::type, utf32>::value,
       "auto detected the wrong type");

@@ -76,7 +76,6 @@ template <class ToCodec, class FromCodec, class ForwardIterator>
 //  Codec:
 //
 //  from_iterator meets the DefaultCtorEndIterator requirements.
-//  ForwardIterator must be default constructible, and yield a singular value.
 //  iterator_traits<from_iterator>::value_type is char32_t.
 //
 //  to_iterator meets the DefaultCtorEndIterator requirements.
@@ -192,6 +191,8 @@ public:
   struct codec { typedef narrow type; };
 
   //  narrow::from_iterator  -----------------------------------------------------------//
+  //
+  //  meets the DefaultCtorEndIterator requirements
 
   template <class ForwardIterator>  
   class from_iterator
@@ -208,14 +209,16 @@ public:
     
     ForwardIterator  m_begin;
     ForwardIterator  m_end;
+    bool             m_default_end;
 
   public:
 
     // end iterator
-    from_iterator() : m_begin(ForwardIterator()), m_end(m_begin) {}
+    from_iterator() : m_default_end(true) {}
 
     // by_null
-    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin) 
+    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin),
+      m_default_end(false) 
     {
       for (;
            *m_end != typename std::iterator_traits<ForwardIterator>::value_type();
@@ -227,36 +230,40 @@ public:
     from_iterator(ForwardIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
       typename boost::enable_if<boost::is_same<ForwardIterator, T>, void >::type* x=0)
-      : m_begin(begin), m_end(end) {}
+      : m_begin(begin), m_end(end), m_default_end(false) {}
 
     // by_size
     from_iterator(ForwardIterator begin, std::size_t sz)
-      : m_begin(begin), m_end(begin) {std::advance(m_end, sz);}
+      : m_begin(begin), m_end(begin), m_default_end(false) {std::advance(m_end, sz);}
 
     u32_t dereference() const
     {
-      BOOST_ASSERT_MSG(m_begin != m_end, "Attempt to dereference end iterator");
+      BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
+        "Attempt to dereference end iterator");
       unsigned char c = static_cast<unsigned char>(*m_begin);
       return static_cast<u32_t>(interop::detail::to_utf16[c]);
     }
 
     bool equal(const from_iterator& that) const
     {
-      if (m_begin == m_end)
-        return that.m_begin == that.m_end;
-      if (that.m_begin != that.m_end)
-        return m_begin == that.m_begin;
-      return false;
+      if (m_default_end || m_begin == m_end)
+        return that.m_default_end || that.m_begin == that.m_end;
+      if (that.m_default_end || that.m_begin == that.m_end)
+        return false;
+      return m_begin == that.m_begin;
     }
 
     void increment()
     { 
-      BOOST_ASSERT_MSG(m_begin != m_end, "Attempt to increment end iterator");
+      BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
+        "Attempt to increment end iterator");
       ++m_begin;
     }
   };
 
   //  narrow::to_iterator  -------------------------------------------------------------//
+  //
+  //  meets the DefaultCtorEndIterator requirements
 
   template <class ForwardIterator>  
   class to_iterator
@@ -333,6 +340,8 @@ public:
   template <class CharT> struct codec { typedef utf8 type; };
 
   //  utf8::from_iterator  -------------------------------------------------------------//
+  //
+  //  meets the DefaultCtorEndIterator requirements
 
   template <class ForwardIterator>
   class from_iterator
@@ -352,14 +361,16 @@ public:
      ForwardIterator  m_begin;  // current position
      ForwardIterator  m_end;
      mutable u32_t    m_value;    // current value or read_pending
+     bool             m_default_end;
 
    public:
 
     // end iterator
-    from_iterator() : m_begin(ForwardIterator()), m_end(m_begin) {}
+    from_iterator() : m_default_end(true) {}
 
     // by_null
-    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin) 
+    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin),
+      m_default_end(false) 
     {
       for (;
            *m_end != typename std::iterator_traits<ForwardIterator>::value_type();
@@ -372,11 +383,11 @@ public:
     from_iterator(ForwardIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
       typename boost::enable_if<boost::is_same<ForwardIterator, T>, void >::type* x=0)
-      : m_begin(begin), m_end(end) { m_value = read_pending; }
+      : m_begin(begin), m_end(end), m_default_end(false) { m_value = read_pending; }
 
     // by_size
     from_iterator(ForwardIterator begin, std::size_t sz)
-      : m_begin(begin), m_end(begin)
+      : m_begin(begin), m_end(begin), m_default_end(false)
     {
       std::advance(m_end, sz);
       m_value = read_pending;
@@ -385,7 +396,8 @@ public:
      typename base_type::reference
         dereference() const
      {
-        BOOST_ASSERT_MSG(m_begin != m_end, "Attempt to dereference end iterator");
+        BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
+          "Attempt to dereference end iterator");
         if (m_value == read_pending)
            extract_current();
         return m_value;
@@ -393,16 +405,17 @@ public:
 
      bool equal(const from_iterator& that) const
      {
-       if (m_begin == m_end)
-         return that.m_begin == that.m_end;
-       if (that.m_begin != that.m_end)
-         return m_begin == that.m_begin;
-       return false;
+       if (m_default_end || m_begin == m_end)
+         return that.m_default_end || that.m_begin == that.m_end;
+       if (that.m_default_end || that.m_begin == that.m_end)
+         return false;
+       return m_begin == that.m_begin;
      }
 
      void increment()
      {
-        BOOST_ASSERT_MSG(m_begin != m_end, "Attempt to increment end iterator");
+        BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
+          "Attempt to increment end iterator");
         unsigned count = detail::utf8_byte_count(*m_begin);
         std::advance(m_begin, count);
         m_value = read_pending;
@@ -449,6 +462,8 @@ public:
   };
 
   //  utf8::to_iterator  ---------------------------------------------------------------//
+  //
+  //  meets the DefaultCtorEndIterator requirements
 
   template <class ForwardIterator>
   class to_iterator
@@ -594,14 +609,16 @@ public:
      ForwardIterator  m_begin;   // current position
      ForwardIterator  m_end;  
      mutable u32_t    m_value;     // current value or read_pending
+     bool             m_default_end;
 
    public:
 
     // end iterator
-    from_iterator() : m_begin(ForwardIterator()), m_end(m_begin) {}
+    from_iterator() : m_default_end(true) {}
 
     // by_null
-    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin) 
+    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin),
+      m_default_end(false) 
     {
       for (;
            *m_end != typename std::iterator_traits<ForwardIterator>::value_type();
@@ -614,11 +631,11 @@ public:
     from_iterator(ForwardIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
       typename boost::enable_if<boost::is_same<ForwardIterator, T>, void >::type* x=0)
-      : m_begin(begin), m_end(end) { m_value = read_pending; }
+      : m_begin(begin), m_end(end), m_default_end(false) { m_value = read_pending; }
 
     // by_size
     from_iterator(ForwardIterator begin, std::size_t sz)
-      : m_begin(begin), m_end(begin)
+      : m_begin(begin), m_end(begin), m_default_end(false)
     {
       std::advance(m_end, sz);
       m_value = read_pending;
@@ -627,7 +644,8 @@ public:
      typename base_type::reference
         dereference() const
      {
-        BOOST_ASSERT_MSG(m_begin != m_end, "Attempt to dereference end iterator");
+        BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
+          "Attempt to dereference end iterator");
         if (m_value == read_pending)
            extract_current();
         return m_value;
@@ -635,16 +653,17 @@ public:
 
      bool equal(const from_iterator& that) const 
      {
-       if (m_begin == m_end)
-         return that.m_begin == that.m_end;
-       if (that.m_begin != that.m_end)
-         return m_begin == that.m_begin;
-       return false;
+       if (m_default_end || m_begin == m_end)
+         return that.m_default_end || that.m_begin == that.m_end;
+       if (that.m_default_end || that.m_begin == that.m_end)
+         return false;
+       return m_begin == that.m_begin;
      }
 
      void increment()
      {
-       BOOST_ASSERT_MSG(m_begin != m_end, "Attempt to increment end iterator");
+       BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
+         "Attempt to increment end iterator");
        // skip high surrogate first if there is one:
        if(detail::is_high_surrogate(*m_begin))
          ++m_begin;
@@ -810,14 +829,16 @@ public:
   {
     ForwardIterator  m_begin;
     ForwardIterator  m_end;
+    bool             m_default_end;
 
   public:
 
     // end iterator
-    from_iterator() : m_begin(ForwardIterator()), m_end(m_begin) {}
+    from_iterator() : m_default_end(true) {}
 
     // by_null
-    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin) 
+    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin),
+      m_default_end(false) 
     {
       for (;
            *m_end != typename std::iterator_traits<ForwardIterator>::value_type();
@@ -829,33 +850,35 @@ public:
     from_iterator(ForwardIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
       typename boost::enable_if<boost::is_same<ForwardIterator, T>, void >::type* x=0)
-      : m_begin(begin), m_end(end) {}
+      : m_begin(begin), m_end(end), m_default_end(false) {}
 
     // by_size
     from_iterator(ForwardIterator begin, std::size_t sz)
-      : m_begin(begin), m_end(begin)
+      : m_begin(begin), m_end(begin), m_default_end(false)
     {
       std::advance(m_end, sz);
     }
 
     u32_t dereference() const
     {
-      BOOST_ASSERT_MSG(m_begin != m_end, "Attempt to dereference end iterator");
+      BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
+        "Attempt to dereference end iterator");
       return *m_begin;
     }
 
     bool equal(const from_iterator& that) const
     {
-      if (m_begin == m_end)
-        return that.m_begin == that.m_end;
-      if (that.m_begin != that.m_end)
-        return m_begin == that.m_begin;
-      return false;
+      if (m_default_end || m_begin == m_end)
+        return that.m_default_end || that.m_begin == that.m_end;
+      if (that.m_default_end || that.m_begin == that.m_end)
+        return false;
+      return m_begin == that.m_begin;
     }
 
     void increment()
     {
-      BOOST_ASSERT_MSG(m_begin != m_end, "Attempt to increment end iterator");
+      BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
+        "Attempt to increment end iterator");
       ++m_begin;
     }
   };
