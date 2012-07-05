@@ -58,7 +58,6 @@ namespace
     test_inserter("Pipsqueek");
     test_inserter(std::string(pipsqueek));
     test_inserter(std::wstring(wpipsqueek));
-//    test_inserter(xop::string(pipsqueek));
 
     cout << "    boost container overloads in namespace std...\n";
 
@@ -66,10 +65,6 @@ namespace
     test_inserter(boost::u8string(u8pipsqueek));
     test_inserter(boost::u16string(u16pipsqueek));
     test_inserter(boost::u32string(u32pipsqueek));
-    //test_inserter(xop::wstring(wpipsqueek));
-    //test_inserter(xop::u8string(u8pipsqueek));
-    //test_inserter(xop::u16string(u16pipsqueek));
-    //test_inserter(xop::u32string(u32pipsqueek));
 
     cout << "    boost pointer overloads in namespace std...\n";
 
