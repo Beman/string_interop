@@ -38,7 +38,7 @@
 #include <boost/type_traits/is_same.hpp>
 #include <stdexcept>
 #include <sstream>
-//#include <ios>
+#include <algorithm>
 #include <limits.h> // CHAR_BIT
 
 #ifndef BOOST_NO_DEFAULTED_FUNCTIONS
@@ -62,13 +62,13 @@ class wide;     // native encoding for wchar_t
 class utf8;     // UTF-8 encoding for char
 class utf16;    // UTF-16 encoding for char16_t
 class utf32;    // UTF-32 encoding for char32_t
-class auto_codec;
+class default_codec;
 
 //  conversion_iterator
 template <class ToCodec, class FromCodec, class ForwardIterator>
   class conversion_iterator;
 
-//  see default_codec trait below
+//  see select_codec trait below
 
 //  see convert() functions below
 
@@ -156,27 +156,27 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 
 } // namespace detail
 
-//----------------------------  default_codec type selector  ---------------------------//
+//----------------------------  select_codec type selector  ---------------------------//
 
-  template <class charT> struct default_codec;
-  template <> struct default_codec<char>    { typedef narrow type; };
-  template <> struct default_codec<wchar_t> { typedef wide type; };
-  template <> struct default_codec<u8_t>    { typedef utf8 type; };
-  template <> struct default_codec<u16_t>   { typedef utf16 type; };
-  template <> struct default_codec<u32_t>   { typedef utf32 type; };
+  template <class charT> struct select_codec;
+  template <> struct select_codec<char>    { typedef narrow type; };
+  template <> struct select_codec<wchar_t> { typedef wide type; };
+  template <> struct select_codec<u8_t>    { typedef utf8 type; };
+  template <> struct select_codec<u16_t>   { typedef utf16 type; };
+  template <> struct select_codec<u32_t>   { typedef utf32 type; };
 
-//-----------------------------  auto_codec pseudo codec  ------------------------------//
+//-----------------------------  default_codec pseudo codec  ---------------------------//
 //
-//  proivides lazy default_codec selection so that codec template parameters with defaults
+//  provides lazy select_codec selection so that codec template parameters with defaults
 //  can appear before the template parameter that determines charT.  
 
-class auto_codec
+class default_codec
 {
 public:
-  template <class CharT>
+  template <class charT>
   struct codec
   { 
-    typedef typename default_codec<CharT>::type type; 
+    typedef typename select_codec<charT>::type type; 
   };
 
 };
@@ -196,7 +196,7 @@ class narrow
 public:
   typedef char value_type;
 
-  template <class CharT>
+  template <class charT>
   struct codec { typedef narrow type; };
 
   //  narrow::from_iterator  -----------------------------------------------------------//
@@ -295,7 +295,7 @@ public:
 
   public:
     // construct:
-    to_iterator() BOOST_DEFAULTED;
+    to_iterator() : m_begin(ForwardIterator()) {}
     to_iterator(ForwardIterator begin) : m_begin(begin) {}
 
     char dereference() const
@@ -337,7 +337,7 @@ class wide
 {
 public:
   typedef wchar_t value_type;
-  template <class CharT> struct codec { typedef wide type; };
+  template <class charT> struct codec { typedef wide type; };
 
   //  wide::from_iterator  -------------------------------------------------------------//
 
@@ -477,7 +477,7 @@ public:
      BOOST_STATIC_ASSERT(sizeof(wchar_t)*CHAR_BIT == 16);
 
      ForwardIterator   m_begin;
-     mutable wchar_t     m_values[3];
+     mutable wchar_t   m_values[3];
      mutable unsigned  m_current;
 
   public:
@@ -519,7 +519,7 @@ public:
      }
 
      // construct:
-     to_iterator() : m_begin(), m_current(0)
+     to_iterator() : m_begin(ForwardIterator()), m_current(0)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -570,7 +570,7 @@ class utf8
 {
 public:
   typedef char value_type;
-  template <class CharT> struct codec { typedef utf8 type; };
+  template <class charT> struct codec { typedef utf8 type; };
 
   //  utf8::from_iterator  -------------------------------------------------------------//
   //
@@ -759,7 +759,7 @@ public:
      }
 
      // construct:
-     to_iterator() : m_begin(), m_current(0)
+     to_iterator() : m_begin(ForwardIterator()), m_current(0)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -826,7 +826,7 @@ class utf16
 {
 public:
   typedef u16_t value_type;
-  template <class CharT> struct codec { typedef utf16 type; };
+  template <class charT> struct codec { typedef utf16 type; };
 
   //  utf16::from_iterator  ------------------------------------------------------------//
 
@@ -1008,7 +1008,7 @@ public:
      }
 
      // construct:
-     to_iterator() : m_begin(), m_current(0)
+     to_iterator() : m_begin(ForwardIterator()), m_current(0)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -1059,7 +1059,7 @@ class utf32
 {
 public:
   typedef u32_t value_type;
-  template <class CharT> struct codec { typedef utf32 type; };
+  template <class charT> struct codec { typedef utf32 type; };
 
   //  utf32::from_iterator  ------------------------------------------------------------//
 
@@ -1136,7 +1136,7 @@ public:
   {
     ForwardIterator m_itr;
   public:
-    to_iterator() {}
+    to_iterator() : m_itr(ForwardIterator()) {}
     to_iterator(ForwardIterator itr) : m_itr(itr) {}
     u32_t dereference() const { return *m_itr; }
     bool equal(const to_iterator& that) const {return m_itr == that.m_itr;}
@@ -1150,8 +1150,8 @@ public:
 //--------------------------------------------------------------------------------------//
 
 //  A conversion_iterator composes a ToCodec's to_iterator and a FromCodec's from_iterator
-//  into a single iterator adapts an ForwardIterator to FromCodec's value_type to act as an
-//  iterator to the ToCodec's value_type.
+//  into a single iterator that adapts an ForwardIterator to FromCodec's value_type to 
+//  behave as an iterator to the ToCodec's value_type.
 
 template <class ToCodec, class FromCodec, class ForwardIterator>
 class conversion_iterator
@@ -1160,7 +1160,7 @@ class conversion_iterator
 {
 public:
   typedef typename FromCodec::template from_iterator<ForwardIterator>  from_iterator_type;
-  typedef typename ToCodec::template to_iterator<from_iterator_type> to_iterator_type;
+  typedef typename ToCodec::template to_iterator<from_iterator_type>   to_iterator_type;
 
   conversion_iterator() BOOST_DEFAULTED
 
@@ -1184,45 +1184,42 @@ public:
 //  container
 template <class ToCodec,
 # ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
-          class FromCodec = auto_codec,
-          class ToContainer = std::basic_string<typename ToCodec::value_type>,
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
 # else
           class FromCodec,
-          class ToContainer,
+          class ToString,
 # endif
           class FromString>
   // enable_if resolves ambiguity with single iterator overload
 typename boost::disable_if<boost::is_iterator<FromString>,
-ToContainer>::type convert(const FromString& x)
+ToString>::type convert(const FromString& s)
 {
   typedef conversion_iterator<ToCodec,
     typename FromCodec::template codec<typename FromString::value_type>::type,
-    const typename FromString::value_type*>
+    typename FromString::const_iterator>
       iter_type;
 
-  ToContainer tmp;
+  ToString tmp;
 
-  //  use x.c_str(), x.c_str()+x.size() rather than x.begin(), x.end() to avoid over
-  //  aggressive asserts in the VC++ standard library
-  iter_type itr(x.c_str(), x.c_str()+x.size());
-  for (; itr != iter_type(); ++itr)
-    tmp.push_back(*itr);
+  iter_type iter(s.cbegin(), s.cend());
+  std::copy(iter, iter_type(), std::back_insert_iterator<ToString>(tmp));
   return tmp;
 }
 
 //  null terminated iterator
 template <class ToCodec,
 # ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
-          class FromCodec = auto_codec,
-          class ToContainer = std::basic_string<typename ToCodec::value_type>,
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
 # else
           class FromCodec,
-          class ToContainer,
+          class ToString,
 # endif
           class ForwardIterator>
   // enable_if resolves ambiguity with FromContainer overload
 typename boost::enable_if<boost::is_iterator<ForwardIterator>,
-ToContainer>::type convert(ForwardIterator begin)
+ToString>::type convert(ForwardIterator begin)
 {
   typedef conversion_iterator<ToCodec,
     typename FromCodec::template
@@ -1230,7 +1227,7 @@ ToContainer>::type convert(ForwardIterator begin)
     ForwardIterator>
       iter_type;
 
-  ToContainer tmp;
+  ToString tmp;
   iter_type itr(begin);
   for (; itr != iter_type(); ++itr)
     tmp.push_back(*itr);
@@ -1240,14 +1237,14 @@ ToContainer>::type convert(ForwardIterator begin)
 //  iterator, size
 template <class ToCodec,
 # ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
-          class FromCodec = auto_codec,
-          class ToContainer = std::basic_string<typename ToCodec::value_type>,
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
 # else
           class FromCodec,
-          class ToContainer,
+          class ToString,
 # endif
           class ForwardIterator>
-ToContainer convert(ForwardIterator begin, std::size_t sz)
+ToString convert(ForwardIterator begin, std::size_t sz)
 {
   typedef conversion_iterator<ToCodec,
     typename FromCodec::template
@@ -1255,7 +1252,7 @@ ToContainer convert(ForwardIterator begin, std::size_t sz)
     ForwardIterator>
       iter_type;
 
-  ToContainer tmp;
+  ToString tmp;
   iter_type itr(begin, sz);
   for (; itr != iter_type(); ++itr)
     tmp.push_back(*itr);
@@ -1265,16 +1262,16 @@ ToContainer convert(ForwardIterator begin, std::size_t sz)
 //  iterator range
 template <class ToCodec,
 # ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
-          class FromCodec = auto_codec,
-          class ToContainer = std::basic_string<typename ToCodec::value_type>,
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
 # else
           class FromCodec,
-          class ToContainer,
+          class ToString,
 # endif
-          class ForwardIterator, class InputIterator2>
+          class ForwardIterator, class ForwardIterator2>
   // enable_if ensures 2nd argument of 0 is treated as size, not range end
-typename boost::enable_if<boost::is_iterator<InputIterator2>,
-ToContainer>::type convert(ForwardIterator begin, InputIterator2 end)
+typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
+ToString>::type convert(ForwardIterator begin, ForwardIterator2 end)
 {
   typedef conversion_iterator<ToCodec,
     typename FromCodec::template
@@ -1282,7 +1279,7 @@ ToContainer>::type convert(ForwardIterator begin, InputIterator2 end)
     ForwardIterator>
       iter_type;
 
-  ToContainer tmp;
+  ToString tmp;
   iter_type itr(begin, end);
   for (; itr != iter_type(); ++itr)
     tmp.push_back(*itr);

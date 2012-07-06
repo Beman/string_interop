@@ -139,19 +139,19 @@ namespace
   void generate_2(const String& str)
   {
     conversion_iterator<ToCodec,
-      typename default_codec<typename String::value_type>::type,
+      typename select_codec<typename String::value_type>::type,
       const typename String::value_type*>         itr1(str.c_str());
 
     default_ctor_end_iter_test(itr1, str.size());
 
     conversion_iterator<ToCodec,
-      typename default_codec<typename String::value_type>::type,
+      typename select_codec<typename String::value_type>::type,
       const typename String::value_type*>  itr2(str.c_str(), str.size()-1);
 
     default_ctor_end_iter_test(itr2, str.size()-1);
 
     conversion_iterator<ToCodec,
-      typename default_codec<typename String::value_type>::type,
+      typename select_codec<typename String::value_type>::type,
       typename String::const_iterator>  itr3(str.begin(), str.end()-2);
 
     default_ctor_end_iter_test(itr3, str.size()-2);

@@ -79,7 +79,7 @@ int cpp_main(int, char*[])
                                      // if invalid assumptions made about default
                                      // constructed iterator
 
-    static_assert(boost::is_same<auto_codec::codec<char>::type, narrow>::value,
+    static_assert(boost::is_same<default_codec::codec<char>::type, narrow>::value,
       "auto detected the wrong type");
 
     typedef conversion_iterator<narrow, narrow, const char*>
@@ -110,7 +110,7 @@ int cpp_main(int, char*[])
                                      // if invalid assumptions made about default
                                      // constructed iterator
 
-    static_assert(boost::is_same<auto_codec::codec<wchar_t>::type, wide>::value,
+    static_assert(boost::is_same<default_codec::codec<wchar_t>::type, wide>::value,
       "auto detected the wrong type");
 
     typedef conversion_iterator<wide, wide, const wchar_t*>
@@ -147,7 +147,7 @@ int cpp_main(int, char*[])
                                      // constructed iterator
 
     //  utf8 is not auto-deteced from char, so don't do the usual static_assert
-    //static_assert(boost::is_same<auto_codec::codec<char>::type, narrow>::value,
+    //static_assert(boost::is_same<default_codec::codec<char>::type, narrow>::value,
     //  "auto detected the wrong type");
 
     typedef conversion_iterator<utf8, utf8, const char*>
@@ -175,7 +175,7 @@ int cpp_main(int, char*[])
                                      // if invalid assumptions made about default
                                      // constructed iterator
 
-    static_assert(boost::is_same<auto_codec::codec<u16_t>::type, utf16>::value,
+    static_assert(boost::is_same<default_codec::codec<u16_t>::type, utf16>::value,
       "auto detected the wrong type");
 
     typedef conversion_iterator<utf16, utf16, const u16_t*>
@@ -203,7 +203,7 @@ int cpp_main(int, char*[])
                                      // if invalid assumptions made about default
                                      // constructed iterator
 
-    static_assert(boost::is_same<auto_codec::codec<u32_t>::type, utf32>::value,
+    static_assert(boost::is_same<default_codec::codec<u32_t>::type, utf32>::value,
       "auto detected the wrong type");
 
     typedef conversion_iterator<utf32, utf32, const u32_t*>
