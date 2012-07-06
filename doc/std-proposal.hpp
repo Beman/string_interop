@@ -1,94 +1,53 @@
 namespace std {
-namespace tbd {  //  to be decided
+namespace tbd {  // to be decided
+ 
+  //  codecs [str-x.codec]
+  class narrow;   // native encoding for char
+  class wide;     // native encoding for wchar_t
+  class utf8;     // UTF-8 encoding for char
+  class utf16;    // UTF-16 encoding for char16_t
+  class utf32;    // UTF-32 encoding for char32_t
+  class default_codec;  // see [str-x.codec.default]
 
-  typedef unsigned char    char8_t;
-  
-  //  End policies [str-x.end]
-  struct by_null_policy {};
-  struct by_range_policy {};
-  struct by_size_policy {};
-
-  template <class InputIterator>
-    class by_null;
-  template <class InputIterator>
-    class by_range;
-  template <class InputIterator>
-   class by_size;
-
-  //  from_iterator [str-x.from_iter]
-  template <class InputIterator, class FromCharT, template<class> class EndPolicy>  
-    class from_iterator;
-  template <class InputIterator, template<class> class EndPolicy>
-    class from_iterator<InputIterator, char, EndPolicy>;
-  template <class InputIterator, template<class> class EndPolicy>
-    class from_iterator<InputIterator, wchar_t, EndPolicy>;
-  template <class InputIterator, template<class> class EndPolicy>
-    class from_iterator<InputIterator, char8_t, EndPolicy>;
-  template <class InputIterator, template<class> class EndPolicy>
-    class from_iterator<InputIterator, char16_t, EndPolicy>;
-  template <class InputIterator, template<class> class EndPolicy>
-    class from_iterator<InputIterator, char32_t, EndPolicy>;
-
-  //  to_iterator [str-x.to_iter]
-  template <class InputIterator, class ToCharT>  
-    class to_iterator; 
-  template <class InputIterator>
-    class to_iterator<InputIterator, char>;
-  template <class InputIterator>
-    class to_iterator<InputIterator, wchar_t>;
-  template <class InputIterator>
-    class to_iterator<InputIterator, char8_t>;
-  template <class InputIterator>
-    class to_iterator<InputIterator, char16_t>;
-  template <class InputIterator>
-    class to_iterator<InputIterator, char32_t>;
-
-  //  utf-8 iterators [str-x.utf8]
-  template <class InputIterator, class FromCharT, template<class> class EndPolicy>  
-    class from_utf8; 
-  template <class InputIterator, class ToCharT = charT>
-    class to_utf8;
-
-  //  conversion_iterator [str-x.cvt-iter
-  template <class InputIterator, class FromCharT, template<class> class EndPolicy,
-    class ToCharT, template <class, class> class ToIterator = to_iterator,
-    template <class, class,
-      template<class> class> class SourceIterator = from_iterator>
+  //  select_codec [str-x.codec.select]
+  template <class charT> struct select_codec;
+  template <> struct select_codec<char>       { typedef narrow type; };
+  template <> struct select_codec<wchar_t>    { typedef wide   type; };
+  template <> struct select_codec<char16_t>   { typedef utf16  type; };
+  template <> struct select_codec<char32_t>   { typedef utf32  type; };
+ 
+  //  conversion_iterator [str-x.cvt-iter]
+  template <class ToCodec, class FromCodec, class ForwardIterator>
     class conversion_iterator;
 
-  //  convert functions [str-x.cvt]
+  //  convert string function [str-x.cvt.ctr]
+  template <class ToCodec,
+            class FromCodec = default_codec,
+            class ToString = std::basic_string<typename ToCodec::value_type>,
+            class FromString>
+  ToString convert(const FromString& ctr);
 
-  //  convert container [str-x.cvt.ctr]
-  template <class ToContainer,
-      template <class, class> class ToIterator = to_iterator,
-      template <class, class,
-        template<class> class> class FromIterator = from_iterator,
-      class FromContainer>
-    ToContainer convert(const FromContainer& ctr);
+  //  convert null terminated iterator function [str-x.cvt.size]
+  template <class ToCodec,
+            class FromCodec = default_codec,
+            class ToString = std::basic_string<typename ToCodec::value_type>,
+            class ForwardIterator>
+  ToString convert(ForwardIterator begin);
 
-  //  convert null terminated iterator [str-x.cvt.size]
-  template <class ToContainer,
-      template <class, class> class ToIterator = to_iterator,
-      template <class, class,
-        template<class> class> class FromIterator = from_iterator,
-      class InputIterator>
-    ToContainer convert(InputIterator begin);
+  //  convert iterator with size function [str-x.cvt.null]
+  template <class ToCodec,
+            class FromCodec = default_codec,
+            class ToString = std::basic_string<typename ToCodec::value_type>,
+            class ForwardIterator>
+  ToString convert(ForwardIterator begin, std::size_t sz);
 
-  //  convert iterator, size [str-x.cvt.null]
-  template <class ToContainer,
-      template <class, class> class ToIterator = to_iterator,
-      template <class, class,
-        template<class> class> class FromIterator = from_iterator,
-      class InputIterator>
-    ToContainer convert(InputIterator begin, std::size_t sz);
-
-  //  convert iterator range [str-x.cvt.range]
-  template <class ToContainer,
-      template <class, class> class ToIterator = to_iterator,
-      template <class, class,
-        template<class> class> class FromIterator = from_iterator,
-      class InputIterator, class InputIterator2>
-    ToContainer convert(InputIterator begin, InputIterator2 end);
+  //  convert iterator range function [str-x.cvt.range]
+  template <class ToCodec,
+            class FromCodec = default_codec,
+            class ToString = std::basic_string<typename ToCodec::value_type>,
+            class ForwardIterator,
+            class ForwardIterator2>
+  ToString convert(ForwardIterator begin, ForwardIterator2 end);
 
 }  // namespace tbd
 
@@ -97,8 +56,36 @@ namespace tbd {  //  to be decided
   Ostream& operator<<(Ostream& os, const basic_string<charT, Traits, Allocator>& str);
 
   basic_ostream<char>& operator<<(basic_ostream<char>& os, const wchar_t* p);
-  basic_ostream<char>& operator<<(basic_ostream<char>& os, const char8_t* p);
   basic_ostream<char>& operator<<(basic_ostream<char>& os, const char16_t* p);
   basic_ostream<char>& operator<<(basic_ostream<char>& os, const char32_t* p);
   
 }  // namespace std
+
+
+//---------------------------  codec requirements  -------------------------------------//
+
+  typedef char value_type;
+
+  template <class charT>
+  struct codec { typedef narrow type; };
+
+  template <class ForwardIterator>  
+  class from_iterator
+  {
+  public:
+    
+    from_iterator();
+    from_iterator(ForwardIterator begin);
+    from_iterator(ForwardIterator begin, std::size_t sz);
+    template <class T>
+      from_iterator(ForwardIterator begin, T end);
+  };
+
+  template <class ForwardIterator>  
+  class to_iterator
+  {
+  public:
+    to_iterator();
+    to_iterator(ForwardIterator begin);
+  };
+
