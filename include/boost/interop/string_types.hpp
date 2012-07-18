@@ -57,7 +57,7 @@
 //  character types, and put the C++0x string types in namespace std. That's the approach
 //  taken by Microsoft Visual Studio 2010, but seems upsetting and controversion to at
 //  least some Boost users and developers. So to avoid controversy these name go into
-//  namespace boost, as is ususal for Boost C++0x emulation names such as in header
+//  namespace boost, as is usual for Boost C++11 emulation names such as in header
 //  <boost/cstdint.hpp>.
 //
 //  The interoperability extensions then go in their own sub-namespace to avoid clashes.
