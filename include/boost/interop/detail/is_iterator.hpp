@@ -4,7 +4,7 @@
 //  (C) Copyright Steve Cleary, Beman Dawes, Howard Hinnant & John Maddock 2000.
 
 //  Distributed under the Boost Software License, Version 1.0.
-//  See http://www.boost.org/LICENSE_1_0.txt).
+//  See http://www.boost.org/LICENSE_1_0.txt.
 //
 //  See http://www.boost.org/libs/type_traits for most recent version including documentation.
 
@@ -13,6 +13,7 @@
 
 #include <boost/type_traits/is_pointer.hpp>
 #include <boost/type_traits/detail/ice_or.hpp>
+#include <boost/type_traits/detail/ice_and.hpp>
 #include <boost/config.hpp>
 
 // should be the last #include
@@ -33,14 +34,39 @@ public:
 };
 
 template <class T>
+class has_difference_type
+{
+  struct size2 {char a[2]; };
+  template <class U> static size2 sfinae(...);
+  template <class U> static char sfinae(typename U::difference_type*);
+public:
+  BOOST_STATIC_CONSTANT(bool, value = sizeof(sfinae<T>(0)) == 1);
+};
+
+template <class T>
+class has_value_type
+{
+  struct size2 {char a[2]; };
+  template <class U> static size2 sfinae(...);
+  template <class U> static char sfinae(typename U::value_type*);
+public:
+  BOOST_STATIC_CONSTANT(bool, value = sizeof(sfinae<T>(0)) == 1);
+};
+
+template <class T>
 struct is_iterator_impl
 { 
     BOOST_STATIC_CONSTANT(bool, value = 
         (::boost::type_traits::ice_or< 
             ::boost::is_pointer<T>::value,
-            ::boost::detail::has_iterator_category<T>::value
-        >::value));
-//  It would markedly reduce the chance of accidental conformance if it was
+            ::boost::type_traits::ice_and<
+              ::boost::detail::has_iterator_category<T>::value,
+              ::boost::detail::has_value_type<T>::value,
+              ::boost::detail::has_difference_type<T>::value
+            >::value // ice_and
+          >::value // ice_or
+        ));
+//  It would further reduce the chance of accidental conformance if it was
 //  required that T::iterator_category was convertible to std::input_iterator_tag
 //  or std::output_iterator_tag.
 };

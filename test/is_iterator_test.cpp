@@ -31,6 +31,11 @@ namespace
     std::cout << "  false\n";
     return false;
   }
+
+  struct accident
+  {
+    typedef int iterator_category;
+  };
 }
 
 int cpp_main(int, char*[])
@@ -47,6 +52,7 @@ int cpp_main(int, char*[])
   BOOST_TEST(is_iterator<const std::vector<int>::iterator>::value);
   BOOST_TEST(is_iterator<std::vector<int>::const_iterator>::value);
   BOOST_TEST(!is_iterator<std::string>::value);
+  BOOST_TEST(!is_iterator<accident>::value);
 
   std::string s;
   BOOST_TEST(f(s.begin()));
