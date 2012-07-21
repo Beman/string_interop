@@ -23,11 +23,8 @@
 #define BOOST_STRING_INTEROP_HPP
 
 #include <boost/interop/detail/config.hpp>
-
-#ifdef BOOST_POSIX_API
-#  error "Sorry, this proof-of-concept implementation is Windows only."
-# endif
-
+#include <boost/assert.hpp>
+#include <stdexcept>
 #include <boost/interop/string_types.hpp>
 #include <boost/interop/detail/is_iterator.hpp>
 //#include <boost/cstdint.hpp>
@@ -47,6 +44,26 @@
 # define BOOST_DEFAULTED {}
 #endif
 
+//  boilerplate it is handy to keep a copy of
+#   ifdef BOOST_WINDOWS_API
+#   else
+      BOOST_ASSERT_MSG(false, "Sorry, POSIX support for this function not avaiable yet.");  
+      throw std::runtime_error("Sorry, POSIX support for this function not avaiable yet."); 
+#   endif
+
+/*
+     TODO:
+
+     Codec    Windows    POSIX
+     ------   -------    -----
+     narrow   hack       hack    Assume codepage 437 for Windows, UTF-8 for POSIX
+     wide     done       hack    POSIX assume wchar_t is UTF-32
+     utf8     done       done
+     utf16    done       done
+     utf32    done       done
+
+*/
+
 namespace boost
 {
 namespace interop
@@ -56,13 +73,6 @@ namespace interop
 //                                     Synopsis                                         //
 //--------------------------------------------------------------------------------------//
 
-//  codecs
-class narrow;   // native encoding for char
-class wide;     // native encoding for wchar_t
-class utf8;     // UTF-8 encoding for char
-class utf16;    // UTF-16 encoding for char16_t
-class utf32;    // UTF-32 encoding for char32_t
-class default_codec;
 
 //  conversion_iterator
 template <class ToCodec, class FromCodec, class ForwardIterator>
@@ -140,28 +150,133 @@ inline unsigned utf8_trailing_byte_count(boost::uint8_t c)
 }
 
 #ifdef BOOST_MSVC
-#pragma warning(push)
-#pragma warning(disable:4100)
+# pragma warning(push)
+# pragma warning(disable:4100)
 #endif
 inline void invalid_utf32_code_point(::boost::uint32_t val)
 {
    std::stringstream ss;
-   ss << "Invalid UTF-32 code point U+" << std::showbase << std::hex << val << " encountered while trying to encode UTF-16 sequence";
+   ss << "Invalid UTF-32 code point U+" << std::showbase << std::hex << val
+      << " encountered while trying to encode UTF-16 sequence";
    std::out_of_range e(ss.str());
    BOOST_INTEROP_THROW(e);
 }
 #ifdef BOOST_MSVC
-#pragma warning(pop)
+# pragma warning(pop)
 #endif
 
+template <class charT>
+class identity_codec
+{
+public:
+  typedef charT value_type;
+  template <class charT2> struct codec { typedef identity_codec<charT> type; };
+
+  //  utf32::from_iterator  ------------------------------------------------------------//
+
+  template <class ForwardIterator>
+  class from_iterator
+    : public boost::iterator_facade<from_iterator<ForwardIterator>,
+        charT, std::input_iterator_tag, const charT> 
+  {
+    static_assert(boost::is_same<typename std::iterator_traits<ForwardIterator>::value_type,
+      charT>::value,
+      "ForwardIterator value_type must be same as codec value_type");
+    ForwardIterator  m_begin;
+    ForwardIterator  m_end;
+    bool             m_default_end;
+
+  public:
+
+    // end iterator
+    from_iterator() : m_default_end(true) {}
+
+    // by_null
+    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin),
+      m_default_end(false) 
+    {
+      for (;
+           *m_end != typename std::iterator_traits<ForwardIterator>::value_type();
+           ++m_end) {}
+    }
+
+    // by range
+    template <class T>
+    from_iterator(ForwardIterator begin, T end,
+      // enable_if ensures 2nd argument of 0 is treated as size, not range end
+      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void >::type* x=0)
+      : m_begin(begin), m_end(end), m_default_end(false) {}
+
+    // by_size
+    from_iterator(ForwardIterator begin, std::size_t sz)
+      : m_begin(begin), m_end(begin), m_default_end(false)
+    {
+      std::advance(m_end, sz);
+    }
+
+    charT dereference() const
+    {
+      BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
+        "Attempt to dereference end iterator");
+      return *m_begin;
+    }
+
+    bool equal(const from_iterator& that) const
+    {
+      if (m_default_end || m_begin == m_end)
+        return that.m_default_end || that.m_begin == that.m_end;
+      if (that.m_default_end || that.m_begin == that.m_end)
+        return false;
+      return m_begin == that.m_begin;
+    }
+
+    void increment()
+    {
+      BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
+        "Attempt to increment end iterator");
+      ++m_begin;
+    }
+  };
+
+  //  utf32::to_iterator  --------------------------------------------------------------//
+
+  template <class ForwardIterator>
+  class to_iterator
+   : public boost::iterator_facade<to_iterator<ForwardIterator>,
+      charT, std::input_iterator_tag, const charT>
+  {
+    ForwardIterator m_itr;
+  public:
+    to_iterator() : m_itr(ForwardIterator()) {}
+    to_iterator(ForwardIterator itr) : m_itr(itr) {}
+    charT dereference() const { return *m_itr; }
+    bool equal(const to_iterator& that) const {return m_itr == that.m_itr;}
+    void increment() { ++m_itr; }
+  };
+
+};
+
 } // namespace detail
+
+  //  codecs
+  class narrow;   // native encoding for char
+#ifdef BOOST_WINDOWS_API
+  class wide;     // native encoding for wchar_t
+#else
+  // hack assumes POSIX wide encoding is UTF-32
+  typedef detail::identity_codec<wchar_t> wide; // UTF-32 encoding for wchar_t
+#endif
+  class utf8;     // UTF-8 encoding for char
+  class utf16;    // UTF-16 encoding for char16_t
+  typedef detail::identity_codec<u32_t> utf32; // UTF-32 encoding for char32_t
+  class default_codec;
 
 //----------------------------  select_codec type selector  ---------------------------//
 
   template <class charT> struct select_codec;
   template <> struct select_codec<char>    { typedef narrow type; };
   template <> struct select_codec<wchar_t> { typedef wide type; };
-  template <> struct select_codec<u8_t>    { typedef utf8 type; };
+//  template <> struct select_codec<u8_t>    { typedef utf8 type; };
   template <> struct select_codec<u16_t>   { typedef utf16 type; };
   template <> struct select_codec<u32_t>   { typedef utf32 type; };
 
@@ -183,6 +298,7 @@ public:
 
 //----------------------------------  narrow codec  ------------------------------------//
 
+#ifdef BOOST_WINDOWS_API
 namespace detail
 {
   // for this proof-of-concept, simply linking in codec tables is sufficient
@@ -327,10 +443,18 @@ public:
   };  // to_iterator
 };  // narrow
 
+#else
+
+// Until <cuchar> becomes available, UTF-8 is the only supported POSIX narrow encoding.
+typedef utf8 narrow;
+
+#endif
+
+
 //-----------------------------------  wide codec  -------------------------------------//
 
   //------------------------------------------------------------------------------------//
-  //  Warning: wide and utf16 duplicate each other. TODO: refactor out duplicate code.  // 
+  //  Warning: wide and utf16 duplicate each other. TODO: factor out duplicate code.    // 
   //------------------------------------------------------------------------------------//
 
 class wide
@@ -1049,98 +1173,6 @@ public:
               detail::invalid_utf32_code_point(*m_begin);
         }
      }
-  };
-
-};
-
-//----------------------------------  utf32 codec  -------------------------------------//
-
-class utf32
-{
-public:
-  typedef u32_t value_type;
-  template <class charT> struct codec { typedef utf32 type; };
-
-  //  utf32::from_iterator  ------------------------------------------------------------//
-
-  template <class ForwardIterator>
-  class from_iterator
-    : public boost::iterator_facade<from_iterator<ForwardIterator>,
-        u32_t, std::input_iterator_tag, const u32_t> 
-  {
-    static_assert(boost::is_same<typename std::iterator_traits<ForwardIterator>::value_type,
-      u32_t>::value,
-      "ForwardIterator value_type must be char32_t for this from_iterator");
-    ForwardIterator  m_begin;
-    ForwardIterator  m_end;
-    bool             m_default_end;
-
-  public:
-
-    // end iterator
-    from_iterator() : m_default_end(true) {}
-
-    // by_null
-    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin),
-      m_default_end(false) 
-    {
-      for (;
-           *m_end != typename std::iterator_traits<ForwardIterator>::value_type();
-           ++m_end) {}
-    }
-
-    // by range
-    template <class T>
-    from_iterator(ForwardIterator begin, T end,
-      // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void >::type* x=0)
-      : m_begin(begin), m_end(end), m_default_end(false) {}
-
-    // by_size
-    from_iterator(ForwardIterator begin, std::size_t sz)
-      : m_begin(begin), m_end(begin), m_default_end(false)
-    {
-      std::advance(m_end, sz);
-    }
-
-    u32_t dereference() const
-    {
-      BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
-        "Attempt to dereference end iterator");
-      return *m_begin;
-    }
-
-    bool equal(const from_iterator& that) const
-    {
-      if (m_default_end || m_begin == m_end)
-        return that.m_default_end || that.m_begin == that.m_end;
-      if (that.m_default_end || that.m_begin == that.m_end)
-        return false;
-      return m_begin == that.m_begin;
-    }
-
-    void increment()
-    {
-      BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
-        "Attempt to increment end iterator");
-      ++m_begin;
-    }
-  };
-
-  //  utf32::to_iterator  --------------------------------------------------------------//
-
-  template <class ForwardIterator>
-  class to_iterator
-   : public boost::iterator_facade<to_iterator<ForwardIterator>,
-      u32_t, std::input_iterator_tag, const u32_t>
-  {
-    ForwardIterator m_itr;
-  public:
-    to_iterator() : m_itr(ForwardIterator()) {}
-    to_iterator(ForwardIterator itr) : m_itr(itr) {}
-    u32_t dereference() const { return *m_itr; }
-    bool equal(const to_iterator& that) const {return m_itr == that.m_itr;}
-    void increment() { ++m_itr; }
   };
 
 };
