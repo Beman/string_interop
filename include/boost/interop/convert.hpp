@@ -326,7 +326,7 @@ public:
 
      BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, charT>::value),
        "ForwardIterator value_type must be charT for this from_iterator");
-     BOOST_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
+//     BOOST_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
 
      ForwardIterator  m_begin;   // current position
@@ -442,10 +442,10 @@ public:
 
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
-     BOOST_ASSERT_MSG((boost::is_same<base_value_type, u32_t>::value),
-       "ForwardIterator value_type must be u32_t for this iterator");
+//     BOOST_ASSERT_MSG((boost::is_same<base_value_type, u32_t>::value),
+//       "ForwardIterator value_type must be u32_t for this iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
-     BOOST_ASSERT(sizeof(charT)*CHAR_BIT == 16);
+//     BOOST_ASSERT(sizeof(charT)*CHAR_BIT == 16);
 
      ForwardIterator   m_begin;
      mutable charT   m_values[3];
@@ -714,8 +714,8 @@ public:
 
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
-     BOOST_ASSERT_MSG((boost::is_same<base_value_type, char>::value),
-       "ForwardIterator value_type must be char for this from_iterator");
+//     BOOST_ASSERT_MSG((boost::is_same<base_value_type, char>::value),
+//       "ForwardIterator value_type must be char for this from_iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
 
@@ -836,8 +836,8 @@ public:
    
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
-     BOOST_ASSERT_MSG((boost::is_same<base_value_type, u32_t>::value),
-       "ForwardIterator value_type must be char32_t for this iterator");
+//     BOOST_ASSERT_MSG((boost::is_same<base_value_type, u32_t>::value),
+//       "ForwardIterator value_type must be char32_t for this iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
      BOOST_STATIC_ASSERT(sizeof(char)*CHAR_BIT == 8);
 
