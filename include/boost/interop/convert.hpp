@@ -75,10 +75,12 @@ template <class charT>
 //--------------------------------------------------------------------------------------//
 
   //  codecs
-  class narrow;   // native encoding for char
 #ifdef BOOST_WINDOWS_API
+  class narrow;   // native encoding for char
   typedef detail::generic_utf16<wchar_t>  wide;      // native encoding for wchar_t
 #else
+  // POSIX narrow encoding is UTF-8 
+  typedef utf8 narrow;
   // hack assumes POSIX wide encoding is UTF-32
   typedef detail::generic_utf32<wchar_t>  wide;      // UTF-32 encoding for wchar_t
 #endif
@@ -679,11 +681,6 @@ public:
 
   };  // to_iterator
 };  // narrow
-
-#else
-
-// Until <cuchar> becomes available, UTF-8 is the only supported POSIX narrow encoding.
-typedef utf8 narrow;
 
 #endif
 
