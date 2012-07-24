@@ -72,7 +72,7 @@ operator<<(Ostream& os, const basic_string<charT, Traits, Allocator>& str)
     typename string_type::const_iterator>
       iter_type;
 
-  iter_type itr(str.cbegin(), str.cend());
+  iter_type itr(str.begin(), str.end());
   for (; itr != iter_type(); ++itr)
     os << *itr;
   return os;

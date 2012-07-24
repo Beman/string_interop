@@ -19,15 +19,15 @@ project
       : <test-info>always_show_run_output # requirements
       : # test name
     ]
-    [ run interop_unit_test.cpp
+    [ run codec_iterator_test.cpp
        ../src/codepage_437.cpp
        : :  : <test-info>always_show_run_output # requirements
     ] 
-    [ run interop_test.cpp
+    [ run smoke_test2.cpp
        ../src/codepage_437.cpp
        : :  : <test-info>always_show_run_output # requirements
     ] 
-    [ run iterator_adapter_unit_test.cpp
+    [ run convert_test.cpp
        ../src/codepage_437.cpp
        : :  : <test-info>always_show_run_output # requirements
     ] 

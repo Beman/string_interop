@@ -9,6 +9,7 @@
 
 #include <boost/interop/convert.hpp>
 #include <cstring>  // for memcmp
+#include <boost/static_assert.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 #include <boost/type_traits.hpp>
@@ -73,14 +74,14 @@ int cpp_main(int, char*[])
     test_to_iterator begin2(u32c);
 
     typedef narrow::from_iterator<string::const_iterator> test_string_from_iterator;
-    test_string_from_iterator begin4(chars.cbegin(), chars.cbegin());
+    test_string_from_iterator begin4(chars.begin(), chars.begin());
     test_string_from_iterator begin4end;
     BOOST_TEST(begin4 == begin4end); // will assert in VC++ <xstring> debug build
                                      // if invalid assumptions made about default
                                      // constructed iterator
 
-    static_assert(boost::is_same<default_codec::codec<char>::type, narrow>::value,
-      "auto detected the wrong type");
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<char>::type,
+      narrow>::value), "auto detected the wrong type");
 
     typedef conversion_iterator<narrow, narrow, const char*>
       conversion_iterator_example;
@@ -104,14 +105,14 @@ int cpp_main(int, char*[])
     test_to_iterator begin2(u32c);
 
     typedef wide::from_iterator<wstring::const_iterator> test_string_from_iterator;
-    test_string_from_iterator begin4(wchars.cbegin(), wchars.cbegin());
+    test_string_from_iterator begin4(wchars.begin(), wchars.begin());
     test_string_from_iterator begin4end;
     BOOST_TEST(begin4 == begin4end); // will assert in VC++ <xstring> debug build
                                      // if invalid assumptions made about default
                                      // constructed iterator
 
-    static_assert(boost::is_same<default_codec::codec<wchar_t>::type, wide>::value,
-      "auto detected the wrong type");
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<wchar_t>::type,
+      wide>::value), "auto detected the wrong type");
 
     typedef conversion_iterator<wide, wide, const wchar_t*>
       conversion_iterator_example;
@@ -140,14 +141,14 @@ int cpp_main(int, char*[])
     BOOST_TEST(begin3 == begin3end);
 
     typedef utf8::from_iterator<string::const_iterator> test_string_from_iterator;
-    test_string_from_iterator begin4(chars.cbegin(), chars.cbegin());
+    test_string_from_iterator begin4(chars.begin(), chars.begin());
     test_string_from_iterator begin4end;
     BOOST_TEST(begin4 == begin4end); // will assert in VC++ <xstring> debug build
                                      // if invalid assumptions made about default
                                      // constructed iterator
 
     //  utf8 is not auto-deteced from char, so don't do the usual static_assert
-    //static_assert(boost::is_same<default_codec::codec<char>::type, narrow>::value,
+    //BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<char>::type, narrow>::value),
     //  "auto detected the wrong type");
 
     typedef conversion_iterator<utf8, utf8, const char*>
@@ -169,14 +170,14 @@ int cpp_main(int, char*[])
     test_to_iterator begin2(u32c);
 
     typedef utf16::from_iterator<u16string::const_iterator> test_string_from_iterator;
-    test_string_from_iterator begin4(u16s.cbegin(), u16s.cbegin());
+    test_string_from_iterator begin4(u16s.begin(), u16s.begin());
     test_string_from_iterator begin4end;
     BOOST_TEST(begin4 == begin4end); // will assert in VC++ <xstring> debug build
                                      // if invalid assumptions made about default
                                      // constructed iterator
 
-    static_assert(boost::is_same<default_codec::codec<u16_t>::type, utf16>::value,
-      "auto detected the wrong type");
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<u16_t>::type,
+      utf16>::value), "auto detected the wrong type");
 
     typedef conversion_iterator<utf16, utf16, const u16_t*>
       conversion_iterator_example;
@@ -197,14 +198,14 @@ int cpp_main(int, char*[])
     test_to_iterator begin2(u32c);
 
     typedef utf32::from_iterator<u32string::const_iterator> test_string_from_iterator;
-    test_string_from_iterator begin4(u32s.cbegin(), u32s.cbegin());
+    test_string_from_iterator begin4(u32s.begin(), u32s.begin());
     test_string_from_iterator begin4end;
     BOOST_TEST(begin4 == begin4end); // will assert in VC++ <xstring> debug build
                                      // if invalid assumptions made about default
                                      // constructed iterator
 
-    static_assert(boost::is_same<default_codec::codec<u32_t>::type, utf32>::value,
-      "auto detected the wrong type");
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<u32_t>::type,
+      utf32>::value), "auto detected the wrong type");
 
     typedef conversion_iterator<utf32, utf32, const u32_t*>
       conversion_iterator_example;

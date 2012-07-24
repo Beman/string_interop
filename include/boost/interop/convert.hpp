@@ -216,8 +216,8 @@ public:
     : public boost::iterator_facade<from_iterator<ForwardIterator>,
         charT, std::input_iterator_tag, const charT> 
   {
-    static_assert(boost::is_same<typename std::iterator_traits<ForwardIterator>::value_type,
-      charT>::value,
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<typename std::iterator_traits<ForwardIterator>::value_type,
+      charT>::value),
       "ForwardIterator value_type must be same as codec value_type");
     ForwardIterator  m_begin;
     ForwardIterator  m_end;
@@ -318,7 +318,7 @@ public:
 
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
-     static_assert(boost::is_same<base_value_type, charT>::value,
+     BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, charT>::value),
        "ForwardIterator value_type must be charT for this from_iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
@@ -436,7 +436,7 @@ public:
 
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
-     static_assert(boost::is_same<base_value_type, u32_t>::value,
+     BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, u32_t>::value),
        "ForwardIterator value_type must be u32_t for this iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
      BOOST_STATIC_ASSERT(sizeof(charT)*CHAR_BIT == 16);
@@ -566,7 +566,7 @@ public:
 
     typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
-    static_assert(boost::is_same<base_value_type, char>::value,
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, char>::value),
       "ForwardIterator value_type must be char for this from_iterator");
     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
     BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
@@ -639,7 +639,7 @@ public:
    
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
-     static_assert(boost::is_same<base_value_type, u32_t>::value,
+     BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, u32_t>::value),
        "ForwardIterator value_type must be char32_t for this iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
      BOOST_STATIC_ASSERT(sizeof(char)*CHAR_BIT == 8);
@@ -713,7 +713,7 @@ public:
 
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
-    //static_assert(boost::is_same<base_value_type, char>::value,
+    //BOOST_STATIC_ASSERT_MSG(boost::is_same<base_value_type, char>::value,
     //  "ForwardIterator value_type must be char for this from_iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
@@ -835,7 +835,7 @@ public:
    
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
-     static_assert(boost::is_same<base_value_type, u32_t>::value,
+     BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, u32_t>::value),
        "ForwardIterator value_type must be char32_t for this iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
      BOOST_STATIC_ASSERT(sizeof(char)*CHAR_BIT == 8);
@@ -998,7 +998,7 @@ ToString>::type convert(const FromString& s)
 
   ToString tmp;
 
-  iter_type iter(s.cbegin(), s.cend());
+  iter_type iter(s.begin(), s.end());
   std::copy(iter, iter_type(), std::back_insert_iterator<ToString>(tmp));
   return tmp;
 }
