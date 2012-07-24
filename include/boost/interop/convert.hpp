@@ -51,7 +51,7 @@
      Codec    Windows    POSIX
      ------   -------    -----
      narrow   hack       hack    Windows assume codepage 437, POSIX assume UTF-8 
-     wide     done       hack    POSIX assume wchar_t is UTF-32
+     wide     done       hack    POSIX assume wchar_t is UTF-16 or UTF-32
      utf8     done       done
      utf16    done       done
      utf32    done       done
@@ -75,16 +75,20 @@ template <class charT>
 //--------------------------------------------------------------------------------------//
 
   //  codecs
+  class utf8;                                        // UTF-8 encoding for char
 #ifdef BOOST_WINDOWS_API
-  class narrow;   // native encoding for char
-  typedef detail::generic_utf16<wchar_t>  wide;      // native encoding for wchar_t
+  class narrow;                                      // native encoding for char
+  typedef detail::generic_utf16<wchar_t>  wide;      // UTF-16 encoding for wchar_t
 #else
-  // POSIX narrow encoding is UTF-8 
+  // hack: assume POSIX narrow encoding is UTF-8 
   typedef utf8 narrow;
-  // hack assumes POSIX wide encoding is UTF-32
+  // hack: assume POSIX wide encoding is UTF-16 or UTF-32
+# if WCHAR_MAX == 0xffff
+  typedef detail::generic_utf16<wchar_t>  wide;      // UTF-16 encoding for wchar_t
+# else
   typedef detail::generic_utf32<wchar_t>  wide;      // UTF-32 encoding for wchar_t
+# endif
 #endif
-  class utf8;                                              // UTF-8 encoding for char
   typedef detail::generic_utf16<u16_t>    utf16;     // UTF-16 encoding for char16_t
   typedef detail::generic_utf32<u32_t>    utf32;     // UTF-32 encoding for char32_t
   class default_codec;
@@ -322,7 +326,7 @@ public:
 
      BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, charT>::value),
        "ForwardIterator value_type must be charT for this from_iterator");
-     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
+     BOOST_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
 
      ForwardIterator  m_begin;   // current position
@@ -438,10 +442,10 @@ public:
 
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
-     BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, u32_t>::value),
+     BOOST_ASSERT_MSG((boost::is_same<base_value_type, u32_t>::value),
        "ForwardIterator value_type must be u32_t for this iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
-     BOOST_STATIC_ASSERT(sizeof(charT)*CHAR_BIT == 16);
+     BOOST_ASSERT(sizeof(charT)*CHAR_BIT == 16);
 
      ForwardIterator   m_begin;
      mutable charT   m_values[3];
@@ -710,8 +714,8 @@ public:
 
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
-    //BOOST_STATIC_ASSERT_MSG(boost::is_same<base_value_type, char>::value,
-    //  "ForwardIterator value_type must be char for this from_iterator");
+     BOOST_ASSERT_MSG((boost::is_same<base_value_type, char>::value),
+       "ForwardIterator value_type must be char for this from_iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
      BOOST_STATIC_ASSERT(sizeof(u32_t)*CHAR_BIT == 32);
 
@@ -832,7 +836,7 @@ public:
    
      typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
 
-     BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, u32_t>::value),
+     BOOST_ASSERT_MSG((boost::is_same<base_value_type, u32_t>::value),
        "ForwardIterator value_type must be char32_t for this iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
      BOOST_STATIC_ASSERT(sizeof(char)*CHAR_BIT == 8);

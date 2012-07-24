@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <boost/interop/convert.hpp>
+#include <cstdlib>>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
@@ -213,6 +214,7 @@ namespace
         BOOST_TEST_EQ(*it, utf8s[i]);
     BOOST_TEST_EQ(i, 8);
 
+# if WCHAR_MAX == 0xffff
     // utf-8 to wide, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
     typedef conversion_iterator<boost::interop::wide, boost::interop::utf8,
@@ -228,6 +230,7 @@ namespace
     for (type_wide_8 it(wides); it != type_wide_8(); ++it, ++i)
         BOOST_TEST(*it == utf8s[i]);
     BOOST_TEST_EQ(i, 8);
+# endif
   }
 
 }  // unnamed namespace
