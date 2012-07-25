@@ -25,7 +25,7 @@
 #include <boost/interop/detail/config.hpp>
 #include <boost/assert.hpp>
 #include <stdexcept>
-#include <boost/interop/string_types.hpp>
+#include <boost/interop/cxx11_char_types.hpp>
 #include <boost/interop/detail/is_iterator.hpp>
 //#include <boost/cstdint.hpp>
 #include <boost/assert.hpp>

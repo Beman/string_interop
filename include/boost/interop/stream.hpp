@@ -8,8 +8,8 @@
 #if !defined(BOOST_INTEROP_STREAM_HPP)
 # define BOOST_INTEROP_STREAM_HPP
 
-#include <boost/interop/string_types.hpp>
-#include <boost/interop/convert.hpp>
+#include <boost/interop/cxx11_char_types.hpp>
+#include <boost/interop/string_interop.hpp>
 #include <boost/interop/detail/is_iterator.hpp>
 #include <boost/interop/detail/iterator_value.hpp>
 #include <boost/utility/enable_if.hpp>

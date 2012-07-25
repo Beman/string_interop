@@ -5,7 +5,7 @@
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/interop/string_types.hpp>
+#include <boost/interop/cxx11_char_types.hpp>
 #include <boost/static_assert.hpp>
 
 namespace boost
