@@ -14,9 +14,8 @@
 using std::cout; using std::endl; using std::hex;
 
 using namespace boost::interop;
-using boost::u8_t;
-using boost::u16_t;
-using boost::u32_t;
+using boost::char16;
+using boost::char32;
 
 namespace
 {
@@ -39,9 +38,8 @@ namespace
 
   const char* meow = "Meow";
   const wchar_t meoww[] = { 'M', 'e', 'o', 'w', 0 };
-  const u8_t meow8[] = { 'M', 'e', 'o', 'w', 0 };
-  const u16_t meow16[] = { 'M', 'e', 'o', 'w', 0 };
-  const u32_t meow32[] = { 'M', 'e', 'o', 'w', 0 };
+  const char16 meow16[] = { 'M', 'e', 'o', 'w', 0 };
+  const char32 meow32[] = { 'M', 'e', 'o', 'w', 0 };
 
   void codex_from_iterator_test()
   {
@@ -72,20 +70,20 @@ namespace
     default_ctor_end_iter_test(utf8::from_iterator<const char*>(meow, meow), 0);
 
     cout << "  uft16" << endl;
-    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*>(meow16), 4);
-    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*>(meow16, 3), 3);
-    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*>(meow16, meow16+2), 2);
-    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*>(meow16+4), 0);
-    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*>(meow16, 0), 0);
-    default_ctor_end_iter_test(utf16::from_iterator<const u16_t*>(meow16, meow16), 0);
+    default_ctor_end_iter_test(utf16::from_iterator<const char16*>(meow16), 4);
+    default_ctor_end_iter_test(utf16::from_iterator<const char16*>(meow16, 3), 3);
+    default_ctor_end_iter_test(utf16::from_iterator<const char16*>(meow16, meow16+2), 2);
+    default_ctor_end_iter_test(utf16::from_iterator<const char16*>(meow16+4), 0);
+    default_ctor_end_iter_test(utf16::from_iterator<const char16*>(meow16, 0), 0);
+    default_ctor_end_iter_test(utf16::from_iterator<const char16*>(meow16, meow16), 0);
 
     cout << "  utf32" << endl;
-    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*>(meow32), 4);
-    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*>(meow32, 3), 3);
-    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*>(meow32, meow32+2), 2);
-    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*>(meow32+4), 0);
-    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*>(meow32, 0), 0);
-    default_ctor_end_iter_test(utf32::from_iterator<const u32_t*>(meow32, meow32), 0);
+    default_ctor_end_iter_test(utf32::from_iterator<const char32*>(meow32), 4);
+    default_ctor_end_iter_test(utf32::from_iterator<const char32*>(meow32, 3), 3);
+    default_ctor_end_iter_test(utf32::from_iterator<const char32*>(meow32, meow32+2), 2);
+    default_ctor_end_iter_test(utf32::from_iterator<const char32*>(meow32+4), 0);
+    default_ctor_end_iter_test(utf32::from_iterator<const char32*>(meow32, 0), 0);
+    default_ctor_end_iter_test(utf32::from_iterator<const char32*>(meow32, meow32), 0);
 
     //cout << "  wchar_t" << endl;
     //default_ctor_end_iter_test(from_iterator<const wchar_t*, wchar_t>(meoww), 4);
@@ -177,15 +175,15 @@ namespace
     //  U+1F60A SMILING FACE WITH SMILING EYES
     //  U+1F60E SMILING FACE WITH SUNGLASSES
 
-    u32_t utf32s[] = {0x1F60A, 0x1F60E, 0};
-    u16_t utf16s[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
+    char32 utf32s[] = {0x1F60A, 0x1F60E, 0};
+    char16 utf16s[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
     wchar_t wides[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
     const char* utf8s = "\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E";
 
     //  utf-32 to utf-16
     int i = 0;
     typedef conversion_iterator<boost::interop::utf16, boost::interop::utf32,
-      const u32_t*> type_32_16;
+      const char32*> type_32_16;
     for (type_32_16 it(utf32s); it != type_32_16(); ++it, ++i)
         BOOST_TEST(*it == utf16s[i]);
     BOOST_TEST_EQ(i, 4);
@@ -193,7 +191,7 @@ namespace
     // utf-32 to utf-8
     i = 0;
     typedef conversion_iterator<boost::interop::utf8, boost::interop::utf32,
-      const u32_t*> type_32_8;
+      const char32*> type_32_8;
     for (type_32_8 it(utf32s); it != type_32_8(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf8s[i]);
     BOOST_TEST_EQ(i, 8);
@@ -209,7 +207,7 @@ namespace
     // utf-16 to utf-8, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
     typedef conversion_iterator<boost::interop::utf8, boost::interop::utf16,
-      const u16_t*> type_16_8;
+      const char16*> type_16_8;
     for (type_16_8 it(utf16s); it != type_16_8(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf8s[i]);
     BOOST_TEST_EQ(i, 8);
@@ -250,17 +248,13 @@ int cpp_main(int, char*[])
   cout << "-----------------  testing with wchar_t...  -----------------" << endl;
   generate_1(std::wstring(L"Meow"));
 
-  //cout << "-----------------  testing with u8_t...  -----------------" << endl;
-  //u8_t u8src[] = { 'M', 'e', 'o', 'w', 0 };
-  //generate_1(std::basic_string<u8_t>(u8src));
+  cout << "-----------------  testing with char16...  -----------------" << endl;
+  char16 u16src[] = { 'M', 'e', 'o', 'w', 0 };
+  generate_1(std::basic_string<char16>(u16src));
 
-  cout << "-----------------  testing with u16_t...  -----------------" << endl;
-  u16_t u16src[] = { 'M', 'e', 'o', 'w', 0 };
-  generate_1(std::basic_string<u16_t>(u16src));
-
-  cout << "-----------------  testing with u32_t...  -----------------" << endl;
-  u32_t u32src[] = { 'M', 'e', 'o', 'w', 0 };
-  generate_1(std::basic_string<u32_t>(u32src));
+  cout << "-----------------  testing with char32...  -----------------" << endl;
+  char32 u32src[] = { 'M', 'e', 'o', 'w', 0 };
+  generate_1(std::basic_string<char32>(u32src));
 
   value_tests();
 

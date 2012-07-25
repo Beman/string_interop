@@ -15,12 +15,10 @@
 
 using std::string;
 using std::wstring;
-using boost::u8string;
 using boost::u16string;
 using boost::u32string;
-using boost::u8_t;
-using boost::u16_t;
-using boost::u32_t;
+using boost::char16;
+using boost::char32;
 using namespace boost::interop;
 
 namespace
@@ -30,13 +28,12 @@ namespace
   //  U+1F60E SMILING FACE WITH SUNGLASSES
 
   // build test strings character by character so they work with C++03 compilers
-  const u32_t u32c[] = {0x1F60A, 0x1F60E, 0};
-  const u16_t u16c[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
-  const u8_t  u8c[] = {0xF0, 0x9F, 0x98, 0x8A, 0xF0, 0x9F, 0x98, 0x8E, 0};
+  const char32 u32c[] = {0x1F60A, 0x1F60E, 0};
+  const char16 u16c[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
 
   const u32string u32s(u32c);
   const u16string u16s(u16c);
-  const u8string u8s(u8c);
+  const string u8s("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
   const string chars("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
 
 //----------------------------- no_default_arguments_test ------------------------------//
@@ -109,7 +106,6 @@ int cpp_main(int, char*[])
   BOOST_TEST_EQ(u8s.size(), 8);
   BOOST_TEST(std::memcmp(u32s.c_str(), u32c, u32s.size())==0);
   BOOST_TEST(std::memcmp(u16s.c_str(), u16c, u16s.size())==0);
-  BOOST_TEST(std::memcmp(u8s.c_str(), u8c, u8s.size())==0);
 
   no_default_arguments_test();
   default_arguments_test();

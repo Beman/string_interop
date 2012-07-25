@@ -14,24 +14,21 @@ using std::cout; using std::endl; using std::hex;
 #include <sstream>
 
 using namespace boost;
-using boost::u8_t;
-using boost::u16_t;
-using boost::u32_t;
+using boost::char16;
+using boost::char32;
 
 namespace
 {
 
   char     pipsqueek[]  = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
   wchar_t  wpipsqueek[] = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
-  u8_t     u8pipsqueek[]    = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
-  u16_t    u16pipsqueek[]   = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
-  u32_t    u32pipsqueek[]   = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
+  char16    u16pipsqueek[]   = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
+  char32    u32pipsqueek[]   = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
 
   char     meow[]  = { 'M', 'e', 'o', 'w', 0 };
   wchar_t  wmeow[] = { 'M', 'e', 'o', 'w', 0 };
-  u8_t     u8meow[]    = { 'M', 'e', 'o', 'w', 0 };
-  u16_t    u16meow[]   = { 'M', 'e', 'o', 'w', 0 };
-  u32_t    u32meow[]   = { 'M', 'e', 'o', 'w', 0 };
+  char16    u16meow[]   = { 'M', 'e', 'o', 'w', 0 };
+  char32    u32meow[]   = { 'M', 'e', 'o', 'w', 0 };
 
   template <class T>
   void test_inserter(T x)
@@ -62,7 +59,6 @@ namespace
     cout << "    boost container overloads in namespace std...\n";
 
     test_inserter(std::wstring(wpipsqueek));
-    test_inserter(boost::u8string(u8pipsqueek));
     test_inserter(boost::u16string(u16pipsqueek));
     test_inserter(boost::u32string(u32pipsqueek));
 

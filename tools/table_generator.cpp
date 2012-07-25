@@ -63,7 +63,7 @@ int main()
 
   //  generate to_utf16
 
-  cout << "const boost::u16_t  to_utf16[] =\n{\n";
+  cout << "const boost::char16  to_utf16[] =\n{\n";
   for (int i = 0; i < 256; ++i)
   {
     if (i)

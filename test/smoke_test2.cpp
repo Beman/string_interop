@@ -17,12 +17,10 @@
 
 using std::string;
 using std::wstring;
-using boost::u8string;
 using boost::u16string;
 using boost::u32string;
-using boost::u8_t;
-using boost::u16_t;
-using boost::u32_t;
+using boost::char16;
+using boost::char32;
 using namespace boost::interop;
 
 namespace
@@ -32,13 +30,12 @@ namespace
   //  U+1F60E SMILING FACE WITH SUNGLASSES
 
   // build test strings character by character so they work with C++03 compilers
-  const u32_t u32c[] = {0x1F60A, 0x1F60E, 0};
-  const u16_t u16c[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
-  const u8_t  u8c[] = {0xF0, 0x9F, 0x98, 0x8A, 0xF0, 0x9F, 0x98, 0x8E, 0};
+  const char32 u32c[] = {0x1F60A, 0x1F60E, 0};
+  const char16 u16c[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
 
   const u32string u32s(u32c);
   const u16string u16s(u16c);
-  const u8string u8s(u8c);
+  const string u8s("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
   const string chars("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
   const wstring wchars(L"\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
 
@@ -57,7 +54,6 @@ int cpp_main(int, char*[])
   BOOST_TEST_EQ(u8s.size(), 8);
   BOOST_TEST(std::memcmp(u32s.c_str(), u32c, u32s.size())==0);
   BOOST_TEST(std::memcmp(u16s.c_str(), u16c, u16s.size())==0);
-  BOOST_TEST(std::memcmp(u8s.c_str(), u8c, u8s.size())==0);
 
   //  look for smoke
 
@@ -70,7 +66,7 @@ int cpp_main(int, char*[])
     test_from_iterator begin1end;
     BOOST_TEST(begin1 != begin1end);
 
-    typedef narrow::to_iterator<const u32_t*> test_to_iterator;
+    typedef narrow::to_iterator<const char32*> test_to_iterator;
     test_to_iterator begin2(u32c);
 
     typedef narrow::from_iterator<string::const_iterator> test_string_from_iterator;
@@ -101,7 +97,7 @@ int cpp_main(int, char*[])
     test_from_iterator begin1end;
     BOOST_TEST(begin1 != begin1end);
 
-    typedef wide::to_iterator<const u32_t*> test_to_iterator;
+    typedef wide::to_iterator<const char32*> test_to_iterator;
     test_to_iterator begin2(u32c);
 
     typedef wide::from_iterator<wstring::const_iterator> test_string_from_iterator;
@@ -132,7 +128,7 @@ int cpp_main(int, char*[])
     test_from_iterator begin1end;
     BOOST_TEST(begin1 != begin1end);
 
-    typedef utf8::to_iterator<const u32_t*> test_to_iterator;
+    typedef utf8::to_iterator<const char32*> test_to_iterator;
     test_to_iterator begin2(u32c);
 
     test_from_iterator begin3(chars.c_str(), chars.c_str());
@@ -163,10 +159,10 @@ int cpp_main(int, char*[])
   //  utf16
   {
     std::cout << "utf16..." << std::endl;
-    typedef utf16::from_iterator<const u16_t*> test_from_iterator;
+    typedef utf16::from_iterator<const char16*> test_from_iterator;
     test_from_iterator begin1(u16s.c_str());
 
-    typedef utf16::to_iterator<const u32_t*> test_to_iterator;
+    typedef utf16::to_iterator<const char32*> test_to_iterator;
     test_to_iterator begin2(u32c);
 
     typedef utf16::from_iterator<u16string::const_iterator> test_string_from_iterator;
@@ -176,10 +172,10 @@ int cpp_main(int, char*[])
                                      // if invalid assumptions made about default
                                      // constructed iterator
 
-    BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<u16_t>::type,
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<char16>::type,
       utf16>::value), "auto detected the wrong type");
 
-    typedef conversion_iterator<utf16, utf16, const u16_t*>
+    typedef conversion_iterator<utf16, utf16, const char16*>
       conversion_iterator_example;
     conversion_iterator_example cvn_iterator;
 
@@ -191,10 +187,10 @@ int cpp_main(int, char*[])
   //  utf32
   {
     std::cout << "utf32..." << std::endl;
-    typedef utf32::from_iterator<const u32_t*> test_from_iterator;
+    typedef utf32::from_iterator<const char32*> test_from_iterator;
     test_from_iterator begin1(u32s.c_str());
 
-    typedef utf32::to_iterator<const u32_t*> test_to_iterator;
+    typedef utf32::to_iterator<const char32*> test_to_iterator;
     test_to_iterator begin2(u32c);
 
     typedef utf32::from_iterator<u32string::const_iterator> test_string_from_iterator;
@@ -204,10 +200,10 @@ int cpp_main(int, char*[])
                                      // if invalid assumptions made about default
                                      // constructed iterator
 
-    BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<u32_t>::type,
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<char32>::type,
       utf32>::value), "auto detected the wrong type");
 
-    typedef conversion_iterator<utf32, utf32, const u32_t*>
+    typedef conversion_iterator<utf32, utf32, const char32*>
       conversion_iterator_example;
     conversion_iterator_example cvn_iterator;
 

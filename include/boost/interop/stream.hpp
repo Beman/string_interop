@@ -94,12 +94,12 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os, const wchar_t* p)
   return boost::interop::detail::inserter(os, p);
 }
 
-basic_ostream<char>& operator<<(basic_ostream<char>& os, const boost::u16_t* p)
+basic_ostream<char>& operator<<(basic_ostream<char>& os, const boost::char16* p)
 {
   return boost::interop::detail::inserter(os, p);
 }
 
-basic_ostream<char>& operator<<(basic_ostream<char>& os, const boost::u32_t* p)
+basic_ostream<char>& operator<<(basic_ostream<char>& os, const boost::char32* p)
 {
   return boost::interop::detail::inserter(os, p);
 }
