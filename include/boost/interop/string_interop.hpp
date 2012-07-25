@@ -121,7 +121,7 @@ template <class charT>
   template <class ToCodec, class FromCodec, class ForwardIterator>
     class conversion_iterator;
 
-//  see convert() functions below
+//  see make_string() functions below
 
 //---------------------------------  Requirements  -------------------------------------//
 //
@@ -989,7 +989,7 @@ template <class ToCodec,
           class FromString>
   // enable_if resolves ambiguity with single iterator overload
 typename boost::disable_if<boost::is_iterator<FromString>,
-ToString>::type convert(const FromString& s)
+ToString>::type make_string(const FromString& s)
 {
   typedef conversion_iterator<ToCodec,
     typename FromCodec::template codec<typename FromString::value_type>::type,
@@ -1015,7 +1015,7 @@ template <class ToCodec,
           class ForwardIterator>
   // enable_if resolves ambiguity with FromContainer overload
 typename boost::enable_if<boost::is_iterator<ForwardIterator>,
-ToString>::type convert(ForwardIterator begin)
+ToString>::type make_string(ForwardIterator begin)
 {
   typedef conversion_iterator<ToCodec,
     typename FromCodec::template
@@ -1040,7 +1040,7 @@ template <class ToCodec,
           class ToString,
 # endif
           class ForwardIterator>
-ToString convert(ForwardIterator begin, std::size_t sz)
+ToString make_string(ForwardIterator begin, std::size_t sz)
 {
   typedef conversion_iterator<ToCodec,
     typename FromCodec::template
@@ -1067,7 +1067,7 @@ template <class ToCodec,
           class ForwardIterator, class ForwardIterator2>
   // enable_if ensures 2nd argument of 0 is treated as size, not range end
 typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
-ToString>::type convert(ForwardIterator begin, ForwardIterator2 end)
+ToString>::type make_string(ForwardIterator begin, ForwardIterator2 end)
 {
   typedef conversion_iterator<ToCodec,
     typename FromCodec::template

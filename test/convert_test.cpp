@@ -43,22 +43,22 @@ namespace
     std::cout << "no_default_arguments_test..." << std::endl;
 
     // container
-    string s1 = convert<utf8, utf16, string>(u16s);
+    string s1 = make_string<utf8, utf16, string>(u16s);
     BOOST_TEST_EQ(s1.size(), 8);
     BOOST_TEST(s1 == chars);
 
     // null terminated iterator
-    string s2 = convert<utf8, utf16, string>(u16s.c_str());
+    string s2 = make_string<utf8, utf16, string>(u16s.c_str());
     BOOST_TEST_EQ(s2.size(), 8);
     BOOST_TEST(s2 == chars);
 
     // iterator, size
-    string s3 = convert<utf8, utf16, string>(u16s.c_str(), u16s.size());
+    string s3 = make_string<utf8, utf16, string>(u16s.c_str(), u16s.size());
     BOOST_TEST_EQ(s3.size(), 8);
     BOOST_TEST(s3 == chars);
 
     // iterator range
-    string s4 = convert<utf8, utf16, string>(u16s.begin(), u16s.end());
+    string s4 = make_string<utf8, utf16, string>(u16s.begin(), u16s.end());
     BOOST_TEST_EQ(s4.size(), 8);
     BOOST_TEST(s4 == chars);
   }
@@ -71,22 +71,22 @@ namespace
     std::cout << "default_arguments_test..." << std::endl;
 
     // container
-    string s1 = convert<utf8>(u16s);
+    string s1 = make_string<utf8>(u16s);
     BOOST_TEST_EQ(s1.size(), 8);
     BOOST_TEST(s1 == chars);
 
     // null terminated iterator
-    string s2 = convert<utf8>(u16s.c_str());
+    string s2 = make_string<utf8>(u16s.c_str());
     BOOST_TEST_EQ(s2.size(), 8);
     BOOST_TEST(s2 == chars);
 
     // iterator, size
-    string s3 = convert<utf8>(u16s.c_str(), u16s.size());
+    string s3 = make_string<utf8>(u16s.c_str(), u16s.size());
     BOOST_TEST_EQ(s3.size(), 8);
     BOOST_TEST(s3 == chars);
 
     // iterator range
-    string s4 = convert<utf8>(u16s.begin(), u16s.end());
+    string s4 = make_string<utf8>(u16s.begin(), u16s.end());
     BOOST_TEST_EQ(s4.size(), 8);
     BOOST_TEST(s4 == chars);
 # endif

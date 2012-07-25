@@ -84,7 +84,7 @@ int cpp_main(int, char*[])
     conversion_iterator_example cvn_iterator;
 
     string source("foo");
-    string result = convert<narrow, narrow, string>(source);
+    string result = make_string<narrow, narrow, string>(source);
     BOOST_TEST_EQ(source, result);
   }
 
@@ -115,7 +115,7 @@ int cpp_main(int, char*[])
     conversion_iterator_example cvn_iterator;
 
     wstring source(L"foo");
-    wstring result = convert<wide, wide, wstring>(source);
+    wstring result = make_string<wide, wide, wstring>(source);
     BOOST_TEST(source == result);
   }
 
@@ -152,7 +152,7 @@ int cpp_main(int, char*[])
     conversion_iterator_example cvn_iterator;
 
     string source("foo");
-    string result = convert<utf8, utf8, string>(source);
+    string result = make_string<utf8, utf8, string>(source);
     BOOST_TEST_EQ(source, result);
   }
 
@@ -180,7 +180,7 @@ int cpp_main(int, char*[])
     conversion_iterator_example cvn_iterator;
 
     u16string source(u16s);
-    u16string result = convert<utf16, utf16, u16string>(source);
+    u16string result = make_string<utf16, utf16, u16string>(source);
     BOOST_TEST(source == result);
   }
 
@@ -208,7 +208,7 @@ int cpp_main(int, char*[])
     conversion_iterator_example cvn_iterator;
 
     u32string source(u32s);
-    u32string result = convert<utf32, utf32, u32string>(source);
+    u32string result = make_string<utf32, utf32, u32string>(source);
     BOOST_TEST(source == result);
   }
 
