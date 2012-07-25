@@ -58,7 +58,7 @@ namespace boost
 # endif
 
 # if defined(BOOST_NO_CHAR32_T) && (!defined(_MSC_VER) || _MSC_VER < 1600)  // 1600 == VC++10 
-    typedef  boost::uint_least16_t            char32;
+    typedef  boost::uint_least32_t            char32;
     typedef std::basic_string<boost::char32>  u32string;
 # else
     typedef char32_t                          char32;
