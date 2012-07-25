@@ -19,6 +19,27 @@
 //  to/from UTF-32 and UTF-16 to/from UTF-32 adapers was based on that header.          //
 //--------------------------------------------------------------------------------------//
 
+/*
+   TODO
+
+   * Add error handling options
+
+   * Add make_* functions. See commented out experiments at end of this header and at end
+     of smoke_test2.cpp.
+
+   * Replace hacks with <cuchar> based implementation for narrow, wide.
+
+     Codec    Windows    POSIX
+     ------   -------    -----
+     narrow   hack       hack    Windows assume codepage 437, POSIX assume UTF-8 
+     wide     done       hack    POSIX assume wchar_t is UTF-16 or UTF-32
+     utf8     done       done
+     utf16    done       done
+     utf32    done       done
+
+*/
+
+
 #if !defined(BOOST_STRING_INTEROP_HPP)
 #define BOOST_STRING_INTEROP_HPP
 
@@ -43,20 +64,6 @@
 #else
 # define BOOST_DEFAULTED {}
 #endif
-
-/*
-     TODO: Replace hacks with <cuchar> based implementation for narrow,
-     and with platform based choice for wide.
-
-     Codec    Windows    POSIX
-     ------   -------    -----
-     narrow   hack       hack    Windows assume codepage 437, POSIX assume UTF-8 
-     wide     done       hack    POSIX assume wchar_t is UTF-16 or UTF-32
-     utf8     done       done
-     utf16    done       done
-     utf32    done       done
-
-*/
 
 namespace boost
 {
@@ -974,7 +981,7 @@ public:
 };
 
 //--------------------------------------------------------------------------------------//
-//                                 convert function                                     //
+//                               make_string function                                   //
 //--------------------------------------------------------------------------------------//
 
 //  container
@@ -1081,6 +1088,19 @@ ToString>::type make_string(ForwardIterator begin, ForwardIterator2 end)
     tmp.push_back(*itr);
   return tmp;
 }
+
+////--------------------------------------------------------------------------------------//
+////                               make_string aliases                                    //
+////--------------------------------------------------------------------------------------//
+//
+//template <class FromCodec/* = default_codec*/,
+//          class ToString/* = std::string*/,
+//          class FromString>
+//inline
+//ToString make_narrow(const FromString& s)
+//{
+//  return make_string<narrow, FromCodec, ToString>(s);
+//}
 
 }  // namespace interop
 }  // namespace boost

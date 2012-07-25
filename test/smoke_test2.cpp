@@ -49,9 +49,9 @@ namespace
 int cpp_main(int, char*[])
 {
   // verify test constants
-  BOOST_TEST_EQ(u32s.size(), 2);
-  BOOST_TEST_EQ(u16s.size(), 4);
-  BOOST_TEST_EQ(u8s.size(), 8);
+  BOOST_TEST_EQ(u32s.size(), 2U);
+  BOOST_TEST_EQ(u16s.size(), 4U);
+  BOOST_TEST_EQ(u8s.size(), 8U);
   BOOST_TEST(std::memcmp(u32s.c_str(), u32c, u32s.size())==0);
   BOOST_TEST(std::memcmp(u16s.c_str(), u16c, u16s.size())==0);
 
@@ -211,6 +211,13 @@ int cpp_main(int, char*[])
     u32string result = make_string<utf32, utf32, u32string>(source);
     BOOST_TEST(source == result);
   }
+
+  //// make_string alias experiment
+
+  //string x, expected("OK");
+  //wstring w(L"OK");
+  //x = make_narrow<wide, string, wstring>(w);
+  //BOOST_TEST_EQ(x, expected);
 
   return ::boost::report_errors();
 }

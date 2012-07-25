@@ -44,22 +44,22 @@ namespace
 
     // container
     string s1 = make_string<utf8, utf16, string>(u16s);
-    BOOST_TEST_EQ(s1.size(), 8);
+    BOOST_TEST_EQ(s1.size(), 8U);
     BOOST_TEST(s1 == chars);
 
     // null terminated iterator
     string s2 = make_string<utf8, utf16, string>(u16s.c_str());
-    BOOST_TEST_EQ(s2.size(), 8);
+    BOOST_TEST_EQ(s2.size(), 8U);
     BOOST_TEST(s2 == chars);
 
     // iterator, size
     string s3 = make_string<utf8, utf16, string>(u16s.c_str(), u16s.size());
-    BOOST_TEST_EQ(s3.size(), 8);
+    BOOST_TEST_EQ(s3.size(), 8U);
     BOOST_TEST(s3 == chars);
 
     // iterator range
     string s4 = make_string<utf8, utf16, string>(u16s.begin(), u16s.end());
-    BOOST_TEST_EQ(s4.size(), 8);
+    BOOST_TEST_EQ(s4.size(), 8U);
     BOOST_TEST(s4 == chars);
   }
 
@@ -72,22 +72,22 @@ namespace
 
     // container
     string s1 = make_string<utf8>(u16s);
-    BOOST_TEST_EQ(s1.size(), 8);
+    BOOST_TEST_EQ(s1.size(), 8U);
     BOOST_TEST(s1 == chars);
 
     // null terminated iterator
     string s2 = make_string<utf8>(u16s.c_str());
-    BOOST_TEST_EQ(s2.size(), 8);
+    BOOST_TEST_EQ(s2.size(), 8U);
     BOOST_TEST(s2 == chars);
 
     // iterator, size
     string s3 = make_string<utf8>(u16s.c_str(), u16s.size());
-    BOOST_TEST_EQ(s3.size(), 8);
+    BOOST_TEST_EQ(s3.size(), 8U);
     BOOST_TEST(s3 == chars);
 
     // iterator range
     string s4 = make_string<utf8>(u16s.begin(), u16s.end());
-    BOOST_TEST_EQ(s4.size(), 8);
+    BOOST_TEST_EQ(s4.size(), 8U);
     BOOST_TEST(s4 == chars);
 # endif
   }
@@ -101,9 +101,9 @@ namespace
 int cpp_main(int, char*[])
 {
   // verify test constants
-  BOOST_TEST_EQ(u32s.size(), 2);
-  BOOST_TEST_EQ(u16s.size(), 4);
-  BOOST_TEST_EQ(u8s.size(), 8);
+  BOOST_TEST_EQ(u32s.size(), 2U);
+  BOOST_TEST_EQ(u16s.size(), 4U);
+  BOOST_TEST_EQ(u8s.size(), 8U);
   BOOST_TEST(std::memcmp(u32s.c_str(), u32c, u32s.size())==0);
   BOOST_TEST(std::memcmp(u16s.c_str(), u16c, u16s.size())==0);
 
