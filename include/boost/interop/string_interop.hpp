@@ -253,7 +253,7 @@ public:
     template <class T>
     from_iterator(ForwardIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void >::type* x=0)
+      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void* >::type =0)
       : m_begin(begin), m_end(end), m_default_end(false) {}
 
     // by_size
@@ -359,7 +359,7 @@ public:
     template <class T>
     from_iterator(ForwardIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void >::type* x=0)
+      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void* >::type = 0)
       : m_begin(begin), m_end(end), m_default_end(false) { m_value = read_pending; }
 
     // by_size
@@ -605,7 +605,7 @@ public:
     template <class T>
     from_iterator(ForwardIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void >::type* x=0)
+      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void* >::type =0)
       : m_begin(begin), m_end(end), m_default_end(false) {}
 
     // by_size
@@ -749,7 +749,7 @@ public:
     template <class T>
     from_iterator(ForwardIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void >::type* x=0)
+      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void* >::type =0)
       : m_begin(begin), m_end(end), m_default_end(false) { m_value = read_pending; }
 
     // by_size
@@ -973,7 +973,7 @@ public:
   template <class U>
   conversion_iterator(ForwardIterator begin, U end,
     // enable_if ensures 2nd argument of 0 is treated as size, not range end
-    typename boost::enable_if<boost::is_same<ForwardIterator, U>, void >::type* x=0)
+    typename boost::enable_if<boost::is_same<ForwardIterator, U>, void* >::type = 0)
     : to_iterator_type(from_iterator_type(begin, end)) {}
 
   conversion_iterator(ForwardIterator begin, std::size_t sz)
