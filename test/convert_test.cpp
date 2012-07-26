@@ -61,6 +61,11 @@ namespace
     string s4 = make_string<utf8, utf16, string>(u16s.begin(), u16s.end());
     BOOST_TEST_EQ(s4.size(), 8U);
     BOOST_TEST(s4 == chars);
+
+    // array
+    string s5 = make_string<narrow, wide, string>(L"bingo");
+    BOOST_TEST_EQ(s5.size(), 5U);
+    BOOST_TEST(s5 == "bingo");
   }
 
 //-------------------------------- default_arguments_test ------------------------------//
@@ -89,6 +94,11 @@ namespace
     string s4 = make_string<utf8>(u16s.begin(), u16s.end());
     BOOST_TEST_EQ(s4.size(), 8U);
     BOOST_TEST(s4 == chars);
+
+    // array
+    string s5 = make_string<narrow>(L"bingo");
+    BOOST_TEST_EQ(s5.size(), 5U);
+    BOOST_TEST(s5 == "bingo");
 # endif
   }
 

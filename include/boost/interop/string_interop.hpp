@@ -54,6 +54,7 @@
 #include <boost/static_assert.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
+#include <boost/type_traits/decay.hpp>
 #include <stdexcept>
 #include <sstream>
 #include <algorithm>
@@ -995,7 +996,7 @@ template <class ToCodec,
 # endif
           class FromString>
   // enable_if resolves ambiguity with single iterator overload
-typename boost::disable_if<boost::is_iterator<FromString>,
+typename boost::disable_if<boost::is_iterator<typename boost::decay<FromString>::type>,
 ToString>::type make_string(const FromString& s)
 {
   typedef conversion_iterator<ToCodec,
