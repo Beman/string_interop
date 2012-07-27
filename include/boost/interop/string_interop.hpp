@@ -996,7 +996,7 @@ template <class ToCodec,
           class FromCodec,
           class ToString,
 # endif
-          class FromString>
+          class FromString> inline
   // enable_if resolves ambiguity with single iterator overload
 typename boost::disable_if<boost::is_iterator<typename boost::decay<FromString>::type>,
 ToString>::type make_string(const FromString& s)
@@ -1022,8 +1022,8 @@ template <class ToCodec,
           class FromCodec,
           class ToString,
 # endif
-          class ForwardIterator>
-  // enable_if resolves ambiguity with FromContainer overload
+          class ForwardIterator> inline
+  // enable_if resolves ambiguity with FromString overload
 typename boost::enable_if<boost::is_iterator<ForwardIterator>,
 ToString>::type make_string(ForwardIterator begin)
 {
@@ -1049,7 +1049,7 @@ template <class ToCodec,
           class FromCodec,
           class ToString,
 # endif
-          class ForwardIterator>
+          class ForwardIterator> inline
 ToString make_string(ForwardIterator begin, std::size_t sz)
 {
   typedef conversion_iterator<ToCodec,
@@ -1092,18 +1092,65 @@ ToString>::type make_string(ForwardIterator begin, ForwardIterator2 end)
   return tmp;
 }
 
-////--------------------------------------------------------------------------------------//
-////                               make_string aliases                                    //
-////--------------------------------------------------------------------------------------//
-//
-//template <class FromCodec/* = default_codec*/,
-//          class ToString/* = std::string*/,
-//          class FromString>
-//inline
-//ToString make_narrow(const FromString& s)
-//{
-//  return make_string<narrow, FromCodec, ToString>(s);
-//}
+//--------------------------------------------------------------------------------------//
+//                               make_string aliases                                    //
+//--------------------------------------------------------------------------------------//
+
+//--------------------------------  make_narrow()  -------------------------------------//
+//  container
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class FromString> inline
+  // disable_if resolves ambiguity with single iterator overload
+typename boost::disable_if<boost::is_iterator<typename boost::decay<FromString>::type>,
+ToString>::type
+make_narrow(const FromString& s) {return make_string<narrow, FromCodec, ToString>(s);}
+
+//  null terminated iterator
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator> inline
+  // enable_if resolves ambiguity with FromString overload
+typename boost::enable_if<boost::is_iterator<ForwardIterator>,
+ToString>::type
+make_narrow(ForwardIterator begin) {return make_string<narrow, FromCodec, ToString>(begin);}
+
+//  iterator, size
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator> inline
+ToString make_narrow(ForwardIterator begin, std::size_t sz)
+  {return make_string<narrow, FromCodec, ToString>(begin, sz);}
+
+//  iterator range
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator, class ForwardIterator2> inline
+  // enable_if ensures 2nd argument of 0 is treated as size, not range end
+typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
+ToString>::type make_narrow(ForwardIterator begin, ForwardIterator2 end)
+  {return make_string<narrow, FromCodec, ToString>(begin, end);}
+
 
 }  // namespace interop
 }  // namespace boost
