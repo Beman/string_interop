@@ -669,6 +669,8 @@ public:
       BOOST_ASSERT_MSG(m_begin != ForwardIterator(),
         "Attempt to dereference end iterator");
       char32 c = *m_begin;
+      if (c & 0xFFFF0000U)
+        return '?';
       //cout << "*** c is " << hex << c << '\n';
       //cout << "    to_slice[c >> 7] << 7 is "
       //  << unsigned int(interop::detail::slice_index[c >> 7] << 7) << '\n';

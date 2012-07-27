@@ -15,6 +15,8 @@
 #include <boost/type_traits.hpp>
 #include <iostream>
 
+using std::cout;
+using std::endl;
 using std::string;
 using std::wstring;
 using boost::u16string;
@@ -59,7 +61,7 @@ int cpp_main(int, char*[])
 
   //  narrow
   {
-    std::cout << "narrow..." << std::endl;
+    cout << "narrow..." << endl;
     typedef narrow::from_iterator<const char*> test_from_iterator;
     test_from_iterator begin1(chars.c_str());
 
@@ -90,7 +92,7 @@ int cpp_main(int, char*[])
 
   //  wide
   {
-    std::cout << "wide..." << std::endl;
+    cout << "wide..." << endl;
     typedef wide::from_iterator<const wchar_t*> test_from_iterator;
     test_from_iterator begin1(wchars.c_str());
 
@@ -121,7 +123,7 @@ int cpp_main(int, char*[])
 
   //  utf8
   {
-    std::cout << "utf8..." << std::endl;
+    cout << "utf8..." << endl;
     typedef utf8::from_iterator<const char*> test_from_iterator;
     test_from_iterator begin1(chars.c_str());
 
@@ -158,7 +160,7 @@ int cpp_main(int, char*[])
 
   //  utf16
   {
-    std::cout << "utf16..." << std::endl;
+    cout << "utf16..." << endl;
     typedef utf16::from_iterator<const char16*> test_from_iterator;
     test_from_iterator begin1(u16s.c_str());
 
@@ -186,7 +188,7 @@ int cpp_main(int, char*[])
 
   //  utf32
   {
-    std::cout << "utf32..." << std::endl;
+    cout << "utf32..." << endl;
     typedef utf32::from_iterator<const char32*> test_from_iterator;
     test_from_iterator begin1(u32s.c_str());
 
@@ -211,6 +213,10 @@ int cpp_main(int, char*[])
     u32string result = make_string<utf32, utf32, u32string>(source);
     BOOST_TEST(source == result);
   }
+
+  //  error character tests
+  cout << "(Windows only) error characters: \""
+       << make_string<narrow, utf32, string>(u32s) << "\"" << endl;
 
   //// make_string alias experiment
 
