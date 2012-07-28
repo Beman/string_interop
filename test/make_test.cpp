@@ -15,6 +15,8 @@
 #include <boost/type_traits.hpp>
 #include <iostream>
 
+using std::cout;
+using std::endl;
 using std::string;
 using std::wstring;
 using boost::u16string;
@@ -39,6 +41,146 @@ namespace
   const string chars("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
   const wstring wchars(L"\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
 
+  void to_narrow_test()
+  {
+    cout << "to_narrow test..." << endl;
+
+    string x, expected("Works!");
+    wstring w(L"Works!");
+    x = to_narrow<wide, string>(w);
+    BOOST_TEST_EQ(x, expected);
+
+    expected = "Works!";
+    x = to_narrow<wide, string>(L"Works!");
+    BOOST_TEST_EQ(x, expected);
+
+    expected = "orks!";
+    x = to_narrow<wide, string>(w.c_str()+1);
+    BOOST_TEST_EQ(x, expected);
+
+    expected = "Work";
+    x = to_narrow<wide, string>(w.c_str(), 4);
+    BOOST_TEST_EQ(x, expected);
+
+    expected = "Works!";
+    x = to_narrow<wide, string>(w.begin(), w.end());
+    BOOST_TEST_EQ(x, expected);
+
+    cout << "  to_narrow test complete" << endl;
+  }
+
+  void to_wide_test()
+  {
+    cout << "to_wide test..." << endl;
+
+    wstring x, expected(L"Works!");
+    string w("Works!");
+    x = to_wide<narrow, wstring>(w);
+    BOOST_TEST(x == expected);
+
+    expected = L"Works!";
+    x = to_wide<narrow, wstring>("Works!");
+    BOOST_TEST(x == expected);
+
+    expected = L"orks!";
+    x = to_wide<narrow, wstring>(w.c_str()+1);
+    BOOST_TEST(x == expected);
+
+    expected = L"Work";
+    x = to_wide<narrow, wstring>(w.c_str(), 4);
+    BOOST_TEST(x == expected);
+
+    expected = L"Works!";
+    x = to_wide<narrow, wstring>(w.begin(), w.end());
+    BOOST_TEST(x == expected);
+
+    cout << "  to_wide test complete" << endl;
+  }
+
+  void to_utf8_test()
+  {
+    cout << "to_utf8 test..." << endl;
+
+    string x, expected("Works!");
+    wstring w(L"Works!");
+    x = to_utf8<wide, string>(w);
+    BOOST_TEST_EQ(x, expected);
+
+    expected = "Works!";
+    x = to_utf8<wide, string>(L"Works!");
+    BOOST_TEST_EQ(x, expected);
+
+    expected = "orks!";
+    x = to_utf8<wide, string>(w.c_str()+1);
+    BOOST_TEST_EQ(x, expected);
+
+    expected = "Work";
+    x = to_utf8<wide, string>(w.c_str(), 4);
+    BOOST_TEST_EQ(x, expected);
+
+    expected = "Works!";
+    x = to_utf8<wide, string>(w.begin(), w.end());
+    BOOST_TEST_EQ(x, expected);
+
+    cout << "  to_utf8 test complete" << endl;
+  }
+
+  void to_utf16_test()
+  {
+    cout << "to_utf16 test..." << endl;
+
+    u16string x, expected(make_string<utf16, narrow, u16string>("Works!"));
+    wstring w(L"Works!");
+    x = to_utf16<wide, u16string>(w);
+    BOOST_TEST(x == expected);
+
+    expected  = make_string<utf16, narrow, u16string>("Works!");
+    x = to_utf16<wide, u16string>(L"Works!");
+    BOOST_TEST(x == expected);
+
+    expected  = make_string<utf16, narrow, u16string>("orks!");
+    x = to_utf16<wide, u16string>(w.c_str()+1);
+    BOOST_TEST(x == expected);
+
+    expected  = make_string<utf16, narrow, u16string>("Work");
+    x = to_utf16<wide, u16string>(w.c_str(), 4);
+    BOOST_TEST(x == expected);
+
+    expected  = make_string<utf16, narrow, u16string>("Works!");
+    x = to_utf16<wide, u16string>(w.begin(), w.end());
+    BOOST_TEST(x == expected);
+
+    cout << "  to_utf16 test complete" << endl;
+  }
+
+  void to_utf32_test()
+  {
+    cout << "to_utf32 test..." << endl;
+
+    u32string x, expected(make_string<utf32, narrow, u32string>("Works!"));
+    wstring w(L"Works!");
+    x = to_utf32<wide, u32string>(w);
+    BOOST_TEST(x == expected);
+
+    expected  = make_string<utf32, narrow, u32string>("Works!");
+    x = to_utf32<wide, u32string>(L"Works!");
+    BOOST_TEST(x == expected);
+
+    expected  = make_string<utf32, narrow, u32string>("orks!");
+    x = to_utf32<wide, u32string>(w.c_str()+1);
+    BOOST_TEST(x == expected);
+
+    expected  = make_string<utf32, narrow, u32string>("Work");
+    x = to_utf32<wide, u32string>(w.c_str(), 4);
+    BOOST_TEST(x == expected);
+
+    expected  = make_string<utf32, narrow, u32string>("Works!");
+    x = to_utf32<wide, u32string>(w.begin(), w.end());
+    BOOST_TEST(x == expected);
+
+    cout << "  to_utf32 test complete" << endl;
+  }
+
 }  // unnamed namespace
 
 
@@ -55,37 +197,12 @@ int cpp_main(int, char*[])
   BOOST_TEST(std::memcmp(u32s.c_str(), u32c, u32s.size())==0);
   BOOST_TEST(std::memcmp(u16s.c_str(), u16c, u16s.size())==0);
 
-  // make_string alias tests
+  to_narrow_test();
+  to_wide_test();
+  to_utf8_test();
+  to_utf16_test();
+  to_utf32_test();
 
-  {
-    string x, expected("Works!");
-    wstring w(L"Works!");
-    x = make_narrow<wide, string>(w);
-    BOOST_TEST_EQ(x, expected);
-  }
-  {
-    string x, expected("Works!");
-    x = make_narrow<wide, string>(L"Works!");
-    BOOST_TEST_EQ(x, expected);
-  }
-  {
-    string x, expected("Works!");
-    wstring w(L"Works!");
-    x = make_narrow<wide, string>(w.c_str());
-    BOOST_TEST_EQ(x, expected);
-  }
-  {
-    string x, expected("Work");
-    wstring w(L"Works!");
-    x = make_narrow<wide, string>(w.c_str(), 4);
-    BOOST_TEST_EQ(x, expected);
-  }
-  {
-    string x, expected("Works!");
-    wstring w(L"Works!");
-    x = make_narrow<wide, string>(w.begin(), w.end());
-    BOOST_TEST_EQ(x, expected);
-  }
 
   return ::boost::report_errors();
 }

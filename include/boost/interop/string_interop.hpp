@@ -1096,7 +1096,7 @@ ToString>::type make_string(ForwardIterator begin, ForwardIterator2 end)
 //                               make_string aliases                                    //
 //--------------------------------------------------------------------------------------//
 
-//--------------------------------  make_narrow()  -------------------------------------//
+//--------------------------------  to_narrow()  -------------------------------------//
 //  container
 template <
 # ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
@@ -1109,7 +1109,7 @@ template <
   // disable_if resolves ambiguity with single iterator overload
 typename boost::disable_if<boost::is_iterator<typename boost::decay<FromString>::type>,
 ToString>::type
-make_narrow(const FromString& s) {return make_string<narrow, FromCodec, ToString>(s);}
+to_narrow(const FromString& s) {return make_string<narrow, FromCodec, ToString>(s);}
 
 //  null terminated iterator
 template <
@@ -1123,7 +1123,7 @@ template <
   // enable_if resolves ambiguity with FromString overload
 typename boost::enable_if<boost::is_iterator<ForwardIterator>,
 ToString>::type
-make_narrow(ForwardIterator begin) {return make_string<narrow, FromCodec, ToString>(begin);}
+to_narrow(ForwardIterator begin) {return make_string<narrow, FromCodec, ToString>(begin);}
 
 //  iterator, size
 template <
@@ -1134,7 +1134,7 @@ template <
           class FromCodec, class ToString,
 # endif
           class ForwardIterator> inline
-ToString make_narrow(ForwardIterator begin, std::size_t sz)
+ToString to_narrow(ForwardIterator begin, std::size_t sz)
   {return make_string<narrow, FromCodec, ToString>(begin, sz);}
 
 //  iterator range
@@ -1148,8 +1148,228 @@ template <
           class ForwardIterator, class ForwardIterator2> inline
   // enable_if ensures 2nd argument of 0 is treated as size, not range end
 typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
-ToString>::type make_narrow(ForwardIterator begin, ForwardIterator2 end)
+ToString>::type to_narrow(ForwardIterator begin, ForwardIterator2 end)
   {return make_string<narrow, FromCodec, ToString>(begin, end);}
+
+//--------------------------------  to_wide()  -------------------------------------//
+//  container
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class FromString> inline
+  // disable_if resolves ambiguity with single iterator overload
+typename boost::disable_if<boost::is_iterator<typename boost::decay<FromString>::type>,
+ToString>::type
+to_wide(const FromString& s) {return make_string<wide, FromCodec, ToString>(s);}
+
+//  null terminated iterator
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator> inline
+  // enable_if resolves ambiguity with FromString overload
+typename boost::enable_if<boost::is_iterator<ForwardIterator>,
+ToString>::type
+to_wide(ForwardIterator begin) {return make_string<wide, FromCodec, ToString>(begin);}
+
+//  iterator, size
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator> inline
+ToString to_wide(ForwardIterator begin, std::size_t sz)
+  {return make_string<wide, FromCodec, ToString>(begin, sz);}
+
+//  iterator range
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator, class ForwardIterator2> inline
+  // enable_if ensures 2nd argument of 0 is treated as size, not range end
+typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
+ToString>::type to_wide(ForwardIterator begin, ForwardIterator2 end)
+  {return make_string<wide, FromCodec, ToString>(begin, end);}
+
+//--------------------------------  to_utf8()  -------------------------------------//
+//  container
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class FromString> inline
+  // disable_if resolves ambiguity with single iterator overload
+typename boost::disable_if<boost::is_iterator<typename boost::decay<FromString>::type>,
+ToString>::type
+to_utf8(const FromString& s) {return make_string<utf8, FromCodec, ToString>(s);}
+
+//  null terminated iterator
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator> inline
+  // enable_if resolves ambiguity with FromString overload
+typename boost::enable_if<boost::is_iterator<ForwardIterator>,
+ToString>::type
+to_utf8(ForwardIterator begin) {return make_string<utf8, FromCodec, ToString>(begin);}
+
+//  iterator, size
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator> inline
+ToString to_utf8(ForwardIterator begin, std::size_t sz)
+  {return make_string<utf8, FromCodec, ToString>(begin, sz);}
+
+//  iterator range
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator, class ForwardIterator2> inline
+  // enable_if ensures 2nd argument of 0 is treated as size, not range end
+typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
+ToString>::type to_utf8(ForwardIterator begin, ForwardIterator2 end)
+  {return make_string<utf8, FromCodec, ToString>(begin, end);}
+
+//--------------------------------  to_utf16()  -------------------------------------//
+//  container
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class FromString> inline
+  // disable_if resolves ambiguity with single iterator overload
+typename boost::disable_if<boost::is_iterator<typename boost::decay<FromString>::type>,
+ToString>::type
+to_utf16(const FromString& s) {return make_string<utf16, FromCodec, ToString>(s);}
+
+//  null terminated iterator
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator> inline
+  // enable_if resolves ambiguity with FromString overload
+typename boost::enable_if<boost::is_iterator<ForwardIterator>,
+ToString>::type
+to_utf16(ForwardIterator begin) {return make_string<utf16, FromCodec, ToString>(begin);}
+
+//  iterator, size
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator> inline
+ToString to_utf16(ForwardIterator begin, std::size_t sz)
+  {return make_string<utf16, FromCodec, ToString>(begin, sz);}
+
+//  iterator range
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator, class ForwardIterator2> inline
+  // enable_if ensures 2nd argument of 0 is treated as size, not range end
+typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
+ToString>::type to_utf16(ForwardIterator begin, ForwardIterator2 end)
+  {return make_string<utf16, FromCodec, ToString>(begin, end);}
+
+//--------------------------------  to_utf32()  -------------------------------------//
+//  container
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class FromString> inline
+  // disable_if resolves ambiguity with single iterator overload
+typename boost::disable_if<boost::is_iterator<typename boost::decay<FromString>::type>,
+ToString>::type
+to_utf32(const FromString& s) {return make_string<utf32, FromCodec, ToString>(s);}
+
+//  null terminated iterator
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator> inline
+  // enable_if resolves ambiguity with FromString overload
+typename boost::enable_if<boost::is_iterator<ForwardIterator>,
+ToString>::type
+to_utf32(ForwardIterator begin) {return make_string<utf32, FromCodec, ToString>(begin);}
+
+//  iterator, size
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator> inline
+ToString to_utf32(ForwardIterator begin, std::size_t sz)
+  {return make_string<utf32, FromCodec, ToString>(begin, sz);}
+
+//  iterator range
+template <
+# ifndef BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
+          class FromCodec = default_codec,
+          class ToString = std::basic_string<typename ToCodec::value_type>,
+# else
+          class FromCodec, class ToString,
+# endif
+          class ForwardIterator, class ForwardIterator2> inline
+  // enable_if ensures 2nd argument of 0 is treated as size, not range end
+typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
+ToString>::type to_utf32(ForwardIterator begin, ForwardIterator2 end)
+  {return make_string<utf32, FromCodec, ToString>(begin, end);}
 
 
 }  // namespace interop
