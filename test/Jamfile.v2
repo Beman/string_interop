@@ -20,19 +20,15 @@ project
       : # test name
     ]
     [ run codec_iterator_test.cpp
-       ../src/codepage_437.cpp
        : :  : <test-info>always_show_run_output # requirements
     ] 
     [ run smoke_test2.cpp
-       ../src/codepage_437.cpp
        : :  : <test-info>always_show_run_output # requirements
     ] 
     [ run convert_test.cpp
-       ../src/codepage_437.cpp
        : :  : <test-info>always_show_run_output # requirements
     ] 
     [ run stream_test.cpp
-       ../src/codepage_437.cpp
        : :  : <test-info>always_show_run_output # requirements
     ] 
 

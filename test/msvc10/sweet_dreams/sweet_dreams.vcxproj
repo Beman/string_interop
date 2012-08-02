@@ -12,7 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\example\sweet_dreams.cpp" />
-    <ClCompile Include="..\..\..\src\codepage_437.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FA47D64B-55E1-4AA6-A28D-3FA23A96F9C8}</ProjectGuid>
