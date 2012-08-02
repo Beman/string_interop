@@ -8,16 +8,33 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "is_iterator_test", "is_iterator_test\is_iterator_test.vcxproj", "{675C7F09-E581-4A5E-872E-E167BD365145}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stream_test", "stream_test\stream_test.vcxproj", "{61FD2BA1-E82B-4CDF-A301-03B02FC3A542}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586} = {1F72F455-D21C-4D43-BCE6-B3DE0EA34586}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "convert_test", "convert_test\convert_test.vcxproj", "{937CE364-BDFE-491D-B06A-E25BBD297594}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586} = {1F72F455-D21C-4D43-BCE6-B3DE0EA34586}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "smoke_test2", "smoke_test2\smoke_test2.vcxproj", "{9E97DFBF-C1A6-4E30-81D2-F8CD01DC902E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586} = {1F72F455-D21C-4D43-BCE6-B3DE0EA34586}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "codec_iterator_test", "codec_iterator_test\codec_iterator_test.vcxproj", "{5B04DCCD-6BFA-4535-8A30-3AA7A7C477D2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586} = {1F72F455-D21C-4D43-BCE6-B3DE0EA34586}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scratch", "scratch\scratch.vcxproj", "{69E4FE5F-9A15-49AC-BEFA-30575AC77B15}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "make_test", "make_test\make_test.vcxproj", "{41B6645C-71C6-4F71-825E-D4390868E54A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586} = {1F72F455-D21C-4D43-BCE6-B3DE0EA34586}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop_dll", "interop_dll\interop_dll.vcxproj", "{1F72F455-D21C-4D43-BCE6-B3DE0EA34586}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +76,10 @@ Global
 		{41B6645C-71C6-4F71-825E-D4390868E54A}.Debug|Win32.Build.0 = Debug|Win32
 		{41B6645C-71C6-4F71-825E-D4390868E54A}.Release|Win32.ActiveCfg = Release|Win32
 		{41B6645C-71C6-4F71-825E-D4390868E54A}.Release|Win32.Build.0 = Release|Win32
+		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586}.Debug|Win32.Build.0 = Debug|Win32
+		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586}.Release|Win32.ActiveCfg = Release|Win32
+		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

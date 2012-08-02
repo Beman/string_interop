@@ -19,6 +19,8 @@
 #include <ostream>
 #include <iterator>
 
+#include <boost/config/abi_prefix.hpp> // must be the last #include
+
 namespace boost
 {
 namespace interop
@@ -105,5 +107,9 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os, const boost::char32* p)
 }
 
 }  // namespace std
+
+//----------------------------------------------------------------------------//
+
+#include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 
 #endif  // BOOST_INTEROP_STREAM_HPP

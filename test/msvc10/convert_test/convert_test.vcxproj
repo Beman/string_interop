@@ -78,6 +78,11 @@
   <ItemGroup>
     <ClCompile Include="..\..\convert_test.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\interop_dll\interop_dll.vcxproj">
+      <Project>{1f72f455-d21c-4d43-bce6-b3de0ea34586}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
