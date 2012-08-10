@@ -5,7 +5,7 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Adapting to Unicode</title>
+<title>String Interoperation</title>
 <style type="text/css">
  ins {background-color:#A0FFA0}
  del {background-color:#FFA0A0}
@@ -17,13 +17,12 @@
   <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="579">
     <tr>
       <td width="153" align="left" valign="top">Document number:</td>
-      <td width="426"><span style="background-color: #CCFFCC">Dnnnn 
-      = 12-nnnn</span></td>
+      <td width="426"><span style="background-color: #FFFFCC">D3398=12-0088</span></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-07-25<!--webbot bot="Timestamp" endspan i-checksum="12434" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-08-10<!--webbot bot="Timestamp" endspan i-checksum="12487" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -59,7 +58,10 @@
     </center>
   </div>
 
-<h1>String Interoperation Library Proposal</h1>
+<h1>String Interoperation Library<br>
+<font size="5">Adapting Standard Library Strings and I/O to a Unicode World</font></h1>
+
+<p>&nbsp;</p>
 
 <h2>Table of contents</h2>
 
@@ -103,6 +105,9 @@ high-lighted in green</span>.</p>
     problem 1.</li>
   </ul>
 
+  <p><b>Initial paper:</b> N3336, Adapting Standard Library Strings and I/O to a 
+  Unicode World</p>
+
 <h2><a name="String-encoding-conversion-safety-rationale">String  conversion safety 
 rationale</a></h2>
   <p>The proposed solutions below make the assumption that it is safe to convert 
@@ -141,6 +146,10 @@ are proposed here.</p>
 character types, and with their encodings. The deeper attributes of Unicode 
 characters are not addressed. See Mathias Gaunard's <a href="http://mathias.gaunard.com/unicode/doc/html/">
   Unicode project</a> for an example of deeper Unicode support.</p>
+
+<p>This proposal provides compile-time solutions. It does not provide runtime 
+solutions such as provided by the <a href="http://icu-project.org">International 
+Components for Unicode (ICU)</a> library.</p>
 
 <p>This proposal does not suggest providing a string type guaranteed to provide 
 UTF-8 encoding.&nbsp; Although experiments with <code>typedef 
