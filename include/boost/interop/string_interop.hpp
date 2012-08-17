@@ -1008,11 +1008,7 @@ ToString>::type make_string(const FromString& s)
     typename FromString::const_iterator>
       iter_type;
 
-  ToString tmp;
-
-  iter_type iter(s.begin(), s.end());
-  std::copy(iter, iter_type(), std::back_insert_iterator<ToString>(tmp));
-  return tmp;
+  return ToString(iter_type(s.begin(), s.end()), iter_type());
 }
 
 //  null terminated iterator
@@ -1035,11 +1031,7 @@ ToString>::type make_string(ForwardIterator begin)
     ForwardIterator>
       iter_type;
 
-  ToString tmp;
-  iter_type itr(begin);
-  for (; itr != iter_type(); ++itr)
-    tmp.push_back(*itr);
-  return tmp;
+  return ToString(iter_type(begin), iter_type());
 }
 
 //  iterator, size
@@ -1060,11 +1052,7 @@ ToString make_string(ForwardIterator begin, std::size_t sz)
     ForwardIterator>
       iter_type;
 
-  ToString tmp;
-  iter_type itr(begin, sz);
-  for (; itr != iter_type(); ++itr)
-    tmp.push_back(*itr);
-  return tmp;
+  return ToString(iter_type(begin, sz), iter_type());
 }
 
 //  iterator range
@@ -1087,11 +1075,7 @@ ToString>::type make_string(ForwardIterator begin, ForwardIterator2 end)
     ForwardIterator>
       iter_type;
 
-  ToString tmp;
-  iter_type itr(begin, end);
-  for (; itr != iter_type(); ++itr)
-    tmp.push_back(*itr);
-  return tmp;
+  return ToString(iter_type(begin, end), iter_type());
 }
 
 //--------------------------------------------------------------------------------------//
