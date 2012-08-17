@@ -24,8 +24,10 @@
 
    * Add error handling options
 
-   * Add make_* functions. See commented out experiments at end of this header and at end
-     of smoke_test2.cpp.
+   * make_string needs to add a (defaulted) allocator arguments for the output string.
+
+   * Add make_ or to_* alias functions. See commented out experiments at end of this
+     header and at end of smoke_test2.cpp.
 
    * Replace hacks with <cuchar> based implementation for narrow, wide.
 
