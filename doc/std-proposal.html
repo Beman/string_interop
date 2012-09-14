@@ -22,7 +22,7 @@
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-08-10<!--webbot bot="Timestamp" endspan i-checksum="12487" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-09-14<!--webbot bot="Timestamp" endspan i-checksum="12559" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -45,11 +45,15 @@
       <p align="center"><b>To Do</b></p>
       <ul>
         <li>
+        <p align="left">Add Motivation section, replacing Problem 1, etc.</li>
+        <li>
         <p align="left">Add error handling argument where appropriate.</li>
         <li>
         <p align="left">Add three pointer case signatures for basic_ostream&lt;wchar_t&gt;&amp; </li>
         <li>
         <p align="left">Add stream extractors.</li>
+        <li>
+        <p align="left">Add usage examples to P/R.</li>
       </ul>
       </td>
     </tr>
@@ -95,6 +99,12 @@ github.com/Beman/string-interoperability</a>.</p>
 
 <p>Changes from the prior revision are <span style="background-color: #CCFFCC">
 high-lighted in green</span>.</p>
+
+<h2>Motivation</h2>
+
+<h3>UTF-8 typedefs (Informative) [str-x.utf8-typedefs]</h3>
+
+<h3>UTF-8 string support [str-x.utf8]</h3>
 
 <h2><a name="Revision-history">Revision history</a></h2>
 
@@ -536,18 +546,26 @@ public:
   <h1>Proposed Wording</h1>
   <p>&nbsp;</p>
   <h1>String interoperation&nbsp;&nbsp;&nbsp; [str-x]</h1>
-  <p>This sub-clause describes facilities that allow interoperation between strings of differing 
-  types and encodings. The following encodings are supported:</p>
+  <p>This library provides facilities that allow interoperation between strings of differing 
+  types and encodings, and ease use of strings with UTF-8 encoding. The following encodings are supported:</p>
   <ul>
     <li>The current native narrow character and wide character encodings.</li>
     <li>Unicode UTF-8, UTF-16, and UTF-32 encodings.</li>
     <li>Implementation-defined additional encodings.</li>
-    <li>User-defined additional encodings. </li>
+    <li>User-defined additional encodings.</li>
   </ul>
-  <p>Unless otherwise specified, the whole of the ISO C++ Standard Library 
+  <p>The whole of the ISO C++ Standard Library 
   introduction [lib.library] is included by reference.</p>
   <h2>Header &lt;string_interop.hpp&gt; synopsis&nbsp;&nbsp;&nbsp; [str-x.synopsis]</h2>
-  <pre>namespace std { namespace tbd {  // tbd is to be decided
+  <pre>namespace std {
+
+  //  UTF-8 typedefs [str-x.utf8-typedefs]
+  typedef unsigned char           char8_t;
+  typedef basic_string&lt;char8_t&gt;   u8string;
+
+  template &lt;&gt; struct char_traits&lt;char8_t&gt;;
+
+namespace tbd {  // tbd is to be decided
  
   //  codecs [str-x.codec]
   class narrow;
@@ -561,6 +579,7 @@ public:
   template &lt;class charT&gt; struct select_codec;
   template &lt;&gt; struct select_codec&lt;char&gt;       { typedef narrow type; };
   template &lt;&gt; struct select_codec&lt;wchar_t&gt;    { typedef wide   type; };
+  template &lt;&gt; struct select_codec&lt;char8_t&gt;    { typedef utf8   type; };
   template &lt;&gt; struct select_codec&lt;char16_t&gt;   { typedef utf16  type; };
   template &lt;&gt; struct select_codec&lt;char32_t&gt;   { typedef utf32  type; };
  
@@ -568,7 +587,7 @@ public:
   template &lt;class ToCodec, class FromCodec, class ForwardIterator&gt;
     class conversion_iterator;
 
-  //  string convert functions [str-x.cvt]
+  //  string convertion functions [str-x.cvt]
   template &lt;class ToCodec,
             class FromCodec = default_codec,
             class ToString = std::basic_string&lt;typename ToCodec::value_type&gt;,
@@ -593,6 +612,12 @@ public:
             class ForwardIterator,
             class ForwardIterator2&gt;
   ToString make_string(ForwardIterator begin, ForwardIterator2 end);
+
+  //  UTF-8 string support [str-x.utf8]
+  inline const char8_t* u8(const char* s) noexcept;
+  inline const char8_t* u8(const string&amp; s) noexcept;
+  inline const char*    u8(const char8_t* s) noexcept;
+  inline const char*    u8(const char8_t&amp; s) noexcept;
 
 }  // namespace tbd
 
@@ -628,7 +653,7 @@ public:
     </tr>
     <tr>
       <td><code>utf8</code></td>
-      <td><code>char</code></td>
+      <td><code>char8_t</code></td>
       <td>UTF-8</td>
     </tr>
     <tr>
@@ -751,7 +776,7 @@ from_iterator(ForwardIterator begin, </code>ForwardIterator2<code> end);</code><
     <p><i>Effects: </i>Constructs an object with the end-of-sequence 
     iterator value ([str-x.codec.req.eos]).</p>
   </blockquote>
-  <p><code>to_iterator(ForwardIterator begin);</code></p>
+  <p dir="ltr"><code>to_iterator(ForwardIterator begin);</code></p>
   <blockquote>
     <p><code>ForwardIterator</code> is required to meet the end-of-sequence 
     iterator requirements ([str-x.codec.req.eos]).</p>
@@ -760,6 +785,20 @@ from_iterator(ForwardIterator begin, </code>ForwardIterator2<code> end);</code><
     value is reached.</p>
   </blockquote>
   <h3>select_codec [str-x.codec.select]</h3>
+  <p><span style="text-decoration: blink; background-color: #FFFFCC">TBS</span></p>
+  <h2>UTF-8 typedefs (Informative) [<a name="str-x.utf8-typedefs">str-x.utf8-typedefs</a>]</h2>
+  <p dir="ltr">In portable internationalized applications, use of UTF-8 encoded 
+  C-style array of <code>char</code> strings and <code>std::string</code> is 
+  problematic for passing arguments of these types to functions which assume the 
+  encoding is the native operating system encoding. For example, arguments 
+  representing filenames for I/O functions or arguments representing content for 
+  web sites. Disciplined conversion of all narrow character strings to UTF-8 
+  encoding within an application is a partial solution, but is not enforceable 
+  via the C++ language type system and does not help with third-party or 
+  standard library functions that assume narrow strings use native encoding. </p>
+  <p dir="ltr">The <code>char8_t</code> and <code>u8string</code> typedefs allow 
+  the C++ type system to distinguish between native encoded and UTF-8 encoded 
+  narrow character strings.</p>
   <h2>conversion_iterator [str-x.cvt-iter]</h2>
   <p>Class template <code>conversion_iterator</code> composes a forward iterator from a 
   codec t<code>o_iterator</code>, a codec <code>from_iterator</code>, and a 
@@ -882,6 +921,33 @@ ToString make_string(ForwardIterator begin, ForwardIterator2 end);</pre>
   <p dir="ltr"><i>Returns: </i>&nbsp;A string containing the characters of the 
   sequence [<code>begin, end</code>).</p>
   
+  </blockquote>
+  <h2 dir="ltr">UTF-8 string support [<a name="str-x.utf8">str-x.utf8</a>]</h2>
+  
+  <p dir="ltr">These functions provide copy-less conversion by taking advantage 
+  of C++ language rules that ensure the representation of the underlying bytes 
+  for <code>char</code> and <code>unsigned char</code> are the same (C++ 
+  standard: [basic.types]). </p>
+  
+  <pre dir="ltr">inline const char8_t* u8(const char* s) noexcept;</pre>
+  <blockquote>
+    <p dir="ltr"><i>Returns: </i><code>static_cast&lt;const char8_t*&gt;(static_cast&lt;const 
+    void*&gt;(s))</code>.</p>
+  </blockquote>
+  <pre>inline const char8_t* u8(const string&amp; s) noexcept;</pre>
+  <blockquote>
+    <p dir="ltr"><i>Returns: </i><code>static_cast&lt;const char8_t*&gt;(static_cast&lt;const 
+    void*&gt;(s.c_str()))</code>.</p>
+  </blockquote>
+  <pre dir="ltr">inline const char* u8(const char8_t* s) noexcept;</pre>
+  <blockquote>
+    <p dir="ltr"><i>Returns: </i><code>static_cast&lt;const char*&gt;(static_cast&lt;const 
+    void*&gt;(s));</code>.</p>
+  </blockquote>
+  <pre dir="ltr">inline const char* u8(const char8_t&amp; s) noexcept;</pre>
+  <blockquote>
+    <p dir="ltr"><i>Returns: </i><code>static_cast&lt;const char*&gt;(static_cast&lt;const 
+    void*&gt;(s.c_str()))</code>.</p>
   </blockquote>
   <h2 dir="ltr">Stream inserters [str-x.ins]</h2>
   
