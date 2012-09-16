@@ -53,7 +53,12 @@
         <li>
         <p align="left">Add stream extractors.</li>
         <li>
+        <p align="left">Add to_*() make_string aliases, after making sure they 
+        are tested and work.</li>
+        <li>
         <p align="left">Add usage examples to P/R.</li>
+        <li>
+        <p align="left">Add example of how would apply to Filesystem class path.</li>
       </ul>
       </td>
     </tr>
@@ -587,7 +592,7 @@ namespace tbd {  // tbd is to be decided
   template &lt;class ToCodec, class FromCodec, class ForwardIterator&gt;
     class conversion_iterator;
 
-  //  string convertion functions [str-x.cvt]
+  //  string conversion functions [str-x.cvt]
   template &lt;class ToCodec,
             class FromCodec = default_codec,
             class ToString = std::basic_string&lt;typename ToCodec::value_type&gt;,
@@ -617,7 +622,7 @@ namespace tbd {  // tbd is to be decided
   inline const char8_t* u8(const char* s) noexcept;
   inline const char8_t* u8(const string&amp; s) noexcept;
   inline const char*    u8(const char8_t* s) noexcept;
-  inline const char*    u8(const char8_t&amp; s) noexcept;
+  inline const char*    u8(const u8string&amp; s) noexcept;
 
 }  // namespace tbd
 
@@ -924,7 +929,9 @@ ToString make_string(ForwardIterator begin, ForwardIterator2 end);</pre>
   </blockquote>
   <h2 dir="ltr">UTF-8 string support [<a name="str-x.utf8">str-x.utf8</a>]</h2>
   
-  <p dir="ltr">These functions provide copy-less conversion by taking advantage 
+  <p dir="ltr">These functions provide copy-less type conversion for use with 
+  narrow character strings when no encoding conversion is required. Their 
+  semantics take advantage 
   of C++ language rules that ensure the representation of the underlying bytes 
   for <code>char</code> and <code>unsigned char</code> are the same (C++ 
   standard: [basic.types]). </p>
@@ -944,7 +951,7 @@ ToString make_string(ForwardIterator begin, ForwardIterator2 end);</pre>
     <p dir="ltr"><i>Returns: </i><code>static_cast&lt;const char*&gt;(static_cast&lt;const 
     void*&gt;(s));</code>.</p>
   </blockquote>
-  <pre dir="ltr">inline const char* u8(const char8_t&amp; s) noexcept;</pre>
+  <pre dir="ltr">inline const char* u8(const u8string&amp; s) noexcept;</pre>
   <blockquote>
     <p dir="ltr"><i>Returns: </i><code>static_cast&lt;const char*&gt;(static_cast&lt;const 
     void*&gt;(s.c_str()))</code>.</p>
