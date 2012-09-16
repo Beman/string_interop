@@ -22,7 +22,7 @@
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-09-14<!--webbot bot="Timestamp" endspan i-checksum="12559" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-09-16<!--webbot bot="Timestamp" endspan i-checksum="12563" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -92,7 +92,7 @@ Boost Filesystem Library. These problems have become more apparent as compiler
 support for C++11's additional Unicode support has made it easier to write programs 
 that run up against current limitations.</p>
 
-<p>The proposed solutions are pure additions to  the C++11 standard library. No C++03 
+<p><span style="background-color: #FFFFCC">The proposed solutions are pure additions to  the C++11 standard library.</span> No C++03 
 or C++11 compliant code is broken or otherwise affected by the additions.</p>
 
 <p>This paper does not provide working paper wording. WP wording will be 
@@ -107,9 +107,91 @@ high-lighted in green</span>.</p>
 
 <h2>Motivation</h2>
 
-<h3>UTF-8 typedefs (Informative) [str-x.utf8-typedefs]</h3>
+<h3>High-level string interoperability</h3>
 
-<h3>UTF-8 string support [str-x.utf8]</h3>
+<p>High-level string interoperability features provide easy-to-use (automatic, 
+in the case of inserters and extractors) solutions to&nbsp; irritating string 
+interoperability problems.</p>
+
+  <blockquote>
+
+<p>With the C++11 standard library:</p>
+
+    <blockquote>
+      <pre>int i = 50;                      // OK
+long j = i;                      // OK
+cout &lt;&lt; j;                       // OK
+string s = to_string(i);         // OK
+wstring t = to_wstring(s);       // error!
+u8string u = to_u8string(t);     // error!
+u16string v = to_u16string(s);   // error!
+u32string w = to_u32string(v);   // error!
+string x = to_string(v.c_str()); // error!
+string y = to_string(U&quot;50&quot;);     // error!
+std::cout &lt;&lt; t;                  // error!</pre>
+    </blockquote>
+    <p>With the proposal (and the unmodified C++11 standard library):</p>
+    <blockquote>
+      <pre>int i = 50;                      // OK
+long j = i;                      // OK
+cout &lt;&lt; j;                       // OK
+string s = to_string(i);         // OK
+wstring t = to_wstring(s);       // OK
+u8string u = to_u8string(t);     // OK
+u16string v = to_u16string(s);   // OK
+u32string w = to_u32string(v);   // OK
+string x = to_string(v.c_str()); // OK
+string y = to_string(U&quot;50&quot;);     // OK
+std::cout &lt;&lt; t;                  // OK</pre>
+    </blockquote>
+  </blockquote>
+  <h3><code>make_string</code> function template</h3>
+  <p>Generic string type and encoding string creation factory function.</p>
+  <blockquote>
+    <p>May be used directly in generic code. The <code>to_</code> family of 
+    functions is specified, and likely implemented, in terms of <code>
+    make_string</code>.</p>
+  </blockquote>
+  <h3><code>conversion_iterator</code> class template</h3>
+  <p>An iterator adapter that performs character type and encoding conversion 
+  on-the-fly.</p>
+  <blockquote>
+    <p>While codecs offer worthwhile benefits, they are essentially low-level, 
+    encoding specific, algorithms. The <code>conversion_iterator</code> class 
+    template provides a uniform interface that composes two codecs regardless of 
+    encoding into a single, easy-to-use iterator.</p>
+    <p>With&nbsp; <code>conversion_iterator</code>, implementation of many mid 
+    and high level character type and encoding conversions becomes trivial. It 
+    is useful to standard, user, and third-party library implementers. </p>
+  </blockquote>
+  <h3>Codecs</h3>
+  <p>An iterator-based composable solution to encoding conversion that works 
+  well in generic code and does not require temporaries.</p>
+  <ul>
+    <li>For any possible conversion of <b>n</b> encodings, the number of codecs 
+    required is <b>2n</b> rather than <b>n<sup>2</sup></b>.</li>
+    <li>Library provided support for the system default narrow and wide 
+    encodings, plus UTF-8, UTF-16, and UTF-32. Implementers and users may add 
+    additional codecs.</li>
+    <li>Codec components allocate no heap memory.</li>
+    <li>System default narrow codec built on top of <code>&lt;cuchar&gt;</code>.</li>
+  </ul>
+  <h3>Explicit UTF-8 encoded types <code>char8_t</code> and <code>u8string</code></h3>
+  <p>Extends the benefits of the rest of the proposal to UTF-8 encoded strings.</p>
+  <blockquote>
+
+<p>The proposed string interoperation facilities use generic programming 
+techniques that depend on a one-to-one relationship between character value 
+types and their encodings. This relationship holds for <code>char</code>,&nbsp; 
+too,&nbsp; where the encoding is the system&#39;s narrow encoding which is 
+determined at runtime, and <code>wchar_t</code>, where the encoding is the wide 
+encoding determined at compile time. This leaves UTF-8 interoperation as a 
+problem because there is no character type that unambiguously implies UTF-8 
+encoding. This is a serious problem for applications that must deal with UTF-8 
+encoded Unicode strings, particularly in portable code or code that must work in 
+a Windows command line environment.</p>
+
+  </blockquote>
 
 <h2><a name="Revision-history">Revision history</a></h2>
 
@@ -564,13 +646,13 @@ public:
   <h2>Header &lt;string_interop.hpp&gt; synopsis&nbsp;&nbsp;&nbsp; [str-x.synopsis]</h2>
   <pre>namespace std {
 
+  template &lt;&gt; struct char_traits&lt;unsigned char&gt;;
+
+namespace tbd {  // tbd is to be decided
+
   //  UTF-8 typedefs [str-x.utf8-typedefs]
   typedef unsigned char           char8_t;
   typedef basic_string&lt;char8_t&gt;   u8string;
-
-  template &lt;&gt; struct char_traits&lt;char8_t&gt;;
-
-namespace tbd {  // tbd is to be decided
  
   //  codecs [str-x.codec]
   class narrow;
@@ -792,18 +874,24 @@ from_iterator(ForwardIterator begin, </code>ForwardIterator2<code> end);</code><
   <h3>select_codec [str-x.codec.select]</h3>
   <p><span style="text-decoration: blink; background-color: #FFFFCC">TBS</span></p>
   <h2>UTF-8 typedefs (Informative) [<a name="str-x.utf8-typedefs">str-x.utf8-typedefs</a>]</h2>
-  <p dir="ltr">In portable internationalized applications, use of UTF-8 encoded 
+  <p>In portable internationalized applications, use of UTF-8 encoded 
   C-style array of <code>char</code> strings and <code>std::string</code> is 
-  problematic for passing arguments of these types to functions which assume the 
-  encoding is the native operating system encoding. For example, arguments 
+  problematic for passing arguments to functions which assume the 
+  encoding is the native narrow character encoding. For example, arguments 
   representing filenames for I/O functions or arguments representing content for 
   web sites. Disciplined conversion of all narrow character strings to UTF-8 
   encoding within an application is a partial solution, but is not enforceable 
   via the C++ language type system and does not help with third-party or 
-  standard library functions that assume narrow strings use native encoding. </p>
+  standard library functions that assume <code>char</code> strings use native 
+  narrow encoding. </p>
   <p dir="ltr">The <code>char8_t</code> and <code>u8string</code> typedefs allow 
   the C++ type system to distinguish between native encoded and UTF-8 encoded 
-  narrow character strings.</p>
+   
+  character strings. The actual type used for <code>char8_t</code> is <code>
+  unsigned char</code> because the C++ language rules require that the representation of the underlying bytes 
+  for <code>char</code> and <code>unsigned char</code> are the same (C++ 
+  standard: [basic.types]). This allows conversion by compile-time casts with no 
+  runtime cost. </p>
   <h2>conversion_iterator [str-x.cvt-iter]</h2>
   <p>Class template <code>conversion_iterator</code> composes a forward iterator from a 
   codec t<code>o_iterator</code>, a codec <code>from_iterator</code>, and a 
