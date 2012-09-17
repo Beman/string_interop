@@ -200,16 +200,31 @@ a Windows command line environment.</p>
   <p><b>Initial paper:</b> N3336, Adapting Standard Library Strings and I/O to a 
   Unicode World</p>
 
-<h2><a name="Design-paths-not-taken">Design paths not taken</a></h2>
+<h2>Design</h2>
 
-<p>This proposal deals with C++11 <code>std::basic_string</code> and 
-standard character types, and with their encodings. The deeper attributes of Unicode 
+<p>The key to the design is the <code>copy_string</code> algorithm. It was 
+arrived at by analyzing numerous real-world string conversion problems 
+encountered by Boost Filesystem and while internationalizing various industrial 
+applications. It was observed that <code>std::copy</code> algorithm would be a 
+common solution to those problems if it could be given generic versions of John 
+Maddock&#39;s Unicode conversion iterator adaptors used in his Boost Regex 
+implementation. The <code>conversion_iterator</code> and <code>codec</code> 
+designs evolved as the realization of the underlying conversion abstractions.</p>
+
+<h3><a name="Design-paths-not-taken">Design paths not taken</a></h3>
+
+<p>This proposal deals with C++11 <code>std::basic_string</code>, standard character types, and their encodings. The deeper attributes of Unicode 
 characters are not addressed. See Mathias Gaunard's <a href="http://mathias.gaunard.com/unicode/doc/html/">
   Unicode project</a> for an example of deeper Unicode support.</p>
 
 <p>This proposal provides compile-time solutions. It does not provide runtime 
 solutions such as provided by the <a href="http://icu-project.org">International 
 Components for Unicode (ICU)</a> library.</p>
+
+<p>This proposal provides work-arounds for C++11&#39;s lack of UTF-8 strings. 
+Several users have argued that instead of work-arounds, the C++ standard should 
+require UTF-8 encoding for both C-style char strings and std::string. This 
+proposal assumes that is too big a leap forward at this time.</p>
 
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 
