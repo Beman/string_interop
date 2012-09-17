@@ -45,6 +45,11 @@
       <p align="center"><b>To Do</b></p>
       <ul>
         <li>
+        <p align="left">Change ForwardIterator to InputIterator. All algorithms 
+        are single pass.</li>
+        <li>
+        <p align="left">Specify functions in terms of copy_string() algorithm.</li>
+        <li>
         <p align="left">Add Motivation section, replacing Problem 1, etc.</li>
         <li>
         <p align="left">Add error handling argument where appropriate.</li>
@@ -76,13 +81,9 @@
 
 <h2><a name="Introduction">Introduction</a></h2>
 
-<p>This paper proposes additions to the C++ standard library/TR2 to ease use of 
-Unicode and other string encodings. The motivation  is a series of problems with 
-the C++11 standard library.</p>
-
-<p>The full statement of the problems with proposed solutions is given below in
-<a href="#Problems-and-solutions">String interoperability problems and proposed 
-solutions</a>.</p>
+<p>This paper proposes a C++ standard library Technical Specification (TS) to ease use of 
+Unicode and other string encodings. The motivations are difficulties encountered 
+performing string operations in an international environment using the current C++11 standard library.</p>
 
 <p>The 
 C++03 versions of these problems were first encountered while 
@@ -92,22 +93,19 @@ Boost Filesystem Library. These problems have become more apparent as compiler
 support for C++11's additional Unicode support has made it easier to write programs 
 that run up against current limitations.</p>
 
-<p><span style="background-color: #FFFFCC">The proposed solutions are pure additions to  the C++11 standard library.</span> No C++03 
-or C++11 compliant code is broken or otherwise affected by the additions.</p>
+<p>The proposed solutions are pure additions that have no effect on the current C++11 standard library. No C++03 
+or C++11 headers are changed and assuming namespace discipline no current code is broken or otherwise affected by the additions.</p>
 
-<p>This paper does not provide working paper wording. WP wording will be 
-provided if this proposal is accepted in principle.</p>
+<p>Proposed wording is provided.</p>
 
 <p>A &quot;proof-of-concept&quot; implementation of the proposals (and more) is 
 available at <a href="http://github.com/Beman/string-interoperability">
-github.com/Beman/string-interoperability</a>.</p>
-
-<p>Changes from the prior revision are <span style="background-color: #CCFFCC">
-high-lighted in green</span>.</p>
+github.com/beman/string-interoperability</a>.</p>
 
 <h2>Motivation</h2>
 
-<h3>High-level string interoperability</h3>
+<h3><code>to_</code><i><code>string</code></i> conversion functions, plus 
+converting stream inserters and extractors</h3>
 
 <p>High-level string interoperability features provide easy-to-use (automatic, 
 in the case of inserters and extractors) solutions to&nbsp; irritating string 
@@ -121,7 +119,7 @@ interoperability problems.</p>
       <pre>int i = 50;                      // OK
 long j = i;                      // OK
 cout &lt;&lt; j;                       // OK
-string s = to_string(i);         // OK
+string s = to_string(i);         // OK, C++11 provides this overload
 wstring t = to_wstring(s);       // error!
 u8string u = to_u8string(t);     // error!
 u16string v = to_u16string(s);   // error!
@@ -144,14 +142,11 @@ string x = to_string(v.c_str()); // OK
 string y = to_string(U&quot;50&quot;);     // OK
 std::cout &lt;&lt; t;                  // OK</pre>
     </blockquote>
+    <p>The <code>to_<i>string</i></code> family of functions is specified, and 
+    likely implemented, in terms of <code>make_string</code>.</p>
   </blockquote>
   <h3><code>make_string</code> function template</h3>
   <p>Generic string type and encoding string creation factory function.</p>
-  <blockquote>
-    <p>May be used directly in generic code. The <code>to_</code> family of 
-    functions is specified, and likely implemented, in terms of <code>
-    make_string</code>.</p>
-  </blockquote>
   <h3><code>conversion_iterator</code> class template</h3>
   <p>An iterator adapter that performs character type and encoding conversion 
   on-the-fly.</p>
@@ -205,42 +200,10 @@ a Windows command line environment.</p>
   <p><b>Initial paper:</b> N3336, Adapting Standard Library Strings and I/O to a 
   Unicode World</p>
 
-<h2><a name="String-encoding-conversion-safety-rationale">String  conversion safety 
-rationale</a></h2>
-  <p>The proposed solutions below make the assumption that it is safe to convert 
-  a string of any type and encoding to another type and encoding. The rationale 
-  for that assumption follows.</p>
-<p>Conversion in either direction between UTF-8 encoded std::string and UTF-32 
-encoded std::u32string is safe because it is defined by the Unicode Consortium 
-and ISO/IEC 10646 as unambiguous and lossless.</p>
-<p>Conversion in either direction between UTF-16 encoded 
-std::u16string and UTF-32 encoded std::u32string is safe because it is defined 
-by the Unicode Consortium and ISO/IEC 10646 as unambiguous and lossless.</p>
-<p>Conversion in either direction between UTF-8 encoded std::string and UTF-16 
-encoded std::u16string is safe because it can be composed from the two previous 
-known safe conversions via an intermediate conversion to and from UTF-32 encoded 
-char32_t characters.</p>
-<p>The cases of <code>std::string</code> and <code>std::wstring</code> are more 
-complex in that the encoding is not implied by the <code>char</code> and <code>
-wchar_t</code> value types.&nbsp; It is not necessary, however, to  know 
-the encoding of these string types in advance as long as it is known how to convert them to 
-one of the known encoding string types. The C++11 standard library requires
-<code>codecvt&lt;char32_t,char,mbstate_t&gt;</code>&nbsp; and <code>codecvt&lt;wchar_t,char,mbstate_t&gt;</code> 
-facets, so such conversions are always possible using the standard library. In practice, library 
-implementations have additional knowledge that allow such conversions to be 
-more efficient than just calling codecvt facets. To ensure safety, error handling 
-does need to be 
-provided, however, as conversions involving some <code>char</code> and <code>wchar_t</code> 
-encodings can encounter errors. See <a href="#Problem-3">Problem 3</a> below for 
-some requested error handling approaches. </p>
-<p>Implicit conversion between single characters of different types, as opposed 
-to strings, may require multi-character sequences. No such single character implicit conversions 
-are proposed here.</p>
-
 <h2><a name="Design-paths-not-taken">Design paths not taken</a></h2>
 
 <p>This proposal deals with C++11 <code>std::basic_string</code> and 
-character types, and with their encodings. The deeper attributes of Unicode 
+standard character types, and with their encodings. The deeper attributes of Unicode 
 characters are not addressed. See Mathias Gaunard's <a href="http://mathias.gaunard.com/unicode/doc/html/">
   Unicode project</a> for an example of deeper Unicode support.</p>
 
@@ -248,34 +211,22 @@ characters are not addressed. See Mathias Gaunard's <a href="http://mathias.gaun
 solutions such as provided by the <a href="http://icu-project.org">International 
 Components for Unicode (ICU)</a> library.</p>
 
-<p>This proposal does not suggest providing a string type guaranteed to provide 
-UTF-8 encoding.&nbsp; Although experiments with <code>typedef 
-basic_string&lt;unsigned char&gt; u8string;</code> worked well, benefits would be 
-speculative and not based on existing practice.</p>
-
-<p><blink><span style="background-color: #FFFFCC">Another approach would be to provide a
-</span> <code><span style="background-color: #FFFFCC">utf8_char_traits</span></code><span style="background-color: #FFFFCC"> class 
-and then </span> <code><span style="background-color: #FFFFCC">typedef 
-basic_string&lt;char, utf8_char_traits&gt; u8string;</span></code><span style="background-color: #FFFFCC">. This approach has 
-not been investigated. </span></blink> </p>
-
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 
 <p>Peter Dimov inspired the idea of string interoperability by arguing that the 
 Boost Filesystem library should treat a path is a single 
   type (i.e. not a template) regardless of  character size 
-  and encoding.</p>
+  and encoding. The experienced gained with that approach led to a much clearer 
+understanding of where to draw the line between functionality provided by a 
+library such as Filesystem, and the standard library (or a TS) itself.</p>
 
 <p>John Maddock's Unicode conversion iterators demonstrated an 
-  easier-to-use, more efficient, and STL friendlier way to perform character 
-type and encoding conversions as an alternative to standard library <code>
-codecvt</code> facets.</p>
+  easy-to-use, more efficient, and STL friendly way to perform character type 
+and encoding conversions.</p>
 
 <p>Yakov Galka 
 suggested attacking string interoperability with free functions to reduce or 
-eliminate changes to <code>basic_string</code>. See Problem 
-1 <a href="#Alternate-Solutions-1">
-Alternative solutions</a>.</p>
+eliminate changes to <code>basic_string</code>. </p>
 
 <p>The C++11 standard deserves acknowledgement as it provides the underlying language and library features that allow 
 Unicode string 
@@ -291,31 +242,6 @@ interoperability:</p>
   programming with Unicode character types and encodings.</li>
 </ul>
 
-  <h1 align="left">
-  <a name="String-interoperability-problems-and-proposed-solutions">String interoperability 
-  problems and proposed solutions</a></h1>
-
-<h2><a name="Problem-1">Problem 1</a>: Strings don't interoperate if encoding differs</h2>
-
-<h3>Discussion</h3>
-
-<p>Standard library strings with different character encodings have different 
-types that do not interoperate.</p>
-
-<h3>Example</h3>
-<blockquote>
-  <pre>u16string s16 = u&quot;您好世界&quot;;
-u32string s32;
-s32 = s16;           // error!
-s32 = &quot;foo&quot;;         // error!
-s32 = s16.c_str();   // error!
-s32.assign(s16.cbegin(), s16.cend()); // error!</pre>
-  <pre>void f(const string&amp;);
-f(s32);              //error!</pre>
-</blockquote>
-<p>The encoding of basic_string instantiations can be determined for 
-the types under discussion. It is either implicit in the string's value_type or 
-can be determined via the locale.</p>
 <h3>Existing practice</h3>
 
   <p>Boost Filesystem Version 3, and the filesystem proposal before the C++ 
@@ -345,239 +271,6 @@ an example of how such interoperability might be achieved.</p>
 interoperability brings a considerable simplification and improvement to 
 internationalized user code, but that having to provide interoperability without 
 the resolution of the issues presented here is a band-aid.</p>
-<h3>Relationship with interoperability iterators</h3>
-<p>String interoperability will be easier to specify, implement, and use if the 
-string interoperability iterators <a href="#Problem-3">proposed below</a> are accepted.</p>
-
-<h3>Proposed Solution</h3>
-
-<p>The approach is to add additional <code>std::basic_string</code> 
-overloads to functions most likely to benefit from interoperability. The 
-overloads are in the form of function templates with sufficient restrictions on 
-overload resolution participation (i.e. enable_if) that the existing C++11 
-functions are always selected if the value type of the argument is the same as 
-or convertible to the <code>std::basic_string</code> type's <code>value_type</code>. 
-The semantics of the added signatures are the same as original signatures except 
-that arguments of the template parameter type have their value converted to the 
-type and encoding of <code>
-basic_string::value_type</code>.</p>
-
-<p>The <code>std::basic_string</code> functions given additional overloads are:</p>
-<ul>
-  <li>Each constructor, <code>operator=</code>, <code>operator+=</code>, <code>
-append</code>, and <code>assign</code> signature.<br>
-&nbsp;</li>
-  <li> <code>template &lt;class T&gt; <b><i>unspecified_iterator</i></b> c_str()</code>, 
-  returning an unspecified iterator with <code>value_type</code> of <code>T</code>.
-  <br>
-&nbsp;</li>
-  <li>
-
-<p><code>begin()</code> and <code>end()</code>. Similar to <code>c_str()</code>. </p>
-  </li>
-</ul>
-
-<p>To keep the number and complexity of overloads manageable, the 
-proof-of-concept implementation does not provide any way to specify error 
-handling policies, or <code>string</code> and <code>wstring</code> encoding. 
-Every one of the added signatures does not need to be able to control error 
-handling and encoding. The need is particularly rare in environments where UTF-8 
-is the narrow character encoding and UTF-16 is the wide character encoding. A 
-subset, possibly just <code>c_str()</code>, <code>begin()</code>, and <code>
-end()</code>, with error handling and encoding parameters or arguments, suitable 
-defaulted, may well be sufficient.</p>
-
-<p>Because full implicit interoperability involves a lot of additional 
-signatures be added to basic_string, it will certainly be appropriate to discuss 
-limiting changes to the key areas of need. For example, constructors and <code>
-operator=</code> are much more likely to need interoperability than <code>operator+=</code>, <code>
-append</code>, or <code>assign</code> signatures.</p>
-
-<h3><span style="background-color: #CCFFCC">
-<a name="Alternate-Solutions-1">Alternate Solutions</a></span></h3>
-
-<p><b><span style="background-color: #CCFFCC">Alternative 1</span></b></p>
-
-<p><span style="background-color: #CCFFCC">An alternative that avoids additions to
-</span> <code><span style="background-color: #CCFFCC">basic_string</span></code><span style="background-color: #CCFFCC"> 
-is to provide non-member function templates that provide encoding conversion.</span></p>
-  <blockquote>
-    <pre><span style="background-color: #CCFFCC">template &lt;class String1, class String2&gt;
-String encoding_cast(const String2&amp; str);</span></pre>
-  </blockquote>
-
-<p><span style="background-color: #CCFFCC">Such an approach is speculative and has not been implemented. It requires 
-additional user code and a temporary string compared to the proposed solution. 
-Move semantics would reduce the cost of the temporary in many uses. A 
-practical version would require additional overloads, although that need would 
-probably be reduced if the N3334 </span> <code>
-<span style="background-color: #CCFFCC">basic_string_ref</span></code><span style="background-color: #CCFFCC"> proposal is 
-accepted.</span></p>
-
-<p><b><span style="background-color: #CCFFCC">Alternative 2</span></b></p>
-
-<p><span style="background-color: #CCFFCC">Assume </span> <code>
-<span style="background-color: #CCFFCC">basic_string</span></code><span style="background-color: #CCFFCC"> accepted additional overloads of a 
-range template in addition to the current InputIterator templates. Presumably 
-this would be part of a general range proposal, rather than something specific 
-to string interoperability. For 
-example:</span></p>
-  <blockquote>
-    <pre><span style="background-color: #CCFFCC">template &lt;class Range&gt;
-  basic_string(Range range);</span></pre>
-  </blockquote>
-
-
-    <p><span style="background-color: #CCFFCC">Then <code>
-    encoding_cast</code> might looks something like this:</span></p>
-  <blockquote>
-    <pre><span style="background-color: #CCFFCC">template &lt;class ToChar, class String&gt;
-<i>unspecified-range</i> encoding_cast(const String&amp; str);</span></pre>
-  </blockquote>
-  <p><span style="background-color: #CCFFCC">This approach eliminates 
-  the need for a temporary string. As with alternative 1, a practical version 
-  would require additional overloads, although that need would probably be 
-  reduced if the N3334 </span> <code><span style="background-color: #CCFFCC">basic_string_ref</span></code><span style="background-color: #CCFFCC"> proposal is 
-accepted.</span></p>
-
-<p><b><span style="background-color: #CCFFCC">Alternative </span></b>
-<span style="background-color: #CCFFCC"><b>3</b></span></p>
-
-<p><span style="background-color: #CCFFCC">Assume </span> <code>
-<span style="background-color: #CCFFCC">basic_string</span></code><span style="background-color: #CCFFCC"> accepted additional overloads of a 
-single InputIterator template in addition to the current two InputIterator templates. 
-Presumably this would be done in the absence of a general range proposal, and 
-specified to only participate in overload resolution when appropriate. For 
-example:</span></p>
-  <blockquote>
-    <pre><span style="background-color: #CCFFCC">template &lt;class InputIterator&gt;
-  basic_string(InputIterator begin);  // end determined by traits</span></pre>
-  </blockquote>
-
-
-    <p><span style="background-color: #CCFFCC">Then <code>
-    encoding_cast</code> might looks something like this:</span></p>
-  <blockquote>
-    <pre><span style="background-color: #CCFFCC">template &lt;class ToChar, class String2&gt;
-<i>unspecified-iterator</i> encoding_cast(const String2&amp; str);</span></pre>
-  </blockquote>
-  <p><span style="background-color: #CCFFCC">This approach also 
-  eliminates the need for a temporary string. See problem 3 for how <i><code>
-  unspecified-iterator</code></i> might work. As with alternative 1, a practical 
-  version would require additional overloads, although that need would probably 
-  be reduced if the N3334 </span> <code><span style="background-color: #CCFFCC">basic_string_ref</span></code><span style="background-color: #CCFFCC"> proposal is 
-accepted.</span></p>
-
-
-<h2><a name="Problem-2">Problem 2</a>: Strings don't interoperate with I/O streams if encoding differs</h2>
-
-<h3>Discussion</h3>
-
-<p>I/O streams do not accept strings of different character types </p>
-
-<p>A &quot;Hello World&quot; program using a C++11 Unicode string literal illustrates 
-this 
-frustration:</p>
-
-<blockquote>
-  <pre>#include &lt;iostream&gt;
-int main()
-{
-  std::cout &lt;&lt; U&quot;您好世界&quot;;   // error in C++11!
-}</pre>
-</blockquote>
-
-<p>This code should 
-&quot;just work&quot;, even though the type of <code>U&quot;您好世界&quot;</code> is <code>const 
-char32_t*</code>, not <code>const char*</code>, as long as the encoding of <code>char</code> 
-supports 您好世界. Even if those characters are not supported by default encodings, 
-alternatives like UTF-8 are available. </p>
-<p>The code does &quot;just work&quot; with the proof-of-concept implementation of this 
-proposal. On Linux, with default <code>char</code> encoding of UTF-8, execution 
-produces the expected 您好世界 output. On Windows, the console doesn&#39;t support full 
-UTF-8, so the output can be piped to a file or to a program which does handle 
-UTF-8 correctly. And, yes, that does work correctly with the proof-of-concept 
-implementation of this proposal.</p>
-
-<h3>Proposed Solution</h3>
-<p>Add additional function templates to those in 27.7.3.6.4 [ostream.inserters.character],
-<i>Character inserter function templates</i>, to cover the case where the 
-argument character type differs from charT and is not <code>char</code>, <code>
-signed char</code>, <code>unsigned char</code>, <code>const char*</code>, <code>
-const signed char*</code>, or <code>const unsigned char*</code>.&nbsp; (The 
-specified types are excluded because they are covered by existing signatures.) 
-The semantics of the added signatures are the same as original signatures except 
-that arguments shall be converted to the type and encoding of the stream.</p>
-<p>Do the same for the character extractors in 27.7.2.2.3 [istream::extractors],
-<i>basic_istream::operator&gt;&gt;</i>.</p>
-<p>Do the same for the two <code>std::basic_string</code> inserters and 
-extractors in 21.4.8.9 [string.io], <i>Inserters and extractors</i>.</p>
-
-<h2><a name="Problem-3">Problem 3</a>: String conversion iterators are 
-not provided</h2>
-<h3>Discussion</h3>
-
-<p>Conversion between character types and their encodings using current standard 
-library facilities such as <code>std::codecvt</code>, <code>std::locale</code>, 
-and 
-<code>std::wstring_make_string</code> has multiple problems:</p>
-
-<ul>
-  <li>Interfaces are overly complex, difficult to learn, difficult to use, and error prone.</li>
-  <li>Given <b><i>n</i></b> encodings, it is necessary to 
-  providing <b>n<sup>2</sup></b>&nbsp; rather than <b>2n</b> codecs. In other 
-  words, two <code>codecvt</code> facets don't easily compose into a complete 
-  conversion from one encoding to another. Such composition is existing practice in C libraries like ICU. 
-  UTF-32 is the obvious choice for the common encoding to pass between codecs.</li>
-  <li>Interfaces don't work well with generic programming 
-  techniques, particularly iterators.</li>
-  <li>Interfaces work at the level of entire strings rather than characters, 
-  resulting in unnecessary creation of temporary strings, with 
-  attendant memory allocations/deallocations.</li>
-  <li>Interfaces entangle <code>std::locale</code> and code conversion, even when these 
-  are implementation details that should be hidden from the application.</li>
-  <li>Difficult to control error actions. Choices requested by users and 
-  provided by other interfaces include:<ul>
-  <li>Throw exception.</li>
-  <li>Replace offending character with default character. </li>
-  <li>Replace offending character with specified character. Motivating example: 
-  Filesystem need to use a replacement character that is acceptable to the 
-  Windows codepage. See Boost issue #5769.</li>
-  </ul>
-  </li>
-  </ul>
-
-<h3>Example</h3>
-
-<p>The generalization of the <code>std::basic_string</code> function
-<code>c_str</code> is:</p>
-  <blockquote>
-    <pre>template &lt;class T&gt; <i>unspecified_iterator</i> c_str() const;</pre>
-  </blockquote>
-  <p>Give a <code>std::string</code> named <code>s8</code>, this allows a user 
-  to write <code>s8.c_str&lt;char16_t&gt;()</code> to obtain an iterator with a value 
-  type of <code>char16_t</code>.&nbsp; To implement this function generically 
-  using the current standard library would be difficult, and would involve the 
-  creation of a temporary sting. The full implementation with the proposed 
-  solution is simply:</p>
-  <blockquote>
-    <pre>template &lt;class T&gt;
-converting_iterator&lt;const_iterator, value_type, by_range, T&gt; c_str() const
-{
-  return converting_iterator&lt;const_iterator,
-    value_type, by_range, T&gt;(cbegin(), cend());
-}</pre>
-  </blockquote>
-  <p>No temporary string is created, and none of the other problems 
-  listed above are present either. The solution 
-  is generally useful for user defined types, and not just for implementations 
-  of the standard library.</p>
-  <p>Other problems become easier to solve with <code>converting_iterator.</code> 
-  For example, the Filesystem library's class <code>path</code> in
-  <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2011/n3239.html">
-  N3239</a> has many functions with an argument in the form <code>const 
-  codecvt_type&amp; cvt=codecvt()</code> that could be eliminated by either direct 
-  or indirect use of <code>converting_iterator.</code></p>
   <h3>Existing practice</h3>
 
 <p>Boost Regex for many years has included a set of Unicode conversion 
@@ -585,51 +278,6 @@ iterators as an implementation detail. Although these do not provide composition
 technique of using encoding conversion iterators to avoid creation of temporary 
 strings.</p>
 
-<h3>Proposed Solution</h3>
-
-<p>This solution is based on the
-<a href="http://github.com/Beman/string-interoperability/blob/master/include/boost/interop/iterator_adapter.hpp">
-proof-of-concept implementation</a>. Input iterator requirements can probably be 
-loosened to bidirectional, but that hasn't been tested yet.</p>
-
-<p>The preliminaries begin with end-detection policy classes, since strings used 
-null termination, size, or half-open ranges to determine the end of a sequence.</p>
-  <blockquote>
-    <pre>template &lt;class InputIterator&gt; class by_null;
-template &lt;class InputIterator&gt; class by_size;
-template &lt;class InputIterator&gt; class by_range;</pre>
-  </blockquote>
-  <p>Codec templates handle actual conversion to and from UTF-32. The primary 
-  templates are:</p>
-  <blockquote>
-    <pre>template &lt;class InputIterator, class FromCharT, template&lt;class&gt; class EndPolicy&gt; 
-  class to32_iterator;
-template &lt;class InputIterator, class ToCharT&gt; 
-  class from32_iterator;</pre>
-  </blockquote>
-  <p>The standard library would provide specializations for <code>char</code>,
-  <code>wchar_t</code>, <code>char16_t</code>, and <code>char32_t</code>. 
-  Presumably users could provide specializations for UDTs, but that hasn't been 
-  tested yet. The <code>char</code> and <code>wchar_t</code> specializations 
-  provide mechanisms to select the encoding. Since this is a new component the
-  <code>char</code> default encoding could be UTF-8 rather than locale based and 
-  no existing code would be broken.</p>
-  <p>The actual <code>converting_iterator</code> primary template is 
-  simply:</p>
-  <blockquote>
-    <pre>template &lt;class InputIterator, class FromCharT, template&lt;class&gt; class EndPolicy,
-          class ToCharT&gt; 
-class converting_iterator
-  : public from32_iterator&lt;to32_iterator&lt;InputIterator, FromCharT, EndPolicy&gt;,
-      ToCharT&gt;
-{
-public:
-  using from32_iterator::from32_iterator;
-};</pre>
-  </blockquote>
-  <p>Specializations may be provided, but aren't required. The proof-of-concept 
-  implementation doesn't use inherited constructors because of lack of compiler 
-  support.</p>
   <h1>Proposed Wording</h1>
   <p>&nbsp;</p>
   <h1>String interoperation&nbsp;&nbsp;&nbsp; [str-x]</h1>
@@ -673,6 +321,12 @@ namespace tbd {  // tbd is to be decided
   //  conversion_iterator [str-x.cvt-iter]
   template &lt;class ToCodec, class FromCodec, class ForwardIterator&gt;
     class conversion_iterator;
+
+  //  algorithm copy_string [str-x.copy_string]
+  template&lt;class InputIterator, class FromCodec,
+           class OutputIterator, class ToCodec&gt;
+  OutputIterator copy_string(InputIterator first, InputIterator last,
+    OutputIterator result);
 
   //  string conversion functions [str-x.cvt]
   template &lt;class ToCodec,
@@ -892,7 +546,7 @@ from_iterator(ForwardIterator begin, </code>ForwardIterator2<code> end);</code><
   for <code>char</code> and <code>unsigned char</code> are the same (C++ 
   standard: [basic.types]). This allows conversion by compile-time casts with no 
   runtime cost. </p>
-  <h2>conversion_iterator [str-x.cvt-iter]</h2>
+  <h2>Class template <code>conversion_iterator</code> [str-x.cvt-iter]</h2>
   <p>Class template <code>conversion_iterator</code> composes a forward iterator from a 
   codec t<code>o_iterator</code>, a codec <code>from_iterator</code>, and a 
   forward iterator. It adapts the forward iterator to behave as an iterator to
@@ -947,6 +601,25 @@ conversion_iterator(ForwardIterator begin, </code>ForwardIterator2<code> end);</
     begins at <code>begin</code> and ends at <code>end</code>.</p>
     <p><i>Remarks: </i>Shall not participate in overload resolution unless <code>
     ForwardIterator</code> and <code>ForwardIterator2</code> are the same type.</p>
+  </blockquote>
+  <h2>Algorithm copy_string [<a name="str-x.copy_string">str-x.copy_string</a>]</h2>
+  <pre>template&lt;class InputIterator, class FromCodec,
+         class OutputIterator, class ToCodec&gt;
+OutputIterator copy_string(InputIterator first, InputIterator last,
+  OutputIterator result);</pre>
+  <blockquote>
+    <p dir="ltr"><i>Requires:</i> <code>result</code> shall not be in the range 
+    [<code>first,last</code>).</p>
+    <p dir="ltr"><i>Effects:</i></p>
+    <blockquote>
+      <pre dir="ltr">typedef conversion_iterator&lt;ToCodec,
+  typename FromCodec::template
+    codec&lt;typename std::iterator_traits&lt;InputIterator&gt;::value_type&gt;::type,
+  InputIterator&gt;
+iter_type;</pre>
+      <p dir="ltr"><i>Returns:</i> <code>std::copy(iter_type(begin, end), 
+      iter_type(), result)</code>.</p>
+    </blockquote>
   </blockquote>
   <h2>String conversion  functions [str-x.cvt]</h2>
   <p>The string conversion functions create a string from a source sequence of 
