@@ -130,7 +130,7 @@ template <class charT>
   };
 
   //  conversion_iterator
-  template <class ToCodec, class FromCodec, class ForwardIterator>
+  template <class ToCodec, class FromCodec, class InputIterator>
     class conversion_iterator;
 
 //  see make_string() functions below
@@ -147,8 +147,8 @@ template <class charT>
 //  iterator_traits<from_iterator>::value_type is char32_t.
 //
 //  to_iterator meets the DefaultCtorEndIterator requirements.
-//  ForwardIterator must meet the DefaultCtorEndIterator requirements.
-//  iterator_traits<ForwardIterator>::value_type must be char32_t.
+//  InputIterator must meet the DefaultCtorEndIterator requirements.
+//  iterator_traits<InputIterator>::value_type must be char32_t.
 
 //--------------------------------------------------------------------------------------//
 //                                  Implementation                                      //
@@ -228,16 +228,16 @@ public:
 
   //  generic_utf32::from_iterator  ---------------------------------------------------//
 
-  template <class ForwardIterator>
+  template <class InputIterator>
   class from_iterator
-    : public boost::iterator_facade<from_iterator<ForwardIterator>,
+    : public boost::iterator_facade<from_iterator<InputIterator>,
         charT, std::input_iterator_tag, const charT> 
   {
-    BOOST_STATIC_ASSERT_MSG((boost::is_same<typename std::iterator_traits<ForwardIterator>::value_type,
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<typename std::iterator_traits<InputIterator>::value_type,
       charT>::value),
-      "ForwardIterator value_type must be same as codec value_type");
-    ForwardIterator  m_begin;
-    ForwardIterator  m_end;
+      "InputIterator value_type must be same as codec value_type");
+    InputIterator  m_begin;
+    InputIterator  m_end;
     bool             m_default_end;
 
   public:
@@ -246,23 +246,23 @@ public:
     from_iterator() : m_default_end(true) {}
 
     // by_null
-    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin),
+    from_iterator(InputIterator begin) : m_begin(begin), m_end(begin),
       m_default_end(false) 
     {
       for (;
-           *m_end != typename std::iterator_traits<ForwardIterator>::value_type();
+           *m_end != typename std::iterator_traits<InputIterator>::value_type();
            ++m_end) {}
     }
 
     // by range
     template <class T>
-    from_iterator(ForwardIterator begin, T end,
+    from_iterator(InputIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void* >::type =0)
+      typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type =0)
       : m_begin(begin), m_end(end), m_default_end(false) {}
 
     // by_size
-    from_iterator(ForwardIterator begin, std::size_t sz)
+    from_iterator(InputIterator begin, std::size_t sz)
       : m_begin(begin), m_end(begin), m_default_end(false)
     {
       std::advance(m_end, sz);
@@ -294,15 +294,15 @@ public:
 
   //  generic_utf32::::to_iterator  ---------------------------------------------------//
 
-  template <class ForwardIterator>
+  template <class InputIterator>
   class to_iterator
-   : public boost::iterator_facade<to_iterator<ForwardIterator>,
+   : public boost::iterator_facade<to_iterator<InputIterator>,
       charT, std::input_iterator_tag, const charT>
   {
-    ForwardIterator m_itr;
+    InputIterator m_itr;
   public:
-    to_iterator() : m_itr(ForwardIterator()) {}
-    to_iterator(ForwardIterator itr) : m_itr(itr) {}
+    to_iterator() : m_itr(InputIterator()) {}
+    to_iterator(InputIterator itr) : m_itr(itr) {}
     charT dereference() const { return *m_itr; }
     bool equal(const to_iterator& that) const {return m_itr == that.m_itr;}
     void increment() { ++m_itr; }
@@ -323,25 +323,25 @@ public:
 
   //  generic_utf16::from_iterator  ----------------------------------------------------//
 
-  template <class ForwardIterator>
+  template <class InputIterator>
   class from_iterator
-   : public boost::iterator_facade<from_iterator<ForwardIterator>,
+   : public boost::iterator_facade<from_iterator<InputIterator>,
        char32, std::input_iterator_tag, const char32>
   {
-     typedef boost::iterator_facade<from_iterator<ForwardIterator>,
+     typedef boost::iterator_facade<from_iterator<InputIterator>,
        char32, std::input_iterator_tag, const char32> base_type;
      // special values for pending iterator reads:
      BOOST_STATIC_CONSTANT(char32, read_pending = 0xffffffffu);
 
-     typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
      BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, charT>::value),
-       "ForwardIterator value_type must be charT for this from_iterator");
+       "InputIterator value_type must be charT for this from_iterator");
 //     BOOST_ASSERT(sizeof(base_value_type)*CHAR_BIT == 16);
      BOOST_STATIC_ASSERT(sizeof(char32)*CHAR_BIT == 32);
 
-     ForwardIterator  m_begin;   // current position
-     ForwardIterator  m_end;  
+     InputIterator  m_begin;   // current position
+     InputIterator  m_end;  
      mutable char32    m_value;     // current value or read_pending
      bool             m_default_end;
 
@@ -351,24 +351,24 @@ public:
     from_iterator() : m_default_end(true) {}
 
     // by_null
-    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin),
+    from_iterator(InputIterator begin) : m_begin(begin), m_end(begin),
       m_default_end(false) 
     {
       for (;
-           *m_end != typename std::iterator_traits<ForwardIterator>::value_type();
+           *m_end != typename std::iterator_traits<InputIterator>::value_type();
            ++m_end) {}
       m_value = read_pending;
     }
 
     // by range
     template <class T>
-    from_iterator(ForwardIterator begin, T end,
+    from_iterator(InputIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void* >::type = 0)
+      typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type = 0)
       : m_begin(begin), m_end(end), m_default_end(false) { m_value = read_pending; }
 
     // by_size
-    from_iterator(ForwardIterator begin, std::size_t sz)
+    from_iterator(InputIterator begin, std::size_t sz)
       : m_begin(begin), m_end(begin), m_default_end(false)
     {
       std::advance(m_end, sz);
@@ -427,7 +427,7 @@ public:
         if(detail::is_high_surrogate(*m_begin))
         {
            // precondition; next value must have be a low-surrogate:
-           ForwardIterator next(m_begin);
+           InputIterator next(m_begin);
            char16 t = *++next;
            if((t & 0xFC00u) != 0xDC00u)
               invalid_code_point(t);
@@ -443,22 +443,22 @@ public:
 
   //  generic_utf16::to_iterator  ------------------------------------------------------//
 
-  template <class ForwardIterator>
+  template <class InputIterator>
   class to_iterator
-   : public boost::iterator_facade<to_iterator<ForwardIterator>,
+   : public boost::iterator_facade<to_iterator<InputIterator>,
       charT, std::input_iterator_tag, const charT>
   {
-     typedef boost::iterator_facade<to_iterator<ForwardIterator>,
+     typedef boost::iterator_facade<to_iterator<InputIterator>,
        charT, std::input_iterator_tag, const charT> base_type;
 
-     typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
 //     BOOST_ASSERT_MSG((boost::is_same<base_value_type, char32>::value),
-//       "ForwardIterator value_type must be char32 for this iterator");
+//       "InputIterator value_type must be char32 for this iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
 //     BOOST_ASSERT(sizeof(charT)*CHAR_BIT == 16);
 
-     ForwardIterator   m_begin;
+     InputIterator   m_begin;
      mutable charT   m_values[3];
      mutable unsigned  m_current;
 
@@ -501,13 +501,13 @@ public:
      }
 
      // construct:
-     to_iterator() : m_begin(ForwardIterator()), m_current(0)
+     to_iterator() : m_begin(InputIterator()), m_current(0)
      {
         m_values[0] = 0;
         m_values[1] = 0;
         m_values[2] = 0;
      }
-     to_iterator(ForwardIterator b) : m_begin(b), m_current(2)
+     to_iterator(InputIterator b) : m_begin(b), m_current(2)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -573,23 +573,23 @@ public:
   //
   //  meets the DefaultCtorEndIterator requirements
 
-  template <class ForwardIterator>  
+  template <class InputIterator>  
   class from_iterator
-   : public boost::iterator_facade<from_iterator<ForwardIterator>,
+   : public boost::iterator_facade<from_iterator<InputIterator>,
        char32, std::input_iterator_tag, const char32>
   {
-    typedef boost::iterator_facade<from_iterator<ForwardIterator>,
+    typedef boost::iterator_facade<from_iterator<InputIterator>,
       char32, std::input_iterator_tag, const char32> base_type;
 
-    typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
+    typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
     BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, char>::value),
-      "ForwardIterator value_type must be char for this from_iterator");
+      "InputIterator value_type must be char for this from_iterator");
     BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
     BOOST_STATIC_ASSERT(sizeof(char32)*CHAR_BIT == 32);
     
-    ForwardIterator  m_begin;
-    ForwardIterator  m_end;
+    InputIterator  m_begin;
+    InputIterator  m_end;
     bool             m_default_end;
 
   public:
@@ -598,23 +598,23 @@ public:
     from_iterator() : m_default_end(true) {}
 
     // by_null
-    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin),
+    from_iterator(InputIterator begin) : m_begin(begin), m_end(begin),
       m_default_end(false) 
     {
       for (;
-           *m_end != typename std::iterator_traits<ForwardIterator>::value_type();
+           *m_end != typename std::iterator_traits<InputIterator>::value_type();
            ++m_end) {}
     }
 
     // by range
     template <class T>
-    from_iterator(ForwardIterator begin, T end,
+    from_iterator(InputIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void* >::type =0)
+      typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type =0)
       : m_begin(begin), m_end(end), m_default_end(false) {}
 
     // by_size
-    from_iterator(ForwardIterator begin, std::size_t sz)
+    from_iterator(InputIterator begin, std::size_t sz)
       : m_begin(begin), m_end(begin), m_default_end(false) {std::advance(m_end, sz);}
 
     char32 dereference() const
@@ -646,31 +646,31 @@ public:
   //
   //  meets the DefaultCtorEndIterator requirements
 
-  template <class ForwardIterator>  
+  template <class InputIterator>  
   class to_iterator
-   : public boost::iterator_facade<to_iterator<ForwardIterator>,
+   : public boost::iterator_facade<to_iterator<InputIterator>,
        char, std::input_iterator_tag, const char>
   {
-     typedef boost::iterator_facade<to_iterator<ForwardIterator>,
+     typedef boost::iterator_facade<to_iterator<InputIterator>,
        char, std::input_iterator_tag, const char> base_type;
    
-     typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
      BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, char32>::value),
-       "ForwardIterator value_type must be char32_t for this iterator");
+       "InputIterator value_type must be char32_t for this iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
      BOOST_STATIC_ASSERT(sizeof(char)*CHAR_BIT == 8);
 
-     ForwardIterator m_begin;
+     InputIterator m_begin;
 
   public:
     // construct:
-    to_iterator() : m_begin(ForwardIterator()) {}
-    to_iterator(ForwardIterator begin) : m_begin(begin) {}
+    to_iterator() : m_begin(InputIterator()) {}
+    to_iterator(InputIterator begin) : m_begin(begin) {}
 
     char dereference() const
     {
-      BOOST_ASSERT_MSG(m_begin != ForwardIterator(),
+      BOOST_ASSERT_MSG(m_begin != InputIterator(),
         "Attempt to dereference end iterator");
       char32 c = *m_begin;
       if (c & 0xFFFF0000U)
@@ -691,7 +691,7 @@ public:
 
     void increment()
     { 
-      BOOST_ASSERT_MSG(m_begin != ForwardIterator(),
+      BOOST_ASSERT_MSG(m_begin != InputIterator(),
         "Attempt to increment end iterator");
       ++m_begin;  // may change m_begin to end iterator
     }
@@ -715,25 +715,25 @@ public:
   //
   //  meets the DefaultCtorEndIterator requirements
 
-  template <class ForwardIterator>
+  template <class InputIterator>
   class from_iterator
-   : public boost::iterator_facade<from_iterator<ForwardIterator>,
+   : public boost::iterator_facade<from_iterator<InputIterator>,
        char32, std::input_iterator_tag, const char32>
   {
-     typedef boost::iterator_facade<from_iterator<ForwardIterator>,
+     typedef boost::iterator_facade<from_iterator<InputIterator>,
        char32, std::input_iterator_tag, const char32> base_type;
      // special values for pending iterator reads:
      BOOST_STATIC_CONSTANT(char32, read_pending = 0xffffffffu);
 
-     typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
 //     BOOST_ASSERT_MSG((boost::is_same<base_value_type, char>::value),
-//       "ForwardIterator value_type must be char for this from_iterator");
+//       "InputIterator value_type must be char for this from_iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
      BOOST_STATIC_ASSERT(sizeof(char32)*CHAR_BIT == 32);
 
-     ForwardIterator  m_begin;  // current position
-     ForwardIterator  m_end;
+     InputIterator  m_begin;  // current position
+     InputIterator  m_end;
      mutable char32    m_value;    // current value or read_pending
      bool             m_default_end;
 
@@ -743,24 +743,24 @@ public:
     from_iterator() : m_default_end(true) {}
 
     // by_null
-    from_iterator(ForwardIterator begin) : m_begin(begin), m_end(begin),
+    from_iterator(InputIterator begin) : m_begin(begin), m_end(begin),
       m_default_end(false) 
     {
       for (;
-           *m_end != typename std::iterator_traits<ForwardIterator>::value_type();
+           *m_end != typename std::iterator_traits<InputIterator>::value_type();
            ++m_end) {}
       m_value = read_pending;
     }
 
     // by range
     template <class T>
-    from_iterator(ForwardIterator begin, T end,
+    from_iterator(InputIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<ForwardIterator, T>, void* >::type =0)
+      typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type =0)
       : m_begin(begin), m_end(end), m_default_end(false) { m_value = read_pending; }
 
     // by_size
-    from_iterator(ForwardIterator begin, std::size_t sz)
+    from_iterator(InputIterator begin, std::size_t sz)
       : m_begin(begin), m_end(begin), m_default_end(false)
     {
       std::advance(m_end, sz);
@@ -812,7 +812,7 @@ public:
         // see how many extra byts we have:
         unsigned extra = detail::utf8_trailing_byte_count(*m_begin);
         // extract the extra bits, 6 from each extra byte:
-        ForwardIterator next(m_begin);
+        InputIterator next(m_begin);
         for(unsigned c = 0; c < extra; ++c)
         {
            ++next;
@@ -839,22 +839,22 @@ public:
   //
   //  meets the DefaultCtorEndIterator requirements
 
-  template <class ForwardIterator>
+  template <class InputIterator>
   class to_iterator
-   : public boost::iterator_facade<to_iterator<ForwardIterator>,
+   : public boost::iterator_facade<to_iterator<InputIterator>,
        char, std::input_iterator_tag, const char>
   {
-     typedef boost::iterator_facade<to_iterator<ForwardIterator>,
+     typedef boost::iterator_facade<to_iterator<InputIterator>,
        char, std::input_iterator_tag, const char> base_type;
    
-     typedef typename std::iterator_traits<ForwardIterator>::value_type base_value_type;
+     typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
 //     BOOST_ASSERT_MSG((boost::is_same<base_value_type, char32>::value),
-//       "ForwardIterator value_type must be char32_t for this iterator");
+//       "InputIterator value_type must be char32_t for this iterator");
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 32);
      BOOST_STATIC_ASSERT(sizeof(char)*CHAR_BIT == 8);
 
-     ForwardIterator   m_begin;
+     InputIterator   m_begin;
      mutable char32    m_values[5];
      mutable unsigned  m_current;
 
@@ -898,7 +898,7 @@ public:
      }
 
      // construct:
-     to_iterator() : m_begin(ForwardIterator()), m_current(0)
+     to_iterator() : m_begin(InputIterator()), m_current(0)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -906,7 +906,7 @@ public:
         m_values[3] = 0;
         m_values[4] = 0;
      }
-     to_iterator(ForwardIterator b) : m_begin(b), m_current(4)
+     to_iterator(InputIterator b) : m_begin(b), m_current(4)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -960,30 +960,30 @@ public:
 //--------------------------------------------------------------------------------------//
 
 //  A conversion_iterator composes a ToCodec's to_iterator and a FromCodec's from_iterator
-//  into a single iterator that adapts an ForwardIterator to FromCodec's value_type to 
+//  into a single iterator that adapts an InputIterator to FromCodec's value_type to 
 //  behave as an iterator to the ToCodec's value_type.
 
-template <class ToCodec, class FromCodec, class ForwardIterator>
+template <class ToCodec, class FromCodec, class InputIterator>
 class conversion_iterator
   : public ToCodec::template to_iterator<
-      typename FromCodec::template from_iterator<ForwardIterator> >
+      typename FromCodec::template from_iterator<InputIterator> >
 {
 public:
-  typedef typename FromCodec::template from_iterator<ForwardIterator>  from_iterator_type;
+  typedef typename FromCodec::template from_iterator<InputIterator>  from_iterator_type;
   typedef typename ToCodec::template to_iterator<from_iterator_type>   to_iterator_type;
 
   conversion_iterator() BOOST_DEFAULTED
 
-  conversion_iterator(ForwardIterator begin)
+  conversion_iterator(InputIterator begin)
     : to_iterator_type(from_iterator_type(begin)) {}
 
   template <class U>
-  conversion_iterator(ForwardIterator begin, U end,
+  conversion_iterator(InputIterator begin, U end,
     // enable_if ensures 2nd argument of 0 is treated as size, not range end
-    typename boost::enable_if<boost::is_same<ForwardIterator, U>, void* >::type = 0)
+    typename boost::enable_if<boost::is_same<InputIterator, U>, void* >::type = 0)
     : to_iterator_type(from_iterator_type(begin, end)) {}
 
-  conversion_iterator(ForwardIterator begin, std::size_t sz)
+  conversion_iterator(InputIterator begin, std::size_t sz)
     : to_iterator_type(from_iterator_type(begin, sz)) {}
 };
 
@@ -1022,15 +1022,15 @@ template <class ToCodec,
           class FromCodec,
           class ToString,
 # endif
-          class ForwardIterator> inline
+          class InputIterator> inline
   // enable_if resolves ambiguity with FromString overload
-typename boost::enable_if<boost::is_iterator<ForwardIterator>,
-ToString>::type make_string(ForwardIterator begin)
+typename boost::enable_if<boost::is_iterator<InputIterator>,
+ToString>::type make_string(InputIterator begin)
 {
   typedef conversion_iterator<ToCodec,
     typename FromCodec::template
-      codec<typename std::iterator_traits<ForwardIterator>::value_type>::type,
-    ForwardIterator>
+      codec<typename std::iterator_traits<InputIterator>::value_type>::type,
+    InputIterator>
       iter_type;
 
   return ToString(iter_type(begin), iter_type());
@@ -1045,13 +1045,13 @@ template <class ToCodec,
           class FromCodec,
           class ToString,
 # endif
-          class ForwardIterator> inline
-ToString make_string(ForwardIterator begin, std::size_t sz)
+          class InputIterator> inline
+ToString make_string(InputIterator begin, std::size_t sz)
 {
   typedef conversion_iterator<ToCodec,
     typename FromCodec::template
-      codec<typename std::iterator_traits<ForwardIterator>::value_type>::type,
-    ForwardIterator>
+      codec<typename std::iterator_traits<InputIterator>::value_type>::type,
+    InputIterator>
       iter_type;
 
   return ToString(iter_type(begin, sz), iter_type());
@@ -1066,15 +1066,15 @@ template <class ToCodec,
           class FromCodec,
           class ToString,
 # endif
-          class ForwardIterator, class ForwardIterator2>
+          class InputIterator, class InputIterator2>
   // enable_if ensures 2nd argument of 0 is treated as size, not range end
-typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
-ToString>::type make_string(ForwardIterator begin, ForwardIterator2 end)
+typename boost::enable_if<boost::is_iterator<InputIterator2>,
+ToString>::type make_string(InputIterator begin, InputIterator2 end)
 {
   typedef conversion_iterator<ToCodec,
     typename FromCodec::template
-      codec<typename std::iterator_traits<ForwardIterator>::value_type>::type,
-    ForwardIterator>
+      codec<typename std::iterator_traits<InputIterator>::value_type>::type,
+    InputIterator>
       iter_type;
 
   return ToString(iter_type(begin, end), iter_type());
@@ -1107,11 +1107,11 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator> inline
+          class InputIterator> inline
   // enable_if resolves ambiguity with FromString overload
-typename boost::enable_if<boost::is_iterator<ForwardIterator>,
+typename boost::enable_if<boost::is_iterator<InputIterator>,
 ToString>::type
-to_narrow(ForwardIterator begin) {return make_string<narrow, FromCodec, ToString>(begin);}
+to_narrow(InputIterator begin) {return make_string<narrow, FromCodec, ToString>(begin);}
 
 //  iterator, size
 template <
@@ -1121,8 +1121,8 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator> inline
-ToString to_narrow(ForwardIterator begin, std::size_t sz)
+          class InputIterator> inline
+ToString to_narrow(InputIterator begin, std::size_t sz)
   {return make_string<narrow, FromCodec, ToString>(begin, sz);}
 
 //  iterator range
@@ -1133,10 +1133,10 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator, class ForwardIterator2> inline
+          class InputIterator, class InputIterator2> inline
   // enable_if ensures 2nd argument of 0 is treated as size, not range end
-typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
-ToString>::type to_narrow(ForwardIterator begin, ForwardIterator2 end)
+typename boost::enable_if<boost::is_iterator<InputIterator2>,
+ToString>::type to_narrow(InputIterator begin, InputIterator2 end)
   {return make_string<narrow, FromCodec, ToString>(begin, end);}
 
 //--------------------------------  to_wide()  -------------------------------------//
@@ -1162,11 +1162,11 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator> inline
+          class InputIterator> inline
   // enable_if resolves ambiguity with FromString overload
-typename boost::enable_if<boost::is_iterator<ForwardIterator>,
+typename boost::enable_if<boost::is_iterator<InputIterator>,
 ToString>::type
-to_wide(ForwardIterator begin) {return make_string<wide, FromCodec, ToString>(begin);}
+to_wide(InputIterator begin) {return make_string<wide, FromCodec, ToString>(begin);}
 
 //  iterator, size
 template <
@@ -1176,8 +1176,8 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator> inline
-ToString to_wide(ForwardIterator begin, std::size_t sz)
+          class InputIterator> inline
+ToString to_wide(InputIterator begin, std::size_t sz)
   {return make_string<wide, FromCodec, ToString>(begin, sz);}
 
 //  iterator range
@@ -1188,10 +1188,10 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator, class ForwardIterator2> inline
+          class InputIterator, class InputIterator2> inline
   // enable_if ensures 2nd argument of 0 is treated as size, not range end
-typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
-ToString>::type to_wide(ForwardIterator begin, ForwardIterator2 end)
+typename boost::enable_if<boost::is_iterator<InputIterator2>,
+ToString>::type to_wide(InputIterator begin, InputIterator2 end)
   {return make_string<wide, FromCodec, ToString>(begin, end);}
 
 //--------------------------------  to_utf8()  -------------------------------------//
@@ -1217,11 +1217,11 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator> inline
+          class InputIterator> inline
   // enable_if resolves ambiguity with FromString overload
-typename boost::enable_if<boost::is_iterator<ForwardIterator>,
+typename boost::enable_if<boost::is_iterator<InputIterator>,
 ToString>::type
-to_utf8(ForwardIterator begin) {return make_string<utf8, FromCodec, ToString>(begin);}
+to_utf8(InputIterator begin) {return make_string<utf8, FromCodec, ToString>(begin);}
 
 //  iterator, size
 template <
@@ -1231,8 +1231,8 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator> inline
-ToString to_utf8(ForwardIterator begin, std::size_t sz)
+          class InputIterator> inline
+ToString to_utf8(InputIterator begin, std::size_t sz)
   {return make_string<utf8, FromCodec, ToString>(begin, sz);}
 
 //  iterator range
@@ -1243,10 +1243,10 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator, class ForwardIterator2> inline
+          class InputIterator, class InputIterator2> inline
   // enable_if ensures 2nd argument of 0 is treated as size, not range end
-typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
-ToString>::type to_utf8(ForwardIterator begin, ForwardIterator2 end)
+typename boost::enable_if<boost::is_iterator<InputIterator2>,
+ToString>::type to_utf8(InputIterator begin, InputIterator2 end)
   {return make_string<utf8, FromCodec, ToString>(begin, end);}
 
 //--------------------------------  to_utf16()  -------------------------------------//
@@ -1272,11 +1272,11 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator> inline
+          class InputIterator> inline
   // enable_if resolves ambiguity with FromString overload
-typename boost::enable_if<boost::is_iterator<ForwardIterator>,
+typename boost::enable_if<boost::is_iterator<InputIterator>,
 ToString>::type
-to_utf16(ForwardIterator begin) {return make_string<utf16, FromCodec, ToString>(begin);}
+to_utf16(InputIterator begin) {return make_string<utf16, FromCodec, ToString>(begin);}
 
 //  iterator, size
 template <
@@ -1286,8 +1286,8 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator> inline
-ToString to_utf16(ForwardIterator begin, std::size_t sz)
+          class InputIterator> inline
+ToString to_utf16(InputIterator begin, std::size_t sz)
   {return make_string<utf16, FromCodec, ToString>(begin, sz);}
 
 //  iterator range
@@ -1298,10 +1298,10 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator, class ForwardIterator2> inline
+          class InputIterator, class InputIterator2> inline
   // enable_if ensures 2nd argument of 0 is treated as size, not range end
-typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
-ToString>::type to_utf16(ForwardIterator begin, ForwardIterator2 end)
+typename boost::enable_if<boost::is_iterator<InputIterator2>,
+ToString>::type to_utf16(InputIterator begin, InputIterator2 end)
   {return make_string<utf16, FromCodec, ToString>(begin, end);}
 
 //--------------------------------  to_utf32()  -------------------------------------//
@@ -1327,11 +1327,11 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator> inline
+          class InputIterator> inline
   // enable_if resolves ambiguity with FromString overload
-typename boost::enable_if<boost::is_iterator<ForwardIterator>,
+typename boost::enable_if<boost::is_iterator<InputIterator>,
 ToString>::type
-to_utf32(ForwardIterator begin) {return make_string<utf32, FromCodec, ToString>(begin);}
+to_utf32(InputIterator begin) {return make_string<utf32, FromCodec, ToString>(begin);}
 
 //  iterator, size
 template <
@@ -1341,8 +1341,8 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator> inline
-ToString to_utf32(ForwardIterator begin, std::size_t sz)
+          class InputIterator> inline
+ToString to_utf32(InputIterator begin, std::size_t sz)
   {return make_string<utf32, FromCodec, ToString>(begin, sz);}
 
 //  iterator range
@@ -1353,10 +1353,10 @@ template <
 # else
           class FromCodec, class ToString,
 # endif
-          class ForwardIterator, class ForwardIterator2> inline
+          class InputIterator, class InputIterator2> inline
   // enable_if ensures 2nd argument of 0 is treated as size, not range end
-typename boost::enable_if<boost::is_iterator<ForwardIterator2>,
-ToString>::type to_utf32(ForwardIterator begin, ForwardIterator2 end)
+typename boost::enable_if<boost::is_iterator<InputIterator2>,
+ToString>::type to_utf32(InputIterator begin, InputIterator2 end)
   {return make_string<utf32, FromCodec, ToString>(begin, end);}
 
 }  // namespace interop

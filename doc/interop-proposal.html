@@ -45,12 +45,7 @@
       <p align="center"><b>To Do</b></p>
       <ul>
         <li>
-        <p align="left">Change ForwardIterator to InputIterator. All algorithms 
-        are single pass.</li>
-        <li>
         <p align="left">Specify functions in terms of copy_string() algorithm.</li>
-        <li>
-        <p align="left">Add Motivation section, replacing Problem 1, etc.</li>
         <li>
         <p align="left">Add error handling argument where appropriate.</li>
         <li>
@@ -75,8 +70,6 @@
 <h1>String Interoperation Library<br>
 <font size="5">Adapting Standard Library Strings and I/O to a Unicode World</font></h1>
 
-<p>&nbsp;</p>
-
 <h2>Table of contents</h2>
 
 <h2><a name="Introduction">Introduction</a></h2>
@@ -93,8 +86,13 @@ Boost Filesystem Library. These problems have become more apparent as compiler
 support for C++11's additional Unicode support has made it easier to write programs 
 that run up against current limitations.</p>
 
+<p>The proposal began when the Library Working Group requested string encoding 
+conversion arguments be removed from class <code>path</code> in the initial 
+C++11-era proposal for a Filesystem library. That sparked this proposal as a far 
+more general solution to string encoding conversion problems.</p>
+
 <p>The proposed solutions are pure additions that have no effect on the current C++11 standard library. No C++03 
-or C++11 headers are changed and assuming namespace discipline no current code is broken or otherwise affected by the additions.</p>
+or C++11 headers are changed and, assuming namespace discipline, no current code is broken or otherwise affected by the additions.</p>
 
 <p>Proposed wording is provided.</p>
 
@@ -103,6 +101,45 @@ available at <a href="http://github.com/Beman/string-interoperability">
 github.com/beman/string-interoperability</a>.</p>
 
 <h2>Motivation</h2>
+
+<h3><code>copy_string</code> algorithm</h3>
+
+<p>An algorithm conceptualized as <code>std::copy</code>, but performing type 
+and encoding conversion as it copies.</p>
+
+  <blockquote>
+
+<p>Solves many end user problems.</p>
+
+<p>Provides a simple way to both specify and implement other high-level 
+convenience functions.</p>
+
+  </blockquote>
+  <h3><code>conversion_iterator</code> class template</h3>
+  <p>An iterator adapter that performs character type and encoding conversion 
+  on-the-fly.</p>
+  <blockquote>
+    <p>While codecs (see below) offer worthwhile benefits, they essentially 
+    provide low-level, encoding specific, iterators. The <code>
+    conversion_iterator</code> class template provides a uniform interface that 
+    composes two codecs regardless of encoding into a single, easy-to-use 
+    iterator.</p>
+    <p>With&nbsp; <code>conversion_iterator</code>, implementation of many mid 
+    and high level character type and encoding conversions becomes trivial. It 
+    is useful to standard, user, and third-party library implementers. </p>
+  </blockquote>
+  <h3>Codecs</h3>
+  <p>An iterator-based composable solution to encoding conversion that works 
+  well in generic code and does not require temporaries.</p>
+  <ul>
+    <li>For any possible conversion of <b>n</b> encodings, the number of codecs 
+    required is <b>2n</b> rather than <b>n<sup>2</sup></b>.</li>
+    <li>Library provided support for the system default narrow and wide 
+    encodings, plus UTF-8, UTF-16, and UTF-32. Implementers and users may add 
+    additional codecs.</li>
+    <li>Codec components allocate no heap memory.</li>
+    <li>System default narrow codec built on top of <code>&lt;cuchar&gt;</code>.</li>
+  </ul>
 
 <h3><code>to_</code><i><code>string</code></i> conversion functions, plus 
 converting stream inserters and extractors</h3>
@@ -147,30 +184,6 @@ std::cout &lt;&lt; t;                  // OK</pre>
   </blockquote>
   <h3><code>make_string</code> function template</h3>
   <p>Generic string type and encoding string creation factory function.</p>
-  <h3><code>conversion_iterator</code> class template</h3>
-  <p>An iterator adapter that performs character type and encoding conversion 
-  on-the-fly.</p>
-  <blockquote>
-    <p>While codecs offer worthwhile benefits, they are essentially low-level, 
-    encoding specific, algorithms. The <code>conversion_iterator</code> class 
-    template provides a uniform interface that composes two codecs regardless of 
-    encoding into a single, easy-to-use iterator.</p>
-    <p>With&nbsp; <code>conversion_iterator</code>, implementation of many mid 
-    and high level character type and encoding conversions becomes trivial. It 
-    is useful to standard, user, and third-party library implementers. </p>
-  </blockquote>
-  <h3>Codecs</h3>
-  <p>An iterator-based composable solution to encoding conversion that works 
-  well in generic code and does not require temporaries.</p>
-  <ul>
-    <li>For any possible conversion of <b>n</b> encodings, the number of codecs 
-    required is <b>2n</b> rather than <b>n<sup>2</sup></b>.</li>
-    <li>Library provided support for the system default narrow and wide 
-    encodings, plus UTF-8, UTF-16, and UTF-32. Implementers and users may add 
-    additional codecs.</li>
-    <li>Codec components allocate no heap memory.</li>
-    <li>System default narrow codec built on top of <code>&lt;cuchar&gt;</code>.</li>
-  </ul>
   <h3>Explicit UTF-8 encoded types <code>char8_t</code> and <code>u8string</code></h3>
   <p>Extends the benefits of the rest of the proposal to UTF-8 encoded strings.</p>
   <blockquote>
@@ -190,19 +203,13 @@ a Windows command line environment.</p>
 
 <h2><a name="Revision-history">Revision history</a></h2>
 
-<p><b>Revision 1</b></p>
-
-  <ul>
-    <li>Provided <a href="#Alternate-Solutions-1">Alternative solutions</a> to 
-    problem 1.</li>
-  </ul>
-
-  <p><b>Initial paper:</b> N3336, Adapting Standard Library Strings and I/O to a 
-  Unicode World</p>
+  <p>This paper is a complete rewrite of N3336, Adapting Standard Library Strings and I/O to a 
+  Unicode World. It reflects C++ committee feedback from the LWG&#39;s review of 
+  N3336.</p>
 
 <h2>Design</h2>
 
-<p>The key to the design is the <code>copy_string</code> algorithm. It was 
+<p>One key to the design is the <code>copy_string</code> algorithm. It was 
 arrived at by analyzing numerous real-world string conversion problems 
 encountered by Boost Filesystem and while internationalizing various industrial 
 applications. It was observed that <code>std::copy</code> algorithm would be a 
@@ -210,6 +217,10 @@ common solution to those problems if it could be given generic versions of John
 Maddock&#39;s Unicode conversion iterator adaptors used in his Boost Regex 
 implementation. The <code>conversion_iterator</code> and <code>codec</code> 
 designs evolved as the realization of the underlying conversion abstractions.</p>
+
+<p>The key design for composition of codecs is the use of UTF-32 as an common 
+intermediate encoding that works without an intermediate temporary string when 
+applied at the iterator level.</p>
 
 <h3><a name="Design-paths-not-taken">Design paths not taken</a></h3>
 
@@ -223,8 +234,9 @@ Components for Unicode (ICU)</a> library.</p>
 
 <p>This proposal provides work-arounds for C++11&#39;s lack of UTF-8 strings. 
 Several users have argued that instead of work-arounds, the C++ standard should 
-require UTF-8 encoding for both C-style char strings and std::string. This 
-proposal assumes that is too big a leap forward at this time.</p>
+require UTF-8 encoding for both C-style <code>char</code> strings and <code>
+std::string</code>. This proposal assumes that is too big a leap forward at this 
+time.</p>
 
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 
@@ -334,7 +346,7 @@ namespace tbd {  // tbd is to be decided
   template &lt;&gt; struct select_codec&lt;char32_t&gt;   { typedef utf32  type; };
  
   //  conversion_iterator [str-x.cvt-iter]
-  template &lt;class ToCodec, class FromCodec, class ForwardIterator&gt;
+  template &lt;class ToCodec, class FromCodec, class InputIterator&gt;
     class conversion_iterator;
 
   //  algorithm copy_string [str-x.copy_string]
@@ -353,21 +365,21 @@ namespace tbd {  // tbd is to be decided
   template &lt;class ToCodec,
             class FromCodec = default_codec,
             class ToString = std::basic_string&lt;typename ToCodec::value_type&gt;,
-            class ForwardIterator&gt;
-  ToString make_string(ForwardIterator begin);
+            class InputIterator&gt;
+  ToString make_string(InputIterator begin);
 
   template &lt;class ToCodec,
             class FromCodec = default_codec,
             class ToString = std::basic_string&lt;typename ToCodec::value_type&gt;,
-            class ForwardIterator&gt;
-  ToString make_string(ForwardIterator begin, std::size_t sz);
+            class InputIterator&gt;
+  ToString make_string(InputIterator begin, std::size_t sz);
 
   template &lt;class ToCodec,
             class FromCodec = default_codec,
             class ToString = std::basic_string&lt;typename ToCodec::value_type&gt;,
-            class ForwardIterator,
-            class ForwardIterator2&gt;
-  ToString make_string(ForwardIterator begin, ForwardIterator2 end);
+            class InputIterator,
+            class InputIterator2&gt;
+  ToString make_string(InputIterator begin, InputIterator2 end);
 
   //  UTF-8 string support [str-x.utf8]
   inline const char8_t* u8(const char* s) noexcept;
@@ -452,24 +464,24 @@ public:
   template &lt;class charT&gt;
   struct codec { typedef <b><i>codec-class-name</i></b> type; };
 
-  template &lt;class ForwardIterator&gt;  
+  template &lt;class InputIterator&gt;  
   class from_iterator
   {
   public:
     
     from_iterator();
-    from_iterator(ForwardIterator begin);
-    from_iterator(ForwardIterator begin, size_t sz);
-    template &lt;class ForwardIterator2&gt;
-      from_iterator(ForwardIterator begin, ForwardIterator2 end);
+    from_iterator(InputIterator begin);
+    from_iterator(InputIterator begin, size_t sz);
+    template &lt;class InputIterator2&gt;
+      from_iterator(InputIterator begin, InputIterator2 end);
   };
 
-  template &lt;class ForwardIterator&gt;  
+  template &lt;class InputIterator&gt;  
   class to_iterator
   {
   public:
     to_iterator();
-    to_iterator(ForwardIterator begin);
+    to_iterator(InputIterator begin);
   };</pre>
   <h4>end-of-sequence iterator requirements [str-x.codec.req.eos]</h4>
   <p>An <i>end-of-sequence</i> iterator becomes equal to the 
@@ -488,18 +500,18 @@ public:
   end-of-sequence value. Two iterators that do not have the end-of-iterator 
   value are equal iff they point to the same element of the sequence.</p>
   <h4><code>from_iterator</code> requirements [str-x.codec.req.from]</h4>
-  <p>The class template <code>from_iterator</code> is a forward 
-  iterator that is an adaptation of a <code>ForwardIterator</code> template 
+  <p>The class template <code>from_iterator</code> is an input 
+  iterator that is an adaptation of a <code>InputIterator</code> template 
   parameter whose <code>value_type</code> is the same as the parent codec class
   <code>value_type</code>.&nbsp; It has a&nbsp; <code>value_type</code> of <code>
-  char32_t</code> and meets the forward iterator requirements of the C++ 
+  char32_t</code> and meets the inpuyt iterator requirements of the C++ 
   standard and the end-of-sequence iterator requirements ([str-x.codec.req.eos]).</p>
   <h4><code>to_iterator</code> requirements [str-x.codec.req.to]</h4>
-  <p>The class template <code>to_iterator</code> is a forward iterator that is 
-  an adaptation of a <code>ForwardIterator</code> template parameter whose <code>
+  <p>The class template <code>to_iterator</code> is a input iterator that is 
+  an adaptation of a <code>InputIterator</code> template parameter whose <code>
   value_type</code> is <code>char32_t</code>.&nbsp; It has a&nbsp; <code>
   value_type</code> that is the same as the parent codec class <code>value_type</code>.&nbsp; 
-  It meets the forward iterator requirements of the C++ standard and the 
+  It meets the input iterator requirements of the C++ standard and the 
   end-of-sequence iterator requirements ([str-x.codec.req.eos]).</p>
   <h4>Constructor requirements [str-x.codec.req.ctors]</h4>
   <p><code>from_iterator();</code></p>
@@ -507,34 +519,34 @@ public:
     <p><i>Effects: </i>Constructs an iterator with the end-of-sequence 
     iterator value ([str-x.codec.req.eos]).</p>
   </blockquote>
-  <p><code>from_iterator(ForwardIterator begin);</code></p>
+  <p><code>from_iterator(InputIterator begin);</code></p>
   <blockquote>
     <p><i>Effects: </i>Constructs an iterator for the half-open range that 
     begins at <code>begin</code> and ends at the first element with a value of
     <code>value_type()</code>.</p>
   </blockquote>
-  <p><code>from_iterator(ForwardIterator begin, size_t sz);</code></p>
+  <p><code>from_iterator(InputIterator begin, size_t sz);</code></p>
   <blockquote>
     <p align="left"><i>Effects: </i>Constructs an iterator for the 
     half-open range that begins at <code>begin</code> and ends at <code>begin + 
     sz</code>.</p>
   </blockquote>
-  <pre><code>template &lt;class </code>ForwardIterator2<code>&gt;
-from_iterator(ForwardIterator begin, </code>ForwardIterator2<code> end);</code></pre>
+  <pre><code>template &lt;class </code>InputIterator2<code>&gt;
+from_iterator(InputIterator begin, </code>InputIterator2<code> end);</code></pre>
   <blockquote>
     <p><i>Effects: </i>Constructs an iterator for the half-open range that 
     begins at <code>begin</code> and ends at <code>end</code>.</p>
     <p><i>Remarks: </i>Shall not participate in overload resolution unless <code>
-    ForwardIterator</code> and <code>ForwardIterator2</code> are the same type.</p>
+    InputIterator</code> and <code>InputIterator2</code> are the same type.</p>
   </blockquote>
   <p><code>to_iterator();</code></p>
   <blockquote>
     <p><i>Effects: </i>Constructs an object with the end-of-sequence 
     iterator value ([str-x.codec.req.eos]).</p>
   </blockquote>
-  <p dir="ltr"><code>to_iterator(ForwardIterator begin);</code></p>
+  <p dir="ltr"><code>to_iterator(InputIterator begin);</code></p>
   <blockquote>
-    <p><code>ForwardIterator</code> is required to meet the end-of-sequence 
+    <p><code>InputIterator</code> is required to meet the end-of-sequence 
     iterator requirements ([str-x.codec.req.eos]).</p>
     <p><i>Effects: </i>Constructs an iterator for the half-open range that 
     begins at <code>begin</code> and ends when the end-of-sequence iterator 
@@ -562,33 +574,33 @@ from_iterator(ForwardIterator begin, </code>ForwardIterator2<code> end);</code><
   standard: [basic.types]). This allows conversion by compile-time casts with no 
   runtime cost. </p>
   <h2>Class template <code>conversion_iterator</code> [str-x.cvt-iter]</h2>
-  <p>Class template <code>conversion_iterator</code> composes a forward iterator from a 
+  <p>Class template <code>conversion_iterator</code> composes a input iterator from a 
   codec t<code>o_iterator</code>, a codec <code>from_iterator</code>, and a 
-  forward iterator. It adapts the forward iterator to behave as an iterator to
-  <code>ToCodec::value_type</code>. The type <code>iterator_traits&lt;ForwardIterator&gt;::value_type</code> 
+  input iterator. It adapts the input iterator to behave as an iterator to
+  <code>ToCodec::value_type</code>. The type <code>iterator_traits&lt;InputIterator&gt;::value_type</code> 
   is required to be the same as <code>FromCodec::value_type</code>.&nbsp; <code>
-  conversion_iterator</code> meets the standard library forward iterator 
+  conversion_iterator</code> meets the standard library input iterator 
   requirements and the end-of-sequence iterator requirements ([str-x.codec.req.eos]).</p>
   <h3>Synopsis [str-x.cvt-iter.synop]</h3>
-  <pre>template &lt;class ToCodec, class FromCodec, class ForwardIterator&gt;
+  <pre>template &lt;class ToCodec, class FromCodec, class InputIterator&gt;
   class conversion_iterator
     : public ToCodec::template to_iterator&lt;
-        typename FromCodec::template from_iterator&lt;ForwardIterator&gt;&gt;
+        typename FromCodec::template from_iterator&lt;InputIterator&gt;&gt;
 {
 public:
-  typedef typename FromCodec::template from_iterator&lt;ForwardIterator&gt;
+  typedef typename FromCodec::template from_iterator&lt;InputIterator&gt;
     from_iterator_type;
   typedef typename ToCodec::template to_iterator&lt;from_iterator_type&gt;
     to_iterator_type;
 
   conversion_iterator();
-  conversion_iterator(ForwardIterator begin);
-  conversion_iterator(ForwardIterator begin, std::size_t sz);
+  conversion_iterator(InputIterator begin);
+  conversion_iterator(InputIterator begin, std::size_t sz);
   template &lt;class U&gt;
-    conversion_iterator(ForwardIterator begin, U end);
+    conversion_iterator(InputIterator begin, U end);
 
 <i>  // other functions as needed to meet standard library requirements
-  // for forward iterators [forward.iterators]
+  // for input iterators [input.iterators]
   ...
 </i>};</pre>
   <h3>Constructors [str-x.cvt-iter.ctors]</h3>
@@ -597,27 +609,27 @@ public:
     <p><i>Effects: </i>Constructs an iterator with the end-of-sequence 
     iterator value ([str-x.codec.req.eos]).</p>
   </blockquote>
-  <p><code>conversion_iterator(ForwardIterator begin);</code></p>
+  <p><code>conversion_iterator(InputIterator begin);</code></p>
   <blockquote>
     <p><i>Effects: </i>Constructs an iterator for the half-open range that 
     begins at <code>begin</code> and ends at the first element with a value of
     <code>value_type()</code>.</p>
   </blockquote>
-  <p><code>conversion_iterator(ForwardIterator begin, size_t sz);</code></p>
+  <p><code>conversion_iterator(InputIterator begin, size_t sz);</code></p>
   <blockquote>
     <p align="left"><i>Effects: </i>Constructs an iterator for the 
     half-open range that begins at <code>begin</code> and ends at <code>begin + 
     sz</code>.</p>
   </blockquote>
-  <pre><code>template &lt;class </code>ForwardIterator2<code>&gt;
-conversion_iterator(ForwardIterator begin, </code>ForwardIterator2<code> end);</code></pre>
+  <pre><code>template &lt;class </code>InputIterator2<code>&gt;
+conversion_iterator(InputIterator begin, </code>InputIterator2<code> end);</code></pre>
   <blockquote>
     <p><i>Effects: </i>Constructs an iterator for the half-open range that 
     begins at <code>begin</code> and ends at <code>end</code>.</p>
     <p><i>Remarks: </i>Shall not participate in overload resolution unless <code>
-    ForwardIterator</code> and <code>ForwardIterator2</code> are the same type.</p>
+    InputIterator</code> and <code>InputIterator2</code> are the same type.</p>
   </blockquote>
-  <h2>Algorithm copy_string [<a name="str-x.copy_string">str-x.copy_string</a>]</h2>
+  <h2>Algorithm <code>copy_string</code> [<a name="str-x.copy_string">str-x.copy_string</a>]</h2>
   <pre>template&lt;class InputIterator, class FromCodec,
          class OutputIterator, class ToCodec&gt;
 OutputIterator copy_string(InputIterator first, InputIterator last,
@@ -671,13 +683,13 @@ ToString make_string(const FromString&amp; s);</pre>
   <pre>template &lt;class ToCodec,
           class FromCodec = default_codec,
           class ToString = std::basic_string&lt;typename ToCodec::value_type&gt;,
-          class ForwardIterator&gt;
-ToString make_string(ForwardIterator begin);</pre>
+          class InputIterator&gt;
+ToString make_string(InputIterator begin);</pre>
   <blockquote>
   <p dir="ltr"><i>Returns: </i>&nbsp;A string containing the characters of the 
   sequence [<code>begin, begin+<i>dist</i></code>) where <code><i>dist</i></code> 
   is the distance from <code>begin</code> to the first instance of character
-  <code>iterator_traits&lt;ForwardIterator&gt;::value_type()</code>.</p>
+  <code>iterator_traits&lt;InputIterator&gt;::value_type()</code>.</p>
   
   <p dir="ltr"><i>Complexity: </i>O(<code><i>dist</i></code>)</p>
   
@@ -685,8 +697,8 @@ ToString make_string(ForwardIterator begin);</pre>
   <pre>template &lt;class ToCodec,
           class FromCodec = default_codec,
           class ToString = std::basic_string&lt;typename ToCodec::value_type&gt;,
-          class ForwardIterator&gt;
-ToString make_string(ForwardIterator begin, std::size_t sz);</pre>
+          class InputIterator&gt;
+ToString make_string(InputIterator begin, std::size_t sz);</pre>
   <blockquote>
   <p dir="ltr"><i>Returns: </i>&nbsp;A string containing the characters of the 
   sequence [<code>begin, begin+sz</code>).</p>
@@ -695,9 +707,9 @@ ToString make_string(ForwardIterator begin, std::size_t sz);</pre>
   <pre>template &lt;class ToCodec,
           class FromCodec = default_codec,
           class ToString = std::basic_string&lt;typename ToCodec::value_type&gt;,
-          class ForwardIterator,
-          class ForwardIterator2&gt;
-ToString make_string(ForwardIterator begin, ForwardIterator2 end);</pre>
+          class InputIterator,
+          class InputIterator2&gt;
+ToString make_string(InputIterator begin, InputIterator2 end);</pre>
   <blockquote>
   <p dir="ltr"><i>Returns: </i>&nbsp;A string containing the characters of the 
   sequence [<code>begin, end</code>).</p>

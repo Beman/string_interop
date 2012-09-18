@@ -28,14 +28,14 @@ namespace interop
 namespace detail
 {
 
-template <class Ostream, class ForwardIterator>
-Ostream& inserter(Ostream& os, ForwardIterator begin)
+template <class Ostream, class InputIterator>
+Ostream& inserter(Ostream& os, InputIterator begin)
 {
   typedef boost::interop::conversion_iterator<
     typename boost::interop::select_codec<typename Ostream::char_type>::type,
     typename boost::interop::select_codec<
-      typename std::iterator_traits<ForwardIterator>::value_type>::type,
-    ForwardIterator>
+      typename std::iterator_traits<InputIterator>::value_type>::type,
+    InputIterator>
       iter_type;
 
   for (iter_type itr(begin); itr != iter_type(); ++itr)
