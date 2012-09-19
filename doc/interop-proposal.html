@@ -36,36 +36,6 @@
   
   <br>
 
-  <div align="center">
-    <center>
-
-  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="80%" bgcolor="#EEFFEE">
-    <tr>
-      <td width="100%">
-      <p align="center"><b>To Do</b></p>
-      <ul>
-        <li>
-        <p align="left">Specify functions in terms of copy_string() algorithm.</li>
-        <li>
-        <p align="left">Add error handling argument where appropriate.</li>
-        <li>
-        <p align="left">Add three pointer case signatures for basic_ostream&lt;wchar_t&gt;&amp; </li>
-        <li>
-        <p align="left">Add stream extractors.</li>
-        <li>
-        <p align="left">Add to_*() make_string aliases, after making sure they 
-        are tested and work.</li>
-        <li>
-        <p align="left">Add usage examples to Proposed Wording.</li>
-        <li>
-        <p align="left">Add example of how would apply to Filesystem class path.</li>
-      </ul>
-      </td>
-    </tr>
-  </table>
-
-    </center>
-  </div>
 
 <h1>String Interoperation Library<br>
 <font size="5">Adapting Standard Library Strings and I/O to a Unicode World</font></h1>
@@ -74,9 +44,9 @@
 
 <h2><a name="Introduction">Introduction</a></h2>
 
-<p>This paper proposes components for a C++ standard library Technical Specification (TS) 
+<p>This paper proposes components 
 aimed at easing string interoperation problems for Unicode and other string 
-encodings encountered 
+encodings that are encountered 
 while performing string operations in an international environment using the current C++11 standard library.</p>
 
 <p>The 
@@ -97,12 +67,17 @@ specific proposal.</p>
 helpers could be removed, although the whole may have more benefit that the sum 
 of its parts.</p>
 
+<p>The proposed components are suitable for a C++ standard library Technical 
+Specification (TS), either standing alone or as part of a larger TS.</p>
+
 <p>The proposed components are pure additions. No C++03 
 or C++11 headers are changed or otherwise affected and no current user or 
 standard library code is broken, subject only to the usual namespace discipline 
 caveats.</p>
 
-<p>Proposed wording is provided.</p>
+<p>Proposed wording is provided. The proposed wording relies only C++11 
+features. Should a <code>basic_string</code>-reference library TS be accepted, 
+it might be used to reduce the number of signatures in this proposal.</p>
 
 <p>A &quot;proof-of-concept&quot; implementation of the proposals (and more) is 
 available at <a href="http://github.com/Beman/string-interoperability">
@@ -114,9 +89,9 @@ github.com/beman/string-interoperability</a>.</p>
   Unicode World. It reflects C++ committee feedback from the LWG&#39;s review of 
   N3336.</p>
 
-<h2>Proposed components and their motivation</h2>
+<h2>Proposed <a name="components">components</a> and their motivation</h2>
 
-  <h3>Codecs and their helpers</h3>
+  <h3><a name="comp-Codecs">Codecs</a> and their helpers</h3>
   <p>An iterator-based composable solution to string encoding and type conversion that works 
   well in generic code and does not require heap allocated temporary strings or 
   buffers.</p>
@@ -149,7 +124,7 @@ github.com/beman/string-interoperability</a>.</p>
   </ul>
 
   </blockquote>
-  <h3><code>conversion_iterator</code> class template</h3>
+  <h3><code><a name="comp-conversion_iterator">conversion_iterator</a></code> class template</h3>
   <p>An iterator adapter that performs character type and encoding conversion 
   on-the-fly.</p>
   <blockquote>
@@ -165,7 +140,7 @@ github.com/beman/string-interoperability</a>.</p>
     roll-your-oven conversions based on codecvt facets. </p>
   </blockquote>
 
-<h3><code>copy_string</code> algorithm</h3>
+<h3><code><a name="comp-copy_string">copy_string</a></code> algorithm</h3>
 
 <p>An algorithm like <code>std::copy</code>, except performing type 
 and encoding conversion as it copies.</p>
@@ -179,10 +154,10 @@ convenience functions.</p>
 
   </blockquote>
 
-  <h3><code>make_string</code> function template</h3>
+  <h3><code><a name="comp.make_string">make_string</a></code> function template</h3>
   <p>Generic string type and encoding string creation factory function.</p>
 
-<h3><code>to_</code><i><code>string</code></i> conversion functions,  converting stream inserters and extractors</h3>
+<h3><a name="comp.to_string"><code>to_</code><code><i>string</i></code></a> conversion functions,  converting stream inserters and extractors</h3>
 
 <p>High-level string interoperability features provide easy-to-use (automatic, 
 in the case of inserters and extractors) solutions to&nbsp; irritating string 
@@ -220,7 +195,7 @@ string y = to_string(U&quot;50&quot;);     // OK
 std::cout &lt;&lt; t;                  // OK</pre>
     </blockquote>
   </blockquote>
-  <h3>Explicit UTF-8 encoded types <code>char8_t</code> and <code>u8string</code></h3>
+  <h3><a name="comp-UTF-8">Explicit UTF-8</a> encoded types <code>char8_t</code> and <code>u8string</code></h3>
   <p>Specifies a character type and a string type that are unambiguously UTF-8 
   encoded.</p>
   <blockquote>
@@ -252,7 +227,7 @@ on a one-to-one relationship between character value types and their encodings.<
 
   </blockquote>
 
-<h2>Design</h2>
+<h2><a name="Design">Design</a></h2>
 
 <p>The <code>copy_string</code> algorithm was starting point for the design. It was 
 arrived at by analyzing numerous real-world string conversion problems 
@@ -283,6 +258,41 @@ Several users have argued that instead of work-arounds, the C++ standard should
 require UTF-8 encoding for both C-style <code>char</code> strings and <code>
 std::string</code>. This proposal assumes that is too big a leap forward at this 
 time.</p>
+
+<h2><a name="Existing-interop">Existing</a> practice with string interoperability</h2>
+
+  <p>Boost Filesystem Version 3&#39;s class <code>path</code> solves some of the string 
+  interoperability problems, albeit in limited context. A function that is 
+  declared like this:</p>
+  <blockquote>
+    <pre>void f(const path&amp;);</pre>
+</blockquote>
+<p>Can be called like this:</p>
+<blockquote>
+  <pre>f(&quot;Meow&quot;);
+f(L&quot;Meow&quot;);
+f(u8&quot;Meow&quot;);
+f(u&quot;Meow&quot;);
+f(U&quot;Meow&quot;);
+// ... many additional variations such as basic_strings and iterators</pre>
+</blockquote>
+<p>This string interoperability support has been a success. It does, however, 
+raise the question of why <code>std::basic_string</code> isn't providing the 
+interoperability support. Users are misusing paths as general string containers 
+because they provide interoperability. The string interoperability cat is out of the bag. 
+The toothpaste is out of the tube.</p>
+<p>See Boost.Filesystem V3 class path for 
+an example of how such interoperability might be achieved.</p>
+<p>Experience with Boost.Filesystem V3 class path has demonstrated that string 
+interoperability brings a considerable simplification and improvement to 
+internationalized user code, but that having to provide interoperability without 
+the resolution of the issues presented here is a band-aid.</p>
+  <h2><a name="Existing-iterator">Existing</a> practice with conversion iterators</h2>
+
+<p>Boost Regex for many years has included a set of Unicode conversion 
+iterators as an implementation detail. Although these do not provide composition, they do demonstrate the 
+technique of using encoding conversion iterators to avoid creation of temporary 
+strings.</p>
 
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 
@@ -315,57 +325,56 @@ interoperability:</p>
   programming with Unicode character types and encodings.</li>
 </ul>
 
-<h2>Existing practice with string interoperability</h2>
+<h2><a name="TODO">TODO</a> List</h2>
 
-  <p>Boost Filesystem Version 3&#39;s class <code>path</code> solves some of the string 
-  interoperability problems, albeit in limited context. A function that is 
-  declared like this:</p>
-  <blockquote>
-    <pre>void f(const path&amp;);</pre>
-</blockquote>
-<p>Can be called like this:</p>
-<blockquote>
-  <pre>f(&quot;Meow&quot;);
-f(L&quot;Meow&quot;);
-f(u8&quot;Meow&quot;);
-f(u&quot;Meow&quot;);
-f(U&quot;Meow&quot;);
-// ... many additional variations such as basic_strings and iterators</pre>
-</blockquote>
-<p>This string interoperability support has been a success. It does, however, 
-raise the question of why <code>std::basic_string</code> isn't providing the 
-interoperability support. Users are misusing paths as general string containers 
-because they provide interoperability. The string interoperability cat is out of the bag. 
-The toothpaste is out of the tube.</p>
-<p>See Boost.Filesystem V3 class path for 
-an example of how such interoperability might be achieved.</p>
-<p>Experience with Boost.Filesystem V3 class path has demonstrated that string 
-interoperability brings a considerable simplification and improvement to 
-internationalized user code, but that having to provide interoperability without 
-the resolution of the issues presented here is a band-aid.</p>
-  <h3>Existing practice with conversion iterators</h3>
+  <div align="center">
+    <center>
+    <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="80%" bgcolor="#EEFFEE">
+      <tr>
+        <td width="100%">
+        <p align="center"><b>To Do</b></p>
+        <ul>
+          <li>
+          <p align="left">Specify functions in terms of copy_string() algorithm.</li>
+          <li>
+          <p align="left">Add error handling argument where appropriate.</li>
+          <li>
+          <p align="left">Add three pointer case signatures for basic_ostream&lt;wchar_t&gt;&amp;
+          </li>
+          <li>
+          <p align="left">Add stream extractors.</li>
+          <li>
+          <p align="left">Add to_*() make_string aliases, after making sure they 
+          are tested and work.</li>
+          <li>
+          <p align="left">Add usage examples to Proposed Wording.</li>
+          <li>
+          <p align="left">Add example of how would apply to Filesystem class 
+          path.</li>
+        </ul>
+        </td>
+      </tr>
+    </table>
+    </center>
+  </div>
 
-<p>Boost Regex for many years has included a set of Unicode conversion 
-iterators as an implementation detail. Although these do not provide composition, they do demonstrate the 
-technique of using encoding conversion iterators to avoid creation of temporary 
-strings.</p>
-
-  <h1>Proposed Wording</h1>
+  <h1>Proposed <a name="Wording">Wording</a></h1>
 
   <p><i><span style="background-color: #FFFF99">Italic text highlighted in 
   yellow is commentary and not part of the proposal.</span></i></p>
-  <h1>String interoperation&nbsp;&nbsp;&nbsp; [str-x]</h1>
+  <h1>String interoperation&nbsp;&nbsp;&nbsp; [<a name="str-x">str-x</a>]</h1>
   <p>This library provides facilities that allow interoperation between strings of differing 
   types and encodings, and ease use of strings with UTF-8 encoding. The following encodings are supported:</p>
   <ul>
-    <li>The current native narrow character and wide character encodings.</li>
+    <li>Native narrow character and wide character encodings.</li>
     <li>Unicode UTF-8, UTF-16, and UTF-32 encodings.</li>
     <li>Implementation-defined additional encodings.</li>
     <li>User-defined additional encodings.</li>
   </ul>
   <p>The whole of the ISO C++ Standard Library 
   introduction [lib.library] is included by reference.</p>
-  <h2>Header &lt;string_interop.hpp&gt; synopsis&nbsp;&nbsp;&nbsp; [str-x.synopsis]</h2>
+  <h2>Header &lt;string_interop.hpp&gt; synopsis&nbsp;&nbsp;&nbsp; [<a name="str-x.synopsis">str-x.synopsis</a>]</h2>
+  <div dir="ltr">
   <pre>namespace std {
 
   template &lt;&gt; struct char_traits&lt;unsigned char&gt;;
@@ -402,7 +411,7 @@ namespace tbd {  // tbd is to be decided
   OutputIterator copy_string(InputIterator first, InputIterator last,
     OutputIterator result);
 
-  //  string conversion functions [str-x.cvt]
+  //  make_string function templates [str-x.make_string]
   template &lt;class ToCodec,
             class FromCodec = default_codec,
             class ToString = std::basic_string&lt;typename ToCodec::value_type&gt;,
@@ -428,6 +437,21 @@ namespace tbd {  // tbd is to be decided
             class InputIterator2&gt;
   ToString make_string(InputIterator begin, InputIterator2 end);
 
+  //  to_<i>string</i> function templates [str-x.to_string]
+  template &lt;class FromCodec = default_codec,
+    class ToString = std::basic_string&lt;char&gt;, class FromString&gt;
+      ToString to_string(const FromString&amp; s);
+  template &lt;class FromCodec = default_codec,
+    class ToString = std::basic_string&lt;char&gt;, class InputIterator&gt;
+      ToString to_string(InputIterator begin);
+  template &lt;class FromCodec = default_codec,
+    class ToString = std::basic_string&lt;char&gt;, class InputIterator&gt;
+      ToString to_string(InputIterator begin, std::size_t sz);
+  template &lt;class FromCodec = default_codec,
+    class ToString = std::basic_string&lt;char&gt;, class InputIterator&gt;
+      ToString to_string(InputIterator begin, InputIterator end);
+  <i><b>Repeat pattern for to_wstring, to_u8string, to_u16string, to_u32string</b></i>
+
   //  UTF-8 string support [str-x.utf8]
   inline const char8_t* u8(const char* s) noexcept;
   inline const char8_t* u8(const string&amp; s) noexcept;
@@ -444,7 +468,8 @@ namespace tbd {  // tbd is to be decided
   basic_ostream&lt;char&gt;&amp; operator&lt;&lt;(basic_ostream&lt;char&gt;&amp; os, const char32_t* p);
   
 }  // namespace std</pre>
-  <h2>Codecs&nbsp;&nbsp;&nbsp; [str-x.codec]</h2>
+  </div>
+  <h2>Codecs&nbsp;&nbsp;&nbsp; [<a name="str-x.codec">str-x.codec</a>]</h2>
   <p>Codecs are classes that package one typedef and three class templates. They 
   contain no data or function members and never need to be instantiated. Codec 
   classes may be predefined or user defined. All codec classes except <code>
@@ -504,7 +529,7 @@ public:
   };
 };
 </pre>
-  <h3>Requirements on codec classes&nbsp;&nbsp;&nbsp; [str-x.codec.req]</h3>
+  <h3>Requirements on codec classes&nbsp;&nbsp;&nbsp; [<a name="str-x.codec.req">str-x.codec.req</a>]</h3>
   <p>Codecs are required to contain the following:</p>
   <pre>  typedef <b><i>implementation-defined</i></b> value_type;
 
@@ -530,7 +555,7 @@ public:
     to_iterator();
     to_iterator(InputIterator begin);
   };</pre>
-  <h4>end-of-sequence iterator requirements&nbsp;&nbsp;&nbsp; [str-x.codec.req.eos]</h4>
+  <h4>end-of-sequence iterator requirements&nbsp;&nbsp;&nbsp; [<a name="str-x.codec.req.eos">str-x.codec.req.eos</a>]</h4>
   <p>An <i>end-of-sequence</i> iterator becomes equal to the 
   end-of-sequence value upon reaching the end of the sequence being iterated 
   over. An end-of-sequence iterator constructor with no arguments constructs the 
@@ -546,21 +571,21 @@ public:
   the end-of-sequence value is not equal to an iterator that does not have the 
   end-of-sequence value. Two iterators that do not have the end-of-iterator 
   value are equal iff they point to the same element of the sequence.</p>
-  <h4><code>from_iterator</code> requirements&nbsp;&nbsp;&nbsp; [str-x.codec.req.from]</h4>
+  <h4><code>from_iterator</code> requirements&nbsp;&nbsp;&nbsp; [<a name="str-x.codec.req.from">str-x.codec.req.from</a>]</h4>
   <p>The class template <code>from_iterator</code> is an input 
   iterator that is an adaptation of a <code>InputIterator</code> template 
   parameter whose <code>value_type</code> is the same as the parent codec class
   <code>value_type</code>.&nbsp; It has a&nbsp; <code>value_type</code> of <code>
   char32_t</code> and meets the inpuyt iterator requirements of the C++ 
   standard and the end-of-sequence iterator requirements ([str-x.codec.req.eos]).</p>
-  <h4><code>to_iterator</code> requirements&nbsp;&nbsp;&nbsp; [str-x.codec.req.to]</h4>
+  <h4><code>to_iterator</code> requirements&nbsp;&nbsp;&nbsp; [<a name="str-x.codec.req.to">str-x.codec.req.to</a>]</h4>
   <p>The class template <code>to_iterator</code> is a input iterator that is 
   an adaptation of a <code>InputIterator</code> template parameter whose <code>
   value_type</code> is <code>char32_t</code>.&nbsp; It has a&nbsp; <code>
   value_type</code> that is the same as the parent codec class <code>value_type</code>.&nbsp; 
   It meets the input iterator requirements of the C++ standard and the 
   end-of-sequence iterator requirements ([str-x.codec.req.eos]).</p>
-  <h4>Constructor requirements&nbsp;&nbsp;&nbsp; [str-x.codec.req.ctors]</h4>
+  <h4>Constructor requirements&nbsp;&nbsp;&nbsp; [<a name="str-x.codec.req.ctors">str-x.codec.req.ctors</a>]</h4>
   <p><code>from_iterator();</code></p>
   <blockquote>
     <p><i>Effects: </i>Constructs an iterator with the end-of-sequence 
@@ -599,7 +624,7 @@ from_iterator(InputIterator begin, </code>InputIterator2<code> end);</code></pre
     begins at <code>begin</code> and ends when the end-of-sequence iterator 
     value is reached.</p>
   </blockquote>
-  <h3>select_codec&nbsp;&nbsp; [str-x.codec.select]</h3>
+  <h3>select_codec&nbsp;&nbsp; [<a name="str-x.codec.select">str-x.codec.select</a>]</h3>
   <p>
   <span style="text-decoration: blink; font-style: italic; background-color: #FFFF99">
   To be supplied.</span></p>
@@ -622,7 +647,7 @@ from_iterator(InputIterator begin, </code>InputIterator2<code> end);</code></pre
   for <code>char</code> and <code>unsigned char</code> are the same (C++ 
   standard: [basic.types]). This allows conversion by compile-time casts with no 
   runtime cost. </p>
-  <h2>Class template <code>conversion_iterator</code>&nbsp;&nbsp;&nbsp; [str-x.cvt-iter]</h2>
+  <h2>Class template <code>conversion_iterator</code>&nbsp;&nbsp;&nbsp; [<a name="str-x.cvt-iter">str-x.cvt-iter</a>]</h2>
   <p>Class template <code>conversion_iterator</code> composes a input iterator from a 
   codec t<code>o_iterator</code>, a codec <code>from_iterator</code>, and a 
   input iterator. It adapts the input iterator to behave as an iterator to
@@ -630,7 +655,7 @@ from_iterator(InputIterator begin, </code>InputIterator2<code> end);</code></pre
   is required to be the same as <code>FromCodec::value_type</code>.&nbsp; <code>
   conversion_iterator</code> meets the standard library input iterator 
   requirements and the end-of-sequence iterator requirements ([str-x.codec.req.eos]).</p>
-  <h3>Synopsis&nbsp;&nbsp;&nbsp; [str-x.cvt-iter.synop]</h3>
+  <h3>Synopsis&nbsp;&nbsp;&nbsp; [<a name="str-x.cvt-iter.synop">str-x.cvt-iter.synop</a>]</h3>
   <pre>template &lt;class ToCodec, class FromCodec, class InputIterator&gt;
   class conversion_iterator
     : public ToCodec::template to_iterator&lt;
@@ -652,7 +677,7 @@ public:
   // for input iterators [input.iterators]
   ...
 </i>};</pre>
-  <h3>Constructors&nbsp;&nbsp;&nbsp; [str-x.cvt-iter.ctors]</h3>
+  <h3>Constructors&nbsp;&nbsp;&nbsp; [<a name="str-x.cvt-iter.ctors">str-x.cvt-iter.ctors</a>]</h3>
   <p><code>conversion_iterator();</code></p>
   <blockquote>
     <p><i>Effects: </i>Constructs an iterator with the end-of-sequence 
@@ -697,8 +722,8 @@ iter_type;</pre>
       iter_type(), result)</code>.</p>
     </blockquote>
   </blockquote>
-  <h2>String conversion  functions&nbsp;&nbsp;&nbsp; [str-x.cvt]</h2>
-  <p>The string conversion functions create a string from a source sequence of 
+  <h2><code>make_string</code> function templates&nbsp;&nbsp;&nbsp; [<a name="str-x.make_string">str-x.make_string</a>]</h2>
+  <p>The <code>make_string</code> functions create a string from a source sequence of 
   characters. The conversion of the type and encoding of the characters in the 
   source sequence of characters to the type and encoding of characters in the 
   created string is performed by <code>conversion_iterator&lt;ToCodec, typename 
@@ -764,6 +789,29 @@ ToString make_string(InputIterator begin, InputIterator2 end);</pre>
   sequence [<code>begin, end</code>).</p>
   
   </blockquote>
+  <h2 dir="ltr"><code>to_</code><i><code>string</code></i> function templates&nbsp;&nbsp;&nbsp; [<a name="str-x.to_string">str-x.to_string</a>]</h2>
+  
+  <pre dir="ltr">template &lt;class FromCodec = default_codec,
+&nbsp; class ToString = std::basic_string&lt;char&gt;, class FromString&gt;
+&nbsp;&nbsp;&nbsp; ToString to_string(const FromString&amp; s);
+template &lt;class FromCodec = default_codec,
+&nbsp; class ToString = std::basic_string&lt;char&gt;, class InputIterator&gt;
+&nbsp;&nbsp;&nbsp; ToString to_string(InputIterator begin);
+template &lt;class FromCodec = default_codec,
+&nbsp; class ToString = std::basic_string&lt;char&gt;, class InputIterator&gt;
+&nbsp;&nbsp;&nbsp; ToString to_string(InputIterator begin, std::size_t sz);
+template &lt;class FromCodec = default_codec,
+&nbsp; class ToString = std::basic_string&lt;char&gt;, class InputIterator&gt;
+&nbsp;&nbsp;&nbsp; ToString to_string(InputIterator begin, InputIterator end);
+<i><b>Repeat pattern for to_wstring, to_u8string, to_u16string, to_u32string</b></i></pre>
+  <blockquote>
+    <p><i>Returns:</i> <code>make_string&lt;<i><b>codec</b></i>, FromCodec, 
+    ToString&gt;(<i><b>arguments</b></i>)</code>, where <code><i><b>codec</b></i></code> 
+    is <code>narrow</code>, <code>wide</code>, <code>utf8</code>, <code>utf16</code>, 
+    and <code>utf32</code>, and <code><i><b>arguments</b></i></code> is <code>s</code>,
+    <code>begin</code>, <code>begin,sz</code>, and <code>begin,end</code>.<br>
+    &nbsp;</p>
+  </blockquote>
   <h2 dir="ltr">UTF-8 string support&nbsp;&nbsp;&nbsp; [<a name="str-x.utf8">str-x.utf8</a>]</h2>
   
   <p dir="ltr">These functions provide copy-less type conversion for use with 
@@ -793,7 +841,7 @@ ToString make_string(InputIterator begin, InputIterator2 end);</pre>
     <p dir="ltr"><i>Returns: </i><code>static_cast&lt;const char*&gt;(static_cast&lt;const 
     void*&gt;(s.c_str()))</code>.</p>
   </blockquote>
-  <h2 dir="ltr">Stream inserters&nbsp;&nbsp;&nbsp; [str-x.ins]</h2>
+  <h2 dir="ltr">Stream inserters&nbsp;&nbsp;&nbsp; [<a name="str-x.ins">str-x.ins</a>]</h2>
   
   <p dir="ltr">The stream inserter functions perform stream insertion of an 
   insertion character sequence converted from a source character sequence. The 
@@ -837,7 +885,7 @@ basic_ostream&lt;char&gt;&amp; operator&lt;&lt;(basic_ostream&lt;char&gt;&amp; o
   
   </blockquote>
   
-  <h2 dir="ltr">Stream extractors&nbsp;&nbsp;&nbsp; [str-x.ext]</h2>
+  <h2 dir="ltr">Stream extractors&nbsp;&nbsp;&nbsp; [<a name="str-x.ext">str-x.ext</a>]</h2>
   
   <p dir="ltr"><i><span style="background-color: #FFFF99">To be supplied.</span></i></p>
   
