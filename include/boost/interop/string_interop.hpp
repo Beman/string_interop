@@ -59,6 +59,7 @@
 #include <boost/type_traits/decay.hpp>
 #include <stdexcept>
 #include <sstream>
+#include <iterator>
 #include <algorithm>
 #include <limits.h> // CHAR_BIT
 

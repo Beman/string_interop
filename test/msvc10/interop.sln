@@ -36,6 +36,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "make_test", "make_test\make
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop_dll", "interop_dll\interop_dll.vcxproj", "{1F72F455-D21C-4D43-BCE6-B3DE0EA34586}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "operators_test", "operators_test\operators_test.vcxproj", "{ADF4DCEF-86EA-45FD-B34B-48C941296EBC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586} = {1F72F455-D21C-4D43-BCE6-B3DE0EA34586}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -80,6 +85,10 @@ Global
 		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586}.Debug|Win32.Build.0 = Debug|Win32
 		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586}.Release|Win32.ActiveCfg = Release|Win32
 		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586}.Release|Win32.Build.0 = Release|Win32
+		{ADF4DCEF-86EA-45FD-B34B-48C941296EBC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{ADF4DCEF-86EA-45FD-B34B-48C941296EBC}.Debug|Win32.Build.0 = Debug|Win32
+		{ADF4DCEF-86EA-45FD-B34B-48C941296EBC}.Release|Win32.ActiveCfg = Release|Win32
+		{ADF4DCEF-86EA-45FD-B34B-48C941296EBC}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
