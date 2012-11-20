@@ -28,12 +28,12 @@ del   { background-color:#FFA0A0 }
   <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="579">
     <tr>
       <td width="153" align="left" valign="top">Document number:</td>
-      <td width="426"><span style="background-color: #FFFF99">D3398=12-0088</span></td>
+      <td width="426"><span style="background-color: #FFFF99">Dxxxx=13-xxxx</span></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-09-19<!--webbot bot="Timestamp" endspan i-checksum="12569" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-11-20<!--webbot bot="Timestamp" endspan i-checksum="12072" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -46,8 +46,41 @@ del   { background-color:#FFA0A0 }
   </table>
   
 
+<h2><span style="background-color: #FFFF99">TODO</span></h2>
+
+  <ul>
+    <li>&gt; One of the objections, I think, was based on a misconception. They 
+    were<br>
+    &gt; concerned about the potential performance implications of a<br>
+    &gt; string-conversion utility that was based on iterators. My understanding is<br>
+    &gt; that even though a codec is specified in terms of conversion iterators, a<br>
+    &gt; library that implements whole-string conversion routines would almost<br>
+    &gt; certainly want to specialize it for important cases (e.g. all 6 
+    conversions<br>
+    &gt; between utf-8, utf-16, and utf-32) and that it would be much faster than 
+    the<br>
+    &gt; naive character-at-a-time version. Perhaps a non-normative note, or an<br>
+    &gt; example of such a specialization, would help lay such fears to rest.</li>
+    <li>&gt; We need bidirectional iteration on the three unicode encodings (utf-8,<br>
+    &gt; utf-16, and utf-32).</li>
+    <li>&gt; What error handling for string conversions might look like:<br>
+    &gt; There are wo cases: something malformed (for utf16 the only such cases is 
+    an<br>
+    &gt; unpaired surrogate), or something we can&#39;t translate. We might want<br>
+    &gt; different behavior for those two cases. Sometimes people want different<br>
+    &gt; behavior for utf8 and utf16. For utf8 some people return surrogates even 
+    if<br>
+    &gt; that&#39;s not strictly correct. Possible behaviors on error:<br>
+    &gt;<br>
+    &gt; Throw an exception<br>
+    &gt; Substitute a character, typically FFFD.<br>
+    &gt; Invoke a callback, which supplies whatever substitute text is desired.</li>
+  </ul>
+  
+
 <h1>String Interoperation Library<br>
-<font size="5">Adapting Standard Library Strings and I/O to a Unicode World</font></h1>
+<font size="5">Adapting Standard Library Strings and I/O to a Unicode World 
+(Revision 1)</font></h1>
 
 <p><a name="Introduction"></a>This paper proposes library components to ease string 
 interoperability problems for Unicode and other string 
