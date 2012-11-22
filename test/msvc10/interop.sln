@@ -41,6 +41,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "operators_test", "operators
 		{1F72F455-D21C-4D43-BCE6-B3DE0EA34586} = {1F72F455-D21C-4D43-BCE6-B3DE0EA34586}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ntcts_iterator_test", "ntcts_iterator_test\ntcts_iterator_test.vcxproj", "{11192DF0-B696-433D-942E-B5464B93CCC5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -89,6 +91,10 @@ Global
 		{ADF4DCEF-86EA-45FD-B34B-48C941296EBC}.Debug|Win32.Build.0 = Debug|Win32
 		{ADF4DCEF-86EA-45FD-B34B-48C941296EBC}.Release|Win32.ActiveCfg = Release|Win32
 		{ADF4DCEF-86EA-45FD-B34B-48C941296EBC}.Release|Win32.Build.0 = Release|Win32
+		{11192DF0-B696-433D-942E-B5464B93CCC5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{11192DF0-B696-433D-942E-B5464B93CCC5}.Debug|Win32.Build.0 = Debug|Win32
+		{11192DF0-B696-433D-942E-B5464B93CCC5}.Release|Win32.ActiveCfg = Release|Win32
+		{11192DF0-B696-433D-942E-B5464B93CCC5}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -51,7 +51,6 @@
 #include <boost/interop/cxx11_char_types.hpp>
 #include <boost/interop/detail/is_iterator.hpp>
 //#include <boost/cstdint.hpp>
-#include <boost/assert.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/utility/enable_if.hpp>
