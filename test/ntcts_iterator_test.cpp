@@ -26,13 +26,28 @@ int cpp_main(int, char*[])
   char_iterator i1 = char_iterator();
   char_iterator i2("");
   BOOST_TEST(i1 == i2);
-  char_iterator i3("z");
-  BOOST_TEST(i1 != i3);
+
+  const char* p3 = "z";
+  char_iterator i3(p3);
+  BOOST_TEST(i3 != i1);
+  BOOST_TEST_EQ(*i3, 'z');
   ++i3;
   BOOST_TEST(i1 == i3);
 
-  //std::string s(char_iterator("foo bar"), char_iterator());
-  //BOOST_TEST_EQ(s.size(), 7U);
-  //BOOST_TEST_EQ(s, std::string("foo bar"));
+  const char* p4 = "ab";
+  char_iterator i4(p4);
+  BOOST_TEST(i4 != i1);
+  BOOST_TEST_EQ(*i4, 'a');
+  ++i4;
+  BOOST_TEST(i4 != i1);
+  BOOST_TEST_EQ(*i4, 'b');
+  ++i4;
+  BOOST_TEST(i1 == i4);
+
+  const char* p5 = "foo bar";
+  std::string s5;
+  s5.assign(char_iterator(p5), char_iterator());
+  BOOST_TEST_EQ(s5.size(), 7U);
+  BOOST_TEST_EQ(s5, std::string("foo bar"));
   return ::boost::report_errors();
 }
