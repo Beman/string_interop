@@ -38,6 +38,7 @@ int cpp_main(int, char*[])
   char_iterator i4(p4);
   BOOST_TEST(i4 != i1);
   BOOST_TEST_EQ(*i4, 'a');
+  //*i4 = 'x';  // error: left operand must be l-value
   ++i4;
   BOOST_TEST(i4 != i1);
   BOOST_TEST_EQ(*i4, 'b');
@@ -49,5 +50,12 @@ int cpp_main(int, char*[])
   s5.assign(char_iterator(p5), char_iterator());
   BOOST_TEST_EQ(s5.size(), 7U);
   BOOST_TEST_EQ(s5, std::string("foo bar"));
+
+  char a[] = {'a', 'b', '\0'};
+  ntcts_iterator<char> i6(a);
+  BOOST_TEST_EQ(*i6, 'a');
+  *i6 = 'z';
+  BOOST_TEST_EQ(*i6, 'z');
+
   return ::boost::report_errors();
 }

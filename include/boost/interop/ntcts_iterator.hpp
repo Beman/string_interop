@@ -21,33 +21,39 @@ namespace boost
 namespace interop
 {
 
-  //  TODO:
+  //  FAQ
   //
-  //  * test non-const (char*) source
-
+  //  Q: Why isn't ntcts_iterator a bidirectional iterator?
+  //  A: Because it isn't possible to meet the [bidrectional.iterators]
+  //     requirement for --r in table 110.
   //  Q: Why isn't ntcts_iterator a random access iterator?
-  //  A: Because it isn't possible to compute the distance between two ntcts_iterators
-  //     if one of them is the end iterator, and that violates [random.access.iterators]
-  //     requirement for b - a in table 111.
+  //  A: Because it isn't possible to meet the bidirectional requirement for
+  //     random access iterators and it isn't possible to compute the distance between
+  //     two ntcts_iterators if one of them is the end iterator,  and that violates
+  //     [random.access.iterators] requirement for b - a in table 111.
 
   template <class charT>
   class ntcts_iterator
     : public boost::iterator_facade<ntcts_iterator<charT>,
-        charT, std::bidirectional_iterator_tag, const charT> 
+        charT, std::forward_iterator_tag> 
   {
-    const charT* m_p;  // 0 for the end iterator
   public:
 
     ntcts_iterator() BOOST_NOEXCEPT : m_p(0) {}  // construct end iterator
 
-    ntcts_iterator(const char* begin) : m_p(begin)
+    ntcts_iterator(charT* begin) : m_p(begin)
     {
       BOOST_ASSERT_MSG(begin, "attempt to construct ntcts_iterator with null pointer"); 
       if (*m_p == charT())
         m_p = 0;
     }
+  
+  private:
+    friend class boost::iterator_core_access;
 
-    charT dereference() const BOOST_NOEXCEPT
+    charT* m_p;  // 0 for the end iterator
+
+    reference dereference() const BOOST_NOEXCEPT
     {
       BOOST_ASSERT_MSG(m_p, "attempt to dereference end ntcts_iterator"); 
       return *m_p;
@@ -65,16 +71,10 @@ namespace interop
         m_p = 0;
     }
 
-    void decrement() BOOST_NOEXCEPT
-    {
-      BOOST_ASSERT_MSG(m_p, "attempt to decrement end ntcts_iterator"); 
-        --m_p;
-    }
-
   };
 
-  typedef ntcts_iterator<char> char_iterator;
-  typedef ntcts_iterator<wchar_t> wchar_iterator;
+  typedef ntcts_iterator<const char> char_iterator;
+  typedef ntcts_iterator<const wchar_t> wchar_iterator;
 
 }  // namespace interop
 }  // namespace boost
