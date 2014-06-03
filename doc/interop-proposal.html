@@ -33,7 +33,7 @@ del   { background-color:#FFA0A0 }
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-12-23<!--webbot bot="Timestamp" endspan i-checksum="12142" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2014-06-03<!--webbot bot="Timestamp" endspan i-checksum="12380" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -437,7 +437,15 @@ interoperability:</p>
         <p align="center"><b>To Do</b></p>
         <ul>
           <li>
-          <p align="left">Add error handling argument where appropriate.</li>
+          <p align="left">Replace multiple signatures with basic_string_view. 
+          MAJOR SIMPLIFICATION</li>
+          <li>
+          <p align="left">Add error handling argument where appropriate. 
+          Consider (1) Using \0 as a default meaning throw exception, or (2) 
+          separate signature that takes the character/string. Do we really need 
+          the callback option? A Callback, however, could default to throw an 
+          exception, and a second provided callback could provide FFFD. A third 
+          could provide &#39;?&#39;, etc.</li>
           <li>
           <p align="left">Add three pointer case signatures for basic_ostream&lt;wchar_t&gt;&amp;
           </li>
