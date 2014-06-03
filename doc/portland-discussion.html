@@ -1,0 +1,180 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>N3398 discussion</title>
+
+<style type="text/css">
+body { font-family : sans-serif; max-width : 7.5in; }
+</style>
+
+</head>
+
+<body>
+
+<h2>Portland discussion of
+  <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3398" target="_top">
+  N3398</a> String Interoperation Library </h2>
+
+<p>Provides easy-to-use automatic, solutions to irritating string 
+interoperability problems, in the style of similar standard library 
+functionality (int/float/double) </p>
+<p>STL pointed out that you <em>can</em> stream a narrow string to <code>
+std::wcout</code>, but not a wide string to <code>std::cout</code> </p>
+<p>We can write these using locales and codecvt facets. Beman ran into problems 
+with them, because they work on strings, not on iterators. </p>
+<p>Beman came up with a generic programming design, and he's looking for 
+feedback on the design. He's very happy of the improvement in the interfaces 
+that he's come up with. </p>
+<p>Eric called this &quot;the elephant in the room&quot;, that locales don't deal with 
+unicode, nor iterators, etc. He feels that this should be part of a larger 
+intl8n/localization framework. </p>
+<p>Howard said that if he had a clean slate, he'd keep code conversions and 
+localization separate. </p>
+<p>Bill pointed out that the fundamental problem is that the encoding is not 
+part of the type, and that's one of the things that makes it hard. </p>
+<p>Bill also said that &quot;we're in the middle of a decade-long conversion&quot;, and 
+there's still a lot of software that uses (say) Big5, and we have to accommodate 
+them. </p>
+<p>Bill also said &quot;Given this mess, we should probably pick a couple winners and 
+back them&quot; (regarding character encodings) </p>
+<p>Beman notes that in his design, the user (or the vendor) could supply codecs 
+to support other encodings, but he thinks we should supply (native, utf8/16/32)
+</p>
+<p>Howard asked Bill &quot;is this a replacement for <code>wstrconvert</code>?&quot; Bill 
+and Beman both said &quot;No&quot;, this is a much more generic approach. </p>
+<p>Bill points out that we're trying to guess what people are going to want in 
+the future, and we should provide a minimum set. </p>
+<p>Beman said that internally, these conversion routines are just a typedef to a 
+converting iterator, and a call to <code>std::copy</code> </p>
+<h3>Afternoon </h3>
+<p>(more from Beman) </p>
+<p>Beman said that (referencing Bill) that there's a real need to match up types 
+and encodings. </p>
+<p>The suggested (not for inclusion in the standard) solution for this is to 
+call <code>basic_string<unsigned char></unsigned></code> as utf-8. </p>
+<p>Marshall suggested that uint8_t instead, but STL and Bill pointed out that 
+this might be the same as 'char' depending on the platform. </p>
+<p>Alisdair pointed out that, technically, you can't specialize <code>
+std::char_traits<unsigned_char></unsigned_char></code>, since unsigned char is 
+not a user-defined type. </p>
+<p>Beman explained there is a (compile-time) mapping between types and codecs.
+</p>
+<p>The key implementation point here is a conversion iterator. They are 
+templated on two codecs, and an iterator whose value_type is one of the 
+supported character type. </p>
+<p>Jeffrey relayed input from the ICU people at Google, who say that backwards 
+iteration is useful in some use cases. </p>
+<p>The &quot;lingua franca&quot; of all the codecs is UTF-32. Each codec converts to/from 
+a single encoding to UTF-32. </p>
+<p>Jeffrey pointed out that you do &gt; 1 character at once with a table-based 
+method, and get significantly better performance. </p>
+<p>Beman responded that implementations can specialize individual conversions.
+</p>
+<p>Eric opined that irregardless, these conversions are useful. </p>
+<p>Alisdair is concerned about the name &quot;from_iterator&quot;; Beman said he's not 
+wedded to any of those names. We decided not to go down that road at this time.
+</p>
+<p>Alisdair asked whether or not the single-param version of <code>
+conversion_iterator</code> should be explicit. </p>
+<p>Marshall asked if there were two utf-16 codecs, one for big-endian and one 
+for little-endian. Beman said that this was converting to utf-16 characters in 
+the native endianness. Jeffrey pointed out that you could write a conversion 
+iterator to change to different endianness if you wanted, and Beman agreed. </p>
+<p>Looking at the codec definition, there are two nested template classes. 
+Alisdair asked if Beman had considered using template aliases here. Beman said 
+NO, because he's not that experienced with C++11 yet; he might in the future.
+</p>
+<p>Alisdair, looking at the codec definition, asked about requirements on the 
+from_iterator and to_iterator. Beman pointed at the text, which describes the 
+requirements. </p>
+<p>Jeffrey suggested that we need a paper naming the iterator concepts that
+<span class="twikiNewLink">
+<a href="http://wiki.edg.com/twiki/bin/edit/Wg21portland2012/InputIterators?topicparent=Wg21portland2012.LibraryWorkingGroup;nowysiwyg=1" rel="nofollow" title="InputIterators (this topic does not yet exist; you can create it)">
+InputIterators</a></span> require, since Beman uses that here. </p>
+<p>Eric asked why you can construct a from_iterator from two different iterator 
+types. Beman said that it was to disambiguate from (iter, size_t) constructor. 
+STL says that this is not the right fix, and gives std::vector as an example of 
+a better solution. </p>
+<p>Beman asked Howard &quot;why don't we have an is_iterator&quot; type trait? STL says 
+that it's hard; &quot;not an integral type&quot; (at least). </p>
+<p>Jeffrey relayed info from ICU people that there are some encodings (not 
+common) where they put the bytes in a different order than unicode. </p>
+<p>Beman said that these codecs are similar (in principle) to uchar.h, where a 
+codec can consume &gt; 1 characters before producing output. Marshall said that as 
+long as the storage needed for each conversion is bounded, then there shouldn't 
+be a problem. Jeffrey agreed. </p>
+<p>Eric pointed out that combining characters (u + combining umlaut, say) can 
+not necessarily be handled; what happens if you get a 'u' as the last character 
+in the output? Beman and Bill say that this behavior is already defined via 
+Unicode, and Beman referred to the error handling sections of his proposal. 
+Beman pointed out that the &quot;flush&quot; operation is called &quot;dereference&quot;, and that 
+made Eric happy. </p>
+<p>Beman opined that we really made a big mistake in C++11 in introducing UTF-8 
+literals w/o having a UTF-8 character type. </p>
+<p>Jeffrey said &quot;You've been very careful to make the default the system 
+encoding, and made it really easy to get UTF-8. Can we switch that? Make the 
+default UTF-8, and make it easy to get native encoding?&quot; Discussion ensued about 
+the relative popularity, and trend lines, w/o any resolution. </p>
+<p>Alisdair asked about deducible template arguments in copy_string, and Beman 
+said that there was an error in that code - template params are out of order.
+</p>
+<p>Marshall says (a) he likes it (b) he wants to see results from more systems 
+(c) and offered to help with that. </p>
+<p>Jeffrey says (relaying from his ICU folks) (a) likes the structures, (b) good 
+for string conversion, (c) think that the general mechanism is overkill, (d) 
+don't care much for support for system encoding, and there should be a solution 
+that discourages conversions. (i.e, live in Unicode). </p>
+<p>Beman pointed out that there is a null conversions. </p>
+<p>STL asks if you can leave the conversion method unspecified and decide on 
+either code-point at a time or whole-string. </p>
+<p>STL says that the barrier to Unicode is that it's hard to convert; and 
+anything that makes it easy is better. </p>
+<p>Jeffrey's people would like to see just string conversions, rather than a 
+general-purpose conversion facility. </p>
+<p>Alisdair says: Ideally, I would like to just deal with Unicode, and never 
+deal with anything else. But I can't just deal with Unicode, so I want this. </p>
+<p>Eric says: I want this too, but I'm concerned about some of the ICU concerns, 
+and he wonders if removing the extensibility from the proposal would simplify it 
+(and remove confusion for users). Beman asked what that would mean - would each 
+implementer have its' own interface for the codecs? </p>
+<p>Steven says that if it's string at a time, there's a concept of a locale or 
+code page, and there's usually an API to convert between strings / code-page.
+</p>
+<p>Beman says that people don't like to generate a lot of temporaries, and on 
+some systems, the number of temporaries can determine the performance of the 
+system. </p>
+<p>Alisdair really wants to specify the user-extensible mechanism here. This 
+will give users a disincentive to &quot;roll their own&quot;. Eric wants the interface 
+too, but he's just not 100% sure that this covers all of the cases. Jeffrey says 
+that he thinks that it does, given that it is ICU's fallback mechanism. </p>
+<p>Alisdair: Let's poll. </p>
+<p>Does the committee have an interest in delivering this interface (including 
+codecs) that we saw today. </p>
+<blockquote>
+  <table border="1">
+    <tr>
+      <th>SF</th>
+      <th>WF</th>
+      <th>WA</th>
+      <th>SA</th>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>4</td>
+      <td>0</td>
+      <td>2</td>
+    </tr>
+  </table>
+</blockquote>
+<p dir="ltr">SF = Strongly in favor<br>
+WF = Weakly in favor<br>
+WA = Weakly against<br>
+SA = Strongly against</p>
+
+</body>
+
+</html>
