@@ -1,4 +1,4 @@
-//  boost/interop/cxx11_char_types.hpp  ------------------------------------------------//
+//  boost cxx11_char_types.hpp  --------------------------------------------------------//
 
 //  Copyright Beman Dawes 2011
 
@@ -7,7 +7,7 @@
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
-//  The purpose of this header is to emulate the new C++11 char16_t and char32_t        //
+//  The purpose of this header is to emulate the C++11 char16_t and char32_t            //
 //  character and string types so that they can be used in both C++11 and C++03         //
 //  programs.                                                                           //
 //                                                                                      //
