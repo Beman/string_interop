@@ -14,21 +14,21 @@ using std::cout; using std::endl; using std::hex;
 #include <sstream>
 
 using namespace boost;
-using boost::char16;
-using boost::char32;
+using char16_t;
+using char32_t;
 
 namespace
 {
 
   char     pipsqueek[]  = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
   wchar_t  wpipsqueek[] = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
-  char16    u16pipsqueek[]   = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
-  char32    u32pipsqueek[]   = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
+  char16_t    u16pipsqueek[]   = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
+  char32_t    u32pipsqueek[]   = { 'P', 'i', 'p', 's', 'q', 'u', 'e', 'e', 'k', 0 };
 
   char     meow[]  = { 'M', 'e', 'o', 'w', 0 };
   wchar_t  wmeow[] = { 'M', 'e', 'o', 'w', 0 };
-  char16    u16meow[]   = { 'M', 'e', 'o', 'w', 0 };
-  char32    u32meow[]   = { 'M', 'e', 'o', 'w', 0 };
+  char16_t    u16meow[]   = { 'M', 'e', 'o', 'w', 0 };
+  char32_t    u32meow[]   = { 'M', 'e', 'o', 'w', 0 };
 
   template <class T>
   void test_inserter(T x)

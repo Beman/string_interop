@@ -21,8 +21,8 @@ using std::string;
 using std::wstring;
 using boost::u16string;
 using boost::u32string;
-using boost::char16;
-using boost::char32;
+using char16_t;
+using char32_t;
 using namespace boost::interop;
 
 namespace
@@ -32,8 +32,8 @@ namespace
   //  U+1F60E SMILING FACE WITH SUNGLASSES
 
   // build test strings character by character so they work with C++03 compilers
-  const char32 u32c[] = {0x1F60A, 0x1F60E, 0};
-  const char16 u16c[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
+  const char32_t u32c[] = {0x1F60A, 0x1F60E, 0};
+  const char16_t u16c[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
 
   const u32string u32s(u32c);
   const u16string u16s(u16c);

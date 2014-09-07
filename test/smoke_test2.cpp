@@ -19,8 +19,8 @@ using std::string;
 using std::wstring;
 using boost::u16string;
 using boost::u32string;
-using boost::char16;
-using boost::char32;
+using char16_t;
+using char32_t;
 using namespace boost::interop;
 
 namespace
@@ -30,8 +30,8 @@ namespace
   //  U+1F60E SMILING FACE WITH SUNGLASSES
 
   // build test strings character by character so they work with C++03 compilers
-  const char32 u32c[] = {0x1F60A, 0x1F60E, 0};
-  const char16 u16c[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
+  const char32_t u32c[] = {0x1F60A, 0x1F60E, 0};
+  const char16_t u16c[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
 
   const u32string u32s(u32c);
   const u16string u16s(u16c);
@@ -66,7 +66,7 @@ int cpp_main(int, char*[])
     test_from_iterator begin1end;
     BOOST_TEST(begin1 != begin1end);
 
-    typedef narrow::to_iterator<const char32*> test_to_iterator;
+    typedef narrow::to_iterator<const char32_t*> test_to_iterator;
     test_to_iterator begin2(u32c);
 
     typedef narrow::from_iterator<string::const_iterator> test_string_from_iterator;
@@ -97,7 +97,7 @@ int cpp_main(int, char*[])
     test_from_iterator begin1end;
     BOOST_TEST(begin1 != begin1end);
 
-    typedef wide::to_iterator<const char32*> test_to_iterator;
+    typedef wide::to_iterator<const char32_t*> test_to_iterator;
     test_to_iterator begin2(u32c);
 
     typedef wide::from_iterator<wstring::const_iterator> test_string_from_iterator;
@@ -128,7 +128,7 @@ int cpp_main(int, char*[])
     test_from_iterator begin1end;
     BOOST_TEST(begin1 != begin1end);
 
-    typedef utf8::to_iterator<const char32*> test_to_iterator;
+    typedef utf8::to_iterator<const char32_t*> test_to_iterator;
     test_to_iterator begin2(u32c);
 
     test_from_iterator begin3(chars.c_str(), chars.c_str());
@@ -159,10 +159,10 @@ int cpp_main(int, char*[])
   //  utf16
   {
     std::cout << "utf16..." << std::endl;
-    typedef utf16::from_iterator<const char16*> test_from_iterator;
+    typedef utf16::from_iterator<const char16_t*> test_from_iterator;
     test_from_iterator begin1(u16s.c_str());
 
-    typedef utf16::to_iterator<const char32*> test_to_iterator;
+    typedef utf16::to_iterator<const char32_t*> test_to_iterator;
     test_to_iterator begin2(u32c);
 
     typedef utf16::from_iterator<u16string::const_iterator> test_string_from_iterator;
@@ -172,10 +172,10 @@ int cpp_main(int, char*[])
                                      // if invalid assumptions made about default
                                      // constructed iterator
 
-    BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<char16>::type,
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<char16_t>::type,
       utf16>::value), "auto detected the wrong type");
 
-    typedef conversion_iterator<utf16, utf16, const char16*>
+    typedef conversion_iterator<utf16, utf16, const char16_t*>
       conversion_iterator_example;
     conversion_iterator_example cvn_iterator;
 
@@ -187,10 +187,10 @@ int cpp_main(int, char*[])
   //  utf32
   {
     std::cout << "utf32..." << std::endl;
-    typedef utf32::from_iterator<const char32*> test_from_iterator;
+    typedef utf32::from_iterator<const char32_t*> test_from_iterator;
     test_from_iterator begin1(u32s.c_str());
 
-    typedef utf32::to_iterator<const char32*> test_to_iterator;
+    typedef utf32::to_iterator<const char32_t*> test_to_iterator;
     test_to_iterator begin2(u32c);
 
     typedef utf32::from_iterator<u32string::const_iterator> test_string_from_iterator;
@@ -200,10 +200,10 @@ int cpp_main(int, char*[])
                                      // if invalid assumptions made about default
                                      // constructed iterator
 
-    BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<char32>::type,
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<char32_t>::type,
       utf32>::value), "auto detected the wrong type");
 
-    typedef conversion_iterator<utf32, utf32, const char32*>
+    typedef conversion_iterator<utf32, utf32, const char32_t*>
       conversion_iterator_example;
     conversion_iterator_example cvn_iterator;
 
