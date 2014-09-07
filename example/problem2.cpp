@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <string>
-#include <boost/interop/stream.hpp>
+#include <boost/string_interop/stream.hpp>
 
 int main()
 {

@@ -9,7 +9,7 @@
 
 #include <string>
 #include <iostream>
-#include <boost/interop/ntcts_iterator.hpp>
+#include <boost/string_interop/ntcts_iterator.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 

@@ -5,7 +5,7 @@
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/interop/detail/is_iterator.hpp>
+#include <boost/string_interop/detail/is_iterator.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 #include <boost/utility/enable_if.hpp>

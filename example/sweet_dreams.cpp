@@ -11,8 +11,8 @@ using std::cout;
 # include <string>
   using std::wstring;
 #else
-# include <boost/interop/string.hpp>
-# include <boost/interop/stream.hpp>
+# include <boost/string_interop/string.hpp>
+# include <boost/string_interop/stream.hpp>
   using boost::xop::wstring;
 #endif
 

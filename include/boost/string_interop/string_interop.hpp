@@ -45,11 +45,11 @@
 #if !defined(BOOST_STRING_INTEROP_HPP)
 #define BOOST_STRING_INTEROP_HPP
 
-#include <boost/interop/detail/config.hpp>
+#include <boost/string_interop/detail/config.hpp>
 #include <boost/assert.hpp>
 #include <stdexcept>
-#include <boost/interop/cxx11_char_types.hpp>
-#include <boost/interop/detail/is_iterator.hpp>
+#include <boost/string_interop/cxx11_char_types.hpp>
+#include <boost/string_interop/detail/is_iterator.hpp>
 //#include <boost/cstdint.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/static_assert.hpp>
@@ -209,7 +209,7 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
    ss << "Invalid UTF-32 code point U+" << std::showbase << std::hex << val
       << " encountered while trying to encode UTF-16 sequence";
    std::out_of_range e(ss.str());
-   BOOST_INTEROP_THROW(e);
+   BOOST_STRING_INTEROP_THROW(e);
 }
 #ifdef BOOST_MSVC
 # pragma warning(pop)
@@ -412,13 +412,13 @@ public:
         ss << "Misplaced UTF-16 surrogate U+" << std::showbase << std::hex << val
            << " encountered while trying to encode UTF-32 sequence";
         std::out_of_range e(ss.str());
-        BOOST_INTEROP_THROW(e);
+        BOOST_STRING_INTEROP_THROW(e);
      }
      static void invalid_sequence()
      {
         std::out_of_range e(
           "Invalid UTF-16 sequence encountered while trying to encode UTF-32 character");
-        BOOST_INTEROP_THROW(e);
+        BOOST_STRING_INTEROP_THROW(e);
      }
      void extract_current() const
      {
@@ -556,9 +556,9 @@ public:
 namespace detail
 {
   //  for this proof-of-concept implementation, use codepage 437 tables at end of header
-  BOOST_INTEROP_DECL extern const boost::char16  to_utf16[];  
-  BOOST_INTEROP_DECL extern const unsigned char to_char[];
-  BOOST_INTEROP_DECL extern const boost::uint8_t slice_index[];
+  BOOST_STRING_INTEROP_DECL extern const boost::char16  to_utf16[];  
+  BOOST_STRING_INTEROP_DECL extern const unsigned char to_char[];
+  BOOST_STRING_INTEROP_DECL extern const boost::uint8_t slice_index[];
 }
 
 class narrow
@@ -799,7 +799,7 @@ public:
      {
         std::out_of_range e(
           "Invalid UTF-8 sequence encountered while trying to encode UTF-32 character");
-        BOOST_INTEROP_THROW(e);
+        BOOST_STRING_INTEROP_THROW(e);
      }
      void extract_current()const
      {

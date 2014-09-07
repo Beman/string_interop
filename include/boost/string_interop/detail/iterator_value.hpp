@@ -5,10 +5,10 @@
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
 
-#if !defined(BOOST_INTEROP_ITERATOR_VALUE_HPP)
-# define BOOST_INTEROP_ITERATOR_VALUE_HPP
+#if !defined(BOOST_STRING_INTEROP_ITERATOR_VALUE_HPP)
+# define BOOST_STRING_INTEROP_ITERATOR_VALUE_HPP
 
-#include <boost/interop/detail/is_iterator.hpp>
+#include <boost/string_interop/detail/is_iterator.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/mpl/logical.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -55,4 +55,4 @@ namespace boost
 } // namespace boost
 
 
-#endif  // BOOST_INTEROP_ITERATOR_VALUE_HPP
+#endif  // BOOST_STRING_INTEROP_ITERATOR_VALUE_HPP

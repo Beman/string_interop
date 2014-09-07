@@ -6,7 +6,7 @@
 //  See http://www.boost.org/LICENSE_1_0.txt
 
 #include <iostream>
-#include <boost/interop/string_interop.hpp>
+#include <boost/string_interop/string_interop.hpp>
 #include <cstdlib>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>

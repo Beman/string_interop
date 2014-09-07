@@ -7,7 +7,7 @@
 
 #include <boost/config/warning_disable.hpp>  // must precede other headers
 
-#include <boost/interop/string_interop.hpp>
+#include <boost/string_interop/string_interop.hpp>
 #include <cstring>  // for memcmp
 #include <boost/static_assert.hpp>
 #include <boost/detail/lightweight_test.hpp>

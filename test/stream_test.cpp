@@ -7,7 +7,7 @@
 
 #include <iostream>
 using std::cout; using std::endl; using std::hex;
-#include <boost/interop/stream.hpp>
+#include <boost/string_interop/stream.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 #include <string>

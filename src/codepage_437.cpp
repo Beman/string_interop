@@ -5,12 +5,12 @@
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
 
-// define BOOST_INTEROP_SOURCE so that <boost/interop/config.hpp> knows
+// define BOOST_STRING_INTEROP_SOURCE so that <boost/string_interop/config.hpp> knows
 // the library is being built (possibly exporting rather than importing code)
-#define BOOST_INTEROP_SOURCE 
+#define BOOST_STRING_INTEROP_SOURCE 
 
-#include <boost/interop/detail/config.hpp>
-#include <boost/interop/cxx11_char_types.hpp>
+#include <boost/string_interop/detail/config.hpp>
+#include <boost/string_interop/cxx11_char_types.hpp>
 #include <boost/static_assert.hpp>
 
 namespace boost
@@ -24,7 +24,7 @@ namespace detail
 
 /****************************** DO NOT EDIT BY HAND *************************************/
 
-BOOST_INTEROP_DECL extern const boost::char16  to_utf16[] =
+BOOST_STRING_INTEROP_DECL extern const boost::char16  to_utf16[] =
 {
 0x0,0x1,0x2,0x3,0x4,0x5,0x6,0x7,0x8,0x9,0xa,0xb,0xc,0xd,0xe,0xf,
 0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f,
@@ -46,7 +46,7 @@ BOOST_INTEROP_DECL extern const boost::char16  to_utf16[] =
 
 BOOST_STATIC_ASSERT(sizeof(to_utf16) == 2*256);
 
-BOOST_INTEROP_DECL extern const unsigned char to_char[] =
+BOOST_STRING_INTEROP_DECL extern const unsigned char to_char[] =
 {
 //  slice 0 - characters with no codepage representation
 '?','?','?','?','?','?','?','?','?','?','?','?','?','?','?','?',
@@ -162,7 +162,7 @@ BOOST_INTEROP_DECL extern const unsigned char to_char[] =
 
 BOOST_STATIC_ASSERT(sizeof(to_char) == 1408);
 
-BOOST_INTEROP_DECL extern const boost::uint8_t slice_index[] =
+BOOST_STRING_INTEROP_DECL extern const boost::uint8_t slice_index[] =
 {
 1,2,0,3,0,0,0,4,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

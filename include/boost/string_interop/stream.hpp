@@ -5,13 +5,13 @@
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
 
-#if !defined(BOOST_INTEROP_STREAM_HPP)
-# define BOOST_INTEROP_STREAM_HPP
+#if !defined(BOOST_STRING_INTEROP_STREAM_HPP)
+# define BOOST_STRING_INTEROP_STREAM_HPP
 
-#include <boost/interop/cxx11_char_types.hpp>
-#include <boost/interop/string_interop.hpp>
-#include <boost/interop/detail/is_iterator.hpp>
-#include <boost/interop/detail/iterator_value.hpp>
+#include <boost/string_interop/cxx11_char_types.hpp>
+#include <boost/string_interop/string_interop.hpp>
+#include <boost/string_interop/detail/is_iterator.hpp>
+#include <boost/string_interop/detail/iterator_value.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/mpl/logical.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -112,4 +112,4 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os, const boost::char32* p)
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 
-#endif  // BOOST_INTEROP_STREAM_HPP
+#endif  // BOOST_STRING_INTEROP_STREAM_HPP

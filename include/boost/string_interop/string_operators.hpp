@@ -15,7 +15,7 @@
 #ifndef BOOST_STRING_OPERATORS_HPP
 #define BOOST_STRING_OPERATORS_HPP
 
-#include <boost/interop/string_interop.hpp>
+#include <boost/string_interop/string_interop.hpp>
 #include <string>
 #include <iterator>
 #include <algorithm>
