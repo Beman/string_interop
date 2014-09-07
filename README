@@ -1,4 +1,10 @@
-String Interoperability Experiments 
+String Interoperability Experiments - Revision 1
+
+This library is intended to be suitable for inclusion in the C++ standard
+library or a standard library Technical Specification (TS).
+
+Revision 1 reflects comments received from the C++ committee's Library
+Working Group at the Portland meeting in the fall of 2012.
 
 Includes support for the new C++11 character and string types.
 
