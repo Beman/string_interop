@@ -1,4 +1,4 @@
-//  interop/smoke_test2.cpp  ----------------------------------------------------------//
+//  string_interop/smoke_test2.cpp  ----------------------------------------------------------//
 
 //  Copyright Beman Dawes 2012
 
@@ -17,11 +17,9 @@
 
 using std::string;
 using std::wstring;
-using boost::u16string;
-using boost::u32string;
-using char16_t;
-using char32_t;
-using namespace boost::interop;
+using std::u16string;
+using std::u32string;
+using namespace boost::string_interop;
 
 namespace
 {

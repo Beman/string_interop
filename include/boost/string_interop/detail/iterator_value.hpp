@@ -1,4 +1,4 @@
-//  boost/interop/detail/iterator_value.hpp  -------------------------------------------//
+//  boost/string_interop/detail/iterator_value.hpp  -------------------------------------------//
 
 //  Copyright Beman Dawes 2011
 

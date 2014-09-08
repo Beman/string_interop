@@ -1,4 +1,4 @@
-//  libs/interop/test/stream_test.cpp  -------------------------------------------------//
+//  libs/string_interop/test/stream_test.cpp  -------------------------------------------------//
 
 //  Copyright Beman Dawes 2011
 
@@ -14,8 +14,6 @@ using std::cout; using std::endl; using std::hex;
 #include <sstream>
 
 using namespace boost;
-using char16_t;
-using char32_t;
 
 namespace
 {
@@ -59,8 +57,8 @@ namespace
     cout << "    boost container overloads in namespace std...\n";
 
     test_inserter(std::wstring(wpipsqueek));
-    test_inserter(boost::u16string(u16pipsqueek));
-    test_inserter(boost::u32string(u32pipsqueek));
+    test_inserter(std::u16string(u16pipsqueek));
+    test_inserter(std::u32string(u32pipsqueek));
 
     cout << "    boost pointer overloads in namespace std...\n";
 

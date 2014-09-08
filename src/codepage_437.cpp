@@ -15,7 +15,7 @@
 
 namespace boost
 {
-namespace interop
+namespace string_interop
 {
 namespace detail
 {
@@ -203,6 +203,6 @@ BOOST_STATIC_ASSERT(sizeof(slice_index) == 512);
 
 }  // namesapce detail
 
-}  // namespace interop
+}  // namespace string_interop
 
 }  // namespace boost

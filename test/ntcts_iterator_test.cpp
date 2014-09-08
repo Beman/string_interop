@@ -15,7 +15,7 @@
 
 using std::cout;
 using std::endl;
-using namespace boost::interop;
+using namespace boost::string_interop;
 
 //--------------------------------------------------------------------------------------//
 //                                      cpp_main                                        //

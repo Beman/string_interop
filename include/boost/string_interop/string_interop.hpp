@@ -1,4 +1,4 @@
-//  boost/interop/string_interop.hpp  --------------------------------------------------//
+//  boost/string_interop/string_interop.hpp  --------------------------------------------------//
 
 //  Copyright Beman Dawes 2011, 2012
 //  Copyright (c) 2004 John Maddock
@@ -72,7 +72,7 @@
 
 namespace boost
 {
-namespace interop
+namespace string_interop
 {
 namespace detail
 {
@@ -622,7 +622,7 @@ public:
       BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
         "Attempt to dereference end iterator");
       unsigned char c = static_cast<unsigned char>(*m_begin);
-      return static_cast<char32_t>(interop::detail::to_utf16[c]);
+      return static_cast<char32_t>(string_interop::detail::to_utf16[c]);
     }
 
     bool equal(const from_iterator& that) const
@@ -677,10 +677,10 @@ public:
         return '?';
       //cout << "*** c is " << hex << c << '\n';
       //cout << "    to_slice[c >> 7] << 7 is "
-      //  << unsigned int(interop::detail::slice_index[c >> 7] << 7) << '\n';
-      return static_cast<char>(interop::detail::to_char
+      //  << unsigned int(string_interop::detail::slice_index[c >> 7] << 7) << '\n';
+      return static_cast<char>(string_interop::detail::to_char
         [
-          (interop::detail::slice_index[c >> 7] << 7) | (c & 0x7f)
+          (string_interop::detail::slice_index[c >> 7] << 7) | (c & 0x7f)
         ]);
     }
 
@@ -1359,7 +1359,7 @@ typename boost::enable_if<boost::is_iterator<InputIterator2>,
 ToString>::type to_utf32(InputIterator begin, InputIterator2 end)
   {return make_string<utf32, FromCodec, ToString>(begin, end);}
 
-}  // namespace interop
+}  // namespace string_interop
 }  // namespace boost
 
 //----------------------------------------------------------------------------//

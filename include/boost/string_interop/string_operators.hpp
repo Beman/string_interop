@@ -1,4 +1,4 @@
-//  boost/interop/string_operators.hpp  ------------------------------------------------//
+//  boost/string_interop/string_operators.hpp  ------------------------------------------------//
 
 //  Copyright Beman Dawes 2012
 
@@ -22,7 +22,7 @@
 
 namespace boost
 {
-namespace interop
+namespace string_interop
 {
 
 //--------------------------------------------------------------------------------------//
@@ -79,7 +79,7 @@ std::cout << "assign" << std::endl;
 //  return to;
 //}
 
-}  // namespace interop
+}  // namespace string_interop
 }  // namespace boost
 
 #endif  // BOOST_STRING_OPERATORS_HPP

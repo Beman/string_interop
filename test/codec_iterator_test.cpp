@@ -1,4 +1,4 @@
-//  libs/interop/test/iterator_adapter_unit_test.cpp  ----------------------------------//
+//  libs/string_interop/test/iterator_adapter_unit_test.cpp  ----------------------------------//
 
 //  Copyright Beman Dawes 2011
 
@@ -13,9 +13,7 @@
 
 using std::cout; using std::endl; using std::hex;
 
-using namespace boost::interop;
-using char16_t;
-using char32_t;
+using namespace boost::string_interop;
 
 namespace
 {
@@ -182,7 +180,7 @@ namespace
 
     //  utf-32 to utf-16
     int i = 0;
-    typedef conversion_iterator<boost::interop::utf16, boost::interop::utf32,
+    typedef conversion_iterator<boost::string_interop::utf16, boost::string_interop::utf32,
       const char32_t*> type_32_16;
     for (type_32_16 it(utf32s); it != type_32_16(); ++it, ++i)
         BOOST_TEST(*it == utf16s[i]);
@@ -190,7 +188,7 @@ namespace
 
     // utf-32 to utf-8
     i = 0;
-    typedef conversion_iterator<boost::interop::utf8, boost::interop::utf32,
+    typedef conversion_iterator<boost::string_interop::utf8, boost::string_interop::utf32,
       const char32_t*> type_32_8;
     for (type_32_8 it(utf32s); it != type_32_8(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf8s[i]);
@@ -198,7 +196,7 @@ namespace
 
     // utf-8 to utf-16, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
-    typedef conversion_iterator<boost::interop::utf16, boost::interop::utf8,
+    typedef conversion_iterator<boost::string_interop::utf16, boost::string_interop::utf8,
       const char*> type_8_16;
     for (type_8_16 it(utf8s); it != type_8_16(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf16s[i]);
@@ -206,7 +204,7 @@ namespace
 
     // utf-16 to utf-8, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
-    typedef conversion_iterator<boost::interop::utf8, boost::interop::utf16,
+    typedef conversion_iterator<boost::string_interop::utf8, boost::string_interop::utf16,
       const char16_t*> type_16_8;
     for (type_16_8 it(utf16s); it != type_16_8(); ++it, ++i)
         BOOST_TEST_EQ(*it, utf8s[i]);
@@ -215,7 +213,7 @@ namespace
 # if WCHAR_MAX == 0xffff
     // utf-8 to wide, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
-    typedef conversion_iterator<boost::interop::wide, boost::interop::utf8,
+    typedef conversion_iterator<boost::string_interop::wide, boost::string_interop::utf8,
       const char*> type_8_wide;
     for (type_8_wide it(utf8s); it != type_8_wide(); ++it, ++i)
         BOOST_TEST(*it == wides[i]);
@@ -223,7 +221,7 @@ namespace
 
     // wide to utf-8, demonstrating that utf-16 surrogate pairs are handled correctly
     i = 0;
-    typedef conversion_iterator<boost::interop::utf8, boost::interop::wide,
+    typedef conversion_iterator<boost::string_interop::utf8, boost::string_interop::wide,
       const wchar_t*> type_wide_8;
     for (type_wide_8 it(wides); it != type_wide_8(); ++it, ++i)
         BOOST_TEST(*it == utf8s[i]);

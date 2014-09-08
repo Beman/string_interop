@@ -1,4 +1,4 @@
-//  libs/interop/test/is_iterator_test.cpp  --------------------------------------------//
+//  libs/string_interop/test/is_iterator_test.cpp  --------------------------------------------//
 
 //  Copyright Beman Dawes 2011
 

@@ -1,4 +1,4 @@
-//  interop/convert_test.cpp  ----------------------------------------------------------//
+//  string_interop/convert_test.cpp  ----------------------------------------------------------//
 
 //  Copyright Beman Dawes 2012
 
@@ -17,7 +17,7 @@ using std::string;
 using std::wstring;
 using std::u16string;
 using std::u32string;
-using namespace boost::interop;
+using namespace boost::string_interop;
 
 namespace
 {

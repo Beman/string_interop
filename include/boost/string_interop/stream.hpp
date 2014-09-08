@@ -1,4 +1,4 @@
-//  boost/interop/stream.hpp  ----------------------------------------------------------//
+//  boost/string_interop/stream.hpp  ----------------------------------------------------------//
 
 //  Copyright Beman Dawes 2011
 
@@ -23,7 +23,7 @@
 
 namespace boost
 {
-namespace interop
+namespace string_interop
 {
 namespace detail
 {
@@ -31,9 +31,9 @@ namespace detail
 template <class Ostream, class InputIterator>
 Ostream& inserter(Ostream& os, InputIterator begin)
 {
-  typedef boost::interop::conversion_iterator<
-    typename boost::interop::select_codec<typename Ostream::char_type>::type,
-    typename boost::interop::select_codec<
+  typedef boost::string_interop::conversion_iterator<
+    typename boost::string_interop::select_codec<typename Ostream::char_type>::type,
+    typename boost::string_interop::select_codec<
       typename std::iterator_traits<InputIterator>::value_type>::type,
     InputIterator>
       iter_type;
@@ -44,7 +44,7 @@ Ostream& inserter(Ostream& os, InputIterator begin)
 }
 
 } // namespace detail
-} // namespace interop
+} // namespace string_interop
 } // namespace boost
 
 
@@ -68,9 +68,9 @@ operator<<(Ostream& os, const basic_string<charT, Traits, Allocator>& str)
 {
   typedef const basic_string<charT, Traits, Allocator> string_type;
 
-  typedef boost::interop::conversion_iterator<
-    typename boost::interop::select_codec<typename Ostream::char_type>::type,
-    typename boost::interop::select_codec<charT>::type,
+  typedef boost::string_interop::conversion_iterator<
+    typename boost::string_interop::select_codec<typename Ostream::char_type>::type,
+    typename boost::string_interop::select_codec<charT>::type,
     typename string_type::const_iterator>
       iter_type;
 
@@ -93,17 +93,17 @@ operator<<(Ostream& os, const basic_string<charT, Traits, Allocator>& str)
 
 basic_ostream<char>& operator<<(basic_ostream<char>& os, const wchar_t* p)
 {
-  return boost::interop::detail::inserter(os, p);
+  return boost::string_interop::detail::inserter(os, p);
 }
 
 basic_ostream<char>& operator<<(basic_ostream<char>& os, const char16_t* p)
 {
-  return boost::interop::detail::inserter(os, p);
+  return boost::string_interop::detail::inserter(os, p);
 }
 
 basic_ostream<char>& operator<<(basic_ostream<char>& os, const char32_t* p)
 {
-  return boost::interop::detail::inserter(os, p);
+  return boost::string_interop::detail::inserter(os, p);
 }
 
 }  // namespace std
