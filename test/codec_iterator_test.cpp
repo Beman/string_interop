@@ -1,4 +1,4 @@
-//  libs/string_interop/test/iterator_adapter_unit_test.cpp  ----------------------------------//
+//  libs/string_interop/test/iterator_adapter_unit_test.cpp  ---------------------------//
 
 //  Copyright Beman Dawes 2011
 
