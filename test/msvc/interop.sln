@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C++ Express 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2013 for Windows Desktop
+VisualStudioVersion = 12.0.30626.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "table_generator", "table_generator\table_generator.vcxproj", "{7FB01443-E361-4005-8507-D0732A296BE7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sweet_dreams", "sweet_dreams\sweet_dreams.vcxproj", "{FA47D64B-55E1-4AA6-A28D-3FA23A96F9C8}"
@@ -42,6 +44,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "operators_test", "operators
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ntcts_iterator_test", "ntcts_iterator_test\ntcts_iterator_test.vcxproj", "{11192DF0-B696-433D-942E-B5464B93CCC5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "smoke_test1", "smoke_test1\smoke_test1.vcxproj", "{BCA933A8-2BDF-4609-8C0D-176D6EF69846}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -95,6 +99,10 @@ Global
 		{11192DF0-B696-433D-942E-B5464B93CCC5}.Debug|Win32.Build.0 = Debug|Win32
 		{11192DF0-B696-433D-942E-B5464B93CCC5}.Release|Win32.ActiveCfg = Release|Win32
 		{11192DF0-B696-433D-942E-B5464B93CCC5}.Release|Win32.Build.0 = Release|Win32
+		{BCA933A8-2BDF-4609-8C0D-176D6EF69846}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BCA933A8-2BDF-4609-8C0D-176D6EF69846}.Debug|Win32.Build.0 = Debug|Win32
+		{BCA933A8-2BDF-4609-8C0D-176D6EF69846}.Release|Win32.ActiveCfg = Release|Win32
+		{BCA933A8-2BDF-4609-8C0D-176D6EF69846}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
