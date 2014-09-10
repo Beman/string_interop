@@ -60,17 +60,32 @@ int cpp_main(int, char*[])
     "wide::actual_encoding wrong. Is detail::wide_encoding helper trait working?");
 #endif
 
-  detail::from_iterator<utf8, char, const char*> end_iter8;
-  detail::from_iterator<utf8, char, const char*> iter8(u8s.c_str());
+  {
+    from_iterator<utf8, char, const char*> end_iter8;
+    from_iterator<utf8, char, const char*> iter8(u8s.c_str());
 
-  detail::from_iterator<utf16, char16_t, const char16_t*> end_iter16;
-  detail::from_iterator<utf16, char16_t, const char16_t*> iter16(u16s.c_str());
+    from_iterator<utf16, char16_t, const char16_t*> end_iter16;
+    from_iterator<utf16, char16_t, const char16_t*> iter16(u16s.c_str());
 
-  detail::from_iterator<utf32, char32_t, const char32_t*> end_iter32;
-  detail::from_iterator<utf32, char32_t, const char32_t*> iter32(u32s.c_str());
+    from_iterator<utf32, char32_t, const char32_t*> end_iter32;
+    from_iterator<utf32, char32_t, const char32_t*> iter32(u32s.c_str());
 
-  detail::from_iterator<utf8, wchar_t, const wchar_t*> end_iterw;
-  detail::from_iterator<utf8, wchar_t, const wchar_t*> iterw(ws.c_str());
+    from_iterator<wide::actual_encoding, wchar_t, const wchar_t*> end_iterw;
+    from_iterator<wide::actual_encoding, wchar_t, const wchar_t*> iterw(ws.c_str());
+  }
+  {
+    to_iterator<utf8, char, const char32_t*> end_iter8;
+    to_iterator<utf8, char, const char32_t*> iter8(u32s.c_str());
+
+    to_iterator<utf16, char16_t, const char32_t*> end_iter16;
+    to_iterator<utf16, char16_t, const char32_t*> iter16(u32s.c_str());
+
+    to_iterator<utf32, char32_t, const char32_t*> end_iter32;
+    to_iterator<utf32, char32_t, const char32_t*> iter32(u32s.c_str());
+
+    to_iterator<wide::actual_encoding, wchar_t, const char32_t*> end_iterw;
+    to_iterator<wide::actual_encoding, wchar_t, const char32_t*> iterw(u32s.c_str());
+  }
 
   return ::boost::report_errors();
 }
