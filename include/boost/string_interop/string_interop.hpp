@@ -993,11 +993,12 @@ class conversion_iterator
   : public to_iterator<typename ToEncoding::actual_encoding,
       typename ToEncoding::value_type,
         from_iterator<typename FromEncoding::actual_encoding,
-          typename ToEncoding::value_type, InputIterator> >
+          typename FromEncoding::value_type, InputIterator> >
 {
 public:
   typedef typename from_iterator<typename FromEncoding::actual_encoding,
-    typename ToEncoding::value_type, InputIterator>     from_iterator_type;
+    typename FromEncoding::value_type, InputIterator>     from_iterator_type;
+
   typedef typename to_iterator<typename ToEncoding::actual_encoding,
     typename ToEncoding::value_type, from_iterator_type>  to_iterator_type;
 

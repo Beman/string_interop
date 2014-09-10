@@ -86,6 +86,19 @@ int cpp_main(int, char*[])
     to_iterator<wide::actual_encoding, wchar_t, const char32_t*> end_iterw;
     to_iterator<wide::actual_encoding, wchar_t, const char32_t*> iterw(u32s.c_str());
   }
+  {
+    conversion_iterator<utf8, utf8, const char*> end_iter_8_8;
+    conversion_iterator<utf8, utf8, const char*> iter_8_8(u8s.c_str());
+
+    conversion_iterator<utf16, utf8, const char*> end_iter_16_8;
+    conversion_iterator<utf16, utf8, const char*> iter_16_8(u8s.c_str());
+
+    conversion_iterator<utf32, utf8, const char*> end_iter_32_8;
+    conversion_iterator<utf32, utf8, const char*> iter_32_8(u8s.c_str());
+
+    conversion_iterator<wide, utf8, const char*> end_iter_wide_8;
+    conversion_iterator<wide, utf8, const char*> iter_wide_8(u8s.c_str());
+  }
 
   return ::boost::report_errors();
 }
