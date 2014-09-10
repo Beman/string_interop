@@ -55,8 +55,8 @@ int cpp_main(int, char*[])
 
   //  look for smoke
 
-  detail::from_iterator<utf8, const char*> end_iter;
-  detail::from_iterator<utf8, const char*> iter(u8s.c_str());
+  detail::from_iterator<utf8, char, const char*> end_iter;
+  detail::from_iterator<utf8, char, const char*> iter(u8s.c_str());
 
   return ::boost::report_errors();
 }
