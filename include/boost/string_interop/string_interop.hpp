@@ -75,23 +75,40 @@ namespace boost
 namespace string_interop
 {
 
+//  Validate expectations
 
-//  Encodings and their corresponding encoded character type (i.e. value_type)
+BOOST_STATIC_ASSERT_MSG(sizeof(char)*CHAR_BIT == 8, "Implementation expects 8-bit char");
+BOOST_STATIC_ASSERT_MSG(sizeof(char16_t)*CHAR_BIT == 16, "Implementation expects 16-bit char16_t");
+BOOST_STATIC_ASSERT_MSG(sizeof(char32_t)*CHAR_BIT == 32, "Implementation expects 32-bit char32_t");
+BOOST_STATIC_ASSERT_MSG(sizeof(wchar_t)*CHAR_BIT == 8
+  || sizeof(wchar_t)*CHAR_BIT == 16 || sizeof(wchar_t)*CHAR_BIT == 32,
+       "Implementation expects 8, 16, or 32-bit wchar_t");
+
+namespace detail
+{
+  //  Helper trait to find actual encoding of wchar_t
+  template <std::size_t> struct wide_encoding;
+  template<> struct wide_encoding<1> { typedef utf8  actual; };
+  template<> struct wide_encoding<2> { typedef utf16 actual; };
+  template<> struct wide_encoding<4> { typedef utf32 actual; };
+}
+
+//--------------------------------------------------------------------------------------//
+//                                                                                      //
+//                                     Synopsis                                         //
+//                                                                                      //
+//--------------------------------------------------------------------------------------//
+
+//  Encodings and their encoded character type (i.e. value_type) and actual encoding.
+//  The actual encoding for wide varies depending on sizeof(value_type).
 
 struct narrow { typedef char      value_type; typedef narrow  actual_encoding; };
 struct utf8   { typedef char      value_type; typedef utf8    actual_encoding; };
 struct utf16  { typedef char16_t  value_type; typedef utf16   actual_encoding; };
 struct utf32  { typedef char32_t  value_type; typedef utf32   actual_encoding; };
-
-//  Trait to find actual encoding of wchar_t
-template <std::size_t> struct wide_encoding;
-template<> struct wide_encoding<1> { typedef utf8  actual_encoding; };
-template<> struct wide_encoding<2> { typedef utf16 actual_encoding; };
-template<> struct wide_encoding<4> { typedef utf32 actual_encoding; };
-
-struct wide { typedef wchar_t  value_type;
-              typedef wide_encoding<sizeof(wchar_t)>::actual_encoding  encoding;
-};
+struct wide   { typedef wchar_t  value_type;
+                typedef detail::wide_encoding<sizeof(wchar_t)>::actual actual_encoding;
+              };
 
 //  Encoded character types (i.e. value types) and their default encodings
 
@@ -117,12 +134,31 @@ public:
 };
 
 //--------------------------------------------------------------------------------------//
+//              from_iterator - converts the FromEncoding to UTF-32                     //
+//--------------------------------------------------------------------------------------//
+
+template <class FromEncoding, class FromCharT, class InputIterator>  // primary template;
+class from_iterator;                                      //  specializations do the work
+
+//--------------------------------------------------------------------------------------//
+//              to_iterator - converts UTF-32 to the ToEncoding                         //
+//--------------------------------------------------------------------------------------//
+
+template <class ToEncoding, class ToCharT, class InputIterator>       // primary template;
+class to_iterator;                                         //  specializations do the work
+
+//--------------------------------------------------------------------------------------//
 //                               conversion_iterator                                    //
 //--------------------------------------------------------------------------------------//
 
 template <class ToEncoding, class FromEncoding, class InputIterator>
 class conversion_iterator;
 
+//--------------------------------------------------------------------------------------//
+//                                                                                      //
+//                                   End Synopsis                                       //
+//                                                                                      //
+//--------------------------------------------------------------------------------------//
 
 //---------------------------------  Requirements  -------------------------------------//
 //
@@ -227,8 +263,6 @@ class from_iterator<utf8, FromCharT, InputIterator>
 
   BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, FromCharT>::value),
          "InputIterator value_type must be FromCharT for this from_iterator");
-  BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
-  BOOST_STATIC_ASSERT(sizeof(char32_t)*CHAR_BIT == 32);
 
   InputIterator     m_begin;    // current position
   InputIterator     m_end;
@@ -356,8 +390,6 @@ class from_iterator<utf16, FromCharT, InputIterator>
 
     BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, FromCharT>::value),
       "InputIterator value_type must be FromCharT for this from_iterator");
-    BOOST_STATIC_ASSERT(sizeof(FromCharT) == 2);
-    BOOST_STATIC_ASSERT(sizeof(char32_t) == 4);
 
     InputIterator     m_begin;   // current position
     InputIterator     m_end;  

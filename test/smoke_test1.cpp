@@ -34,8 +34,8 @@ namespace
   const u32string u32s(u32c);
   const u16string u16s(u16c);
   const string u8s("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
-  const string chars("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
-  const wstring wchars(L"\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
+  const string s("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
+  const wstring ws(L"\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
 
 }  // unnamed namespace
 
@@ -55,8 +55,22 @@ int cpp_main(int, char*[])
 
   //  look for smoke
 
-  detail::from_iterator<utf8, char, const char*> end_iter;
-  detail::from_iterator<utf8, char, const char*> iter(u8s.c_str());
+#ifdef BOOST_WINDOWS_API
+  BOOST_STATIC_ASSERT_MSG(boost::is_same<wide::actual_encoding, utf16>::value,
+    "wide::actual_encoding wrong. Is detail::wide_encoding helper trait working?");
+#endif
+
+  detail::from_iterator<utf8, char, const char*> end_iter8;
+  detail::from_iterator<utf8, char, const char*> iter8(u8s.c_str());
+
+  detail::from_iterator<utf16, char16_t, const char16_t*> end_iter16;
+  detail::from_iterator<utf16, char16_t, const char16_t*> iter16(u16s.c_str());
+
+  detail::from_iterator<utf32, char32_t, const char32_t*> end_iter32;
+  detail::from_iterator<utf32, char32_t, const char32_t*> iter32(u32s.c_str());
+
+  detail::from_iterator<utf8, wchar_t, const wchar_t*> end_iterw;
+  detail::from_iterator<utf8, wchar_t, const wchar_t*> iterw(ws.c_str());
 
   return ::boost::report_errors();
 }
