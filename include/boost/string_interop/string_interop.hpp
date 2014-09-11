@@ -91,7 +91,7 @@ struct utf32;
 
 namespace detail
 {
-  //  Helper trait to find actual encoding of wchar_t
+  //  Helper to find actual encoding of wchar_t
   template <std::size_t> struct wide_encoding;
   template<> struct wide_encoding<1> { typedef utf8  actual; };
   template<> struct wide_encoding<2> { typedef utf16 actual; };
@@ -104,16 +104,44 @@ namespace detail
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-//  Encodings and their encoded character type (i.e. value_type) and actual encoding.
+//  Encodings supply encoded character type (i.e. value_type) and actual encoding.
 //  The actual encoding for wide varies depending on sizeof(value_type).
 
-struct narrow { typedef char      value_type; typedef narrow  actual_encoding; };
-struct utf8   { typedef char      value_type; typedef utf8    actual_encoding; };
-struct utf16  { typedef char16_t  value_type; typedef utf16   actual_encoding; };
-struct utf32  { typedef char32_t  value_type; typedef utf32   actual_encoding; };
-struct wide   { typedef wchar_t  value_type;
-                typedef detail::wide_encoding<sizeof(wchar_t)>::actual actual_encoding;
-              };
+struct narrow
+{ 
+  typedef char      value_type;
+  typedef narrow    actual_encoding;
+  template <class EcharT>
+    struct encoding { typedef narrow type; };
+};
+struct utf8
+{
+  typedef char      value_type;
+  typedef utf8      actual_encoding;
+  template <class EcharT>
+    struct encoding { typedef utf8 type; };
+};
+struct utf16
+{
+  typedef char16_t  value_type;
+  typedef utf16     actual_encoding;
+  template <class EcharT>
+    struct encoding { typedef utf16 type; };
+};
+struct utf32
+{
+  typedef char32_t  value_type;
+  typedef utf32     actual_encoding;
+  template <class EcharT>
+    struct encoding { typedef utf32 type; };
+};
+struct wide
+{ 
+  typedef wchar_t  value_type;
+  typedef detail::wide_encoding<sizeof(wchar_t)>::actual actual_encoding;
+  template <class EcharT>
+    struct encoding { typedef narrow type; };
+};
 
 //  Encoded character types (i.e. value types) and their default encodings
 
@@ -125,10 +153,11 @@ template<> struct default_encoding<wchar_t>  { typedef wide    type; };
 template<> struct default_encoding<char16_t> { typedef utf16   type; };
 template<> struct default_encoding<char32_t> { typedef utf32   type; };
 
-//  Lazy encoding lookup for use as a default template parameter that appears before the
-//  parameter that determines the value type
 
-class deferred
+//  Psuedo-encoding used as a default template parameter that parameter precedes the
+//  parameter that determines the value type.
+
+struct defaulted
 {
 public:
   template <class EcharT>
@@ -791,8 +820,8 @@ private:
         if(v > 0x10FFFFu)
           detail::invalid_utf32_code_point(*m_first);
         // split into two surrogates:
-        m_values[0] = static_cast<charT>(v >> 10) + detail::high_surrogate_base;
-        m_values[1] = static_cast<charT>(v & detail::ten_bit_mask)
+        m_values[0] = static_cast<ToCharT>(v >> 10) + detail::high_surrogate_base;
+        m_values[1] = static_cast<ToCharT>(v & detail::ten_bit_mask)
           + detail::low_surrogate_base;
         m_current = 0;
         BOOST_ASSERT(detail::is_high_surrogate(m_values[0]));
@@ -801,7 +830,7 @@ private:
     else
     {
         // 16-bit code point:
-        m_values[0] = static_cast<charT>(*m_first);
+      m_values[0] = static_cast<ToCharT>(*m_first);
         m_values[1] = 0;
         m_current = 0;
         // value must not be a surrogate:
@@ -1016,6 +1045,30 @@ public:
   conversion_iterator(InputIterator first, std::size_t sz)
     : to_iterator_type(from_iterator_type(begin, sz)) {}
 };
+
+//--------------------------------------------------------------------------------------//
+
+//  what might the to_*string family of functions look like if implemented with a
+//  conversion_iterator?
+
+template <class FromEncoding = defaulted, class T>          
+std::u16string to_u16string(const T& source)
+{
+  typedef typename FromEncoding::template
+    encoding<typename std::iterator_traits<T>::value_type>::type from_encoding;
+
+  typedef conversion_iterator<utf16, from_encoding, T> iterator_type;
+
+  return std::u16string(iterator_type(source), iterator_type());
+}
+
+//template <class T, class U, class FromEncoding>
+//std::u16string to_u16string(InputIterator first, U arg2)
+//{
+//  typedef conversion_iterator<...> iterator_type;
+//  return std::u16string(iterator_type(first, arg2), iterator_type());
+//}
+
 
 ////--------------------------------------------------------------------------------------//
 ////                               make_string function                                   //

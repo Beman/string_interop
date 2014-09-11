@@ -100,5 +100,14 @@ int cpp_main(int, char*[])
     conversion_iterator<wide, utf8, const char*> iter_wide_8(u8s.c_str());
   }
 
+  {
+    u16string result1 = to_u16string<utf8>(u8s.c_str());
+    // alternate formulation: to_u16string<utf8>(u8s.c_str())
+    BOOST_TEST(result1 == u16s);
+
+    u16string result2 = to_u16string(u32s.c_str());
+    BOOST_TEST(result1 == u16s);
+  }
+
   return ::boost::report_errors();
 }
