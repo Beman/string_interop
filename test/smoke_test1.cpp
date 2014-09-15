@@ -15,6 +15,10 @@
 #include <boost/type_traits.hpp>
 #include <iostream>
 
+
+#include <cvt/big5>                                        // Microsoft specific
+#include <cvt/ksc5601>                                     // Microsoft specific
+
 using std::string;
 using std::wstring;
 using std::u16string;
@@ -56,8 +60,8 @@ int cpp_main(int, char*[])
   //  look for smoke
 
 #ifdef BOOST_WINDOWS_API
-  BOOST_STATIC_ASSERT_MSG(boost::is_same<wide::actual_encoding, utf16>::value,
-    "wide::actual_encoding wrong. Is detail::wide_encoding helper trait working?");
+  BOOST_STATIC_ASSERT_MSG(boost::is_same<wide::physical_encoding, utf16>::value,
+    "wide::physical_encoding wrong. Is detail::wide_encoding helper trait working?");
 #endif
 
   {
@@ -70,8 +74,8 @@ int cpp_main(int, char*[])
     from_iterator<utf32, char32_t, const char32_t*> end_iter32;
     from_iterator<utf32, char32_t, const char32_t*> iter32(u32s.c_str());
 
-    from_iterator<wide::actual_encoding, wchar_t, const wchar_t*> end_iterw;
-    from_iterator<wide::actual_encoding, wchar_t, const wchar_t*> iterw(ws.c_str());
+    from_iterator<wide::physical_encoding, wchar_t, const wchar_t*> end_iterw;
+    from_iterator<wide::physical_encoding, wchar_t, const wchar_t*> iterw(ws.c_str());
   }
   {
     to_iterator<utf8, char, const char32_t*> end_iter8;
@@ -83,8 +87,8 @@ int cpp_main(int, char*[])
     to_iterator<utf32, char32_t, const char32_t*> end_iter32;
     to_iterator<utf32, char32_t, const char32_t*> iter32(u32s.c_str());
 
-    to_iterator<wide::actual_encoding, wchar_t, const char32_t*> end_iterw;
-    to_iterator<wide::actual_encoding, wchar_t, const char32_t*> iterw(u32s.c_str());
+    to_iterator<wide::physical_encoding, wchar_t, const char32_t*> end_iterw;
+    to_iterator<wide::physical_encoding, wchar_t, const char32_t*> iterw(u32s.c_str());
   }
   {
     conversion_iterator<utf8, utf8, const char*> end_iter_8_8;
@@ -100,13 +104,12 @@ int cpp_main(int, char*[])
     conversion_iterator<wide, utf8, const char*> iter_wide_8(u8s.c_str());
   }
 
-  {
-    u16string result1 = to_u16string<utf8>(u8s.c_str());
-    // alternate formulation: to_u16string(u8s.c_str(), utf8())
-    BOOST_TEST(result1 == u16s);
 
-    u16string result2 = to_u16string(u32s.c_str());
-    BOOST_TEST(result1 == u16s);
+  {
+    std::u32string s32;
+    //to_basic_string<utf16>(boost::u32string_view(s32.c_str()));
+    //to_basic_string<utf16>(s32);
+    to_basic_string<utf16>(s32.c_str());
   }
 
   return ::boost::report_errors();

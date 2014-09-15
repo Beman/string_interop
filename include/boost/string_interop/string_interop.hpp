@@ -50,6 +50,7 @@
 #include <stdexcept>
 #include <boost/string_interop/cxx11_char_types.hpp>
 #include <boost/string_interop/detail/is_iterator.hpp>
+#include <boost/string_interop/string_view.hpp>
 //#include <boost/cstdint.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/static_assert.hpp>
@@ -91,11 +92,11 @@ struct utf32;
 
 namespace detail
 {
-  //  Helper to find actual encoding of wchar_t
+  //  Helper to find physical encoding of wchar_t
   template <std::size_t> struct wide_encoding;
-  template<> struct wide_encoding<1> { typedef utf8  actual; };
-  template<> struct wide_encoding<2> { typedef utf16 actual; };
-  template<> struct wide_encoding<4> { typedef utf32 actual; };
+  template<> struct wide_encoding<1> { typedef utf8  physical; };
+  template<> struct wide_encoding<2> { typedef utf16 physical; };
+  template<> struct wide_encoding<4> { typedef utf32 physical; };
 }
 
 //--------------------------------------------------------------------------------------//
@@ -104,41 +105,41 @@ namespace detail
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-//  Encodings supply encoded character type (i.e. value_type) and actual encoding.
-//  The actual encoding for wide varies depending on sizeof(value_type).
+//  Encodings supply encoded character type (i.e. value_type) and physical encoding.
+//  The physical encoding for wide varies depending on sizeof(value_type).
 
 struct narrow
 { 
   typedef char      value_type;
-  typedef narrow    actual_encoding;
+  typedef narrow    physical_encoding;
   template <class EcharT>
     struct encoding { typedef narrow type; };
 };
 struct utf8
 {
   typedef char      value_type;
-  typedef utf8      actual_encoding;
+  typedef utf8      physical_encoding;
   template <class EcharT>
     struct encoding { typedef utf8 type; };
 };
 struct utf16
 {
   typedef char16_t  value_type;
-  typedef utf16     actual_encoding;
+  typedef utf16     physical_encoding;
   template <class EcharT>
     struct encoding { typedef utf16 type; };
 };
 struct utf32
 {
   typedef char32_t  value_type;
-  typedef utf32     actual_encoding;
+  typedef utf32     physical_encoding;
   template <class EcharT>
     struct encoding { typedef utf32 type; };
 };
 struct wide
 { 
   typedef wchar_t  value_type;
-  typedef detail::wide_encoding<sizeof(wchar_t)>::actual actual_encoding;
+  typedef detail::wide_encoding<sizeof(wchar_t)>::physical physical_encoding;
   template <class EcharT>
     struct encoding { typedef narrow type; };
 };
@@ -296,8 +297,79 @@ namespace detail
 template <class FromEncoding, class FromCharT, class InputIterator>  // primary template;
 class from_iterator;                                      //  specializations do the work
 
-//  Remark: FromCharT is not stricktly necessary, but allows early detection of mismatch
+//  Remark: FromCharT is not strickly necessary, but allows early detection of mismatch
 //  between encoding and InputIterator value_type.
+
+//------------------------------  narrow from_iterator  --------------------------------//
+//
+//  meets the DefaultCtorEndIterator requirements
+
+template <class InputIterator>
+class from_iterator<narrow, char, InputIterator>
+  : public boost::iterator_facade<from_iterator<narrow, char, InputIterator>,
+  char32_t, std::input_iterator_tag, const char32_t>
+{
+  typedef boost::iterator_facade<from_iterator<narrow, char, InputIterator>,
+  char32_t, std::input_iterator_tag, const char32_t> base_type;
+
+  typedef typename std::iterator_traits<InputIterator>::value_type value_type;
+
+  BOOST_STATIC_ASSERT_MSG((boost::is_same<value_type, char>::value),
+    "InputIterator value_type must be char for this from_iterator");
+    
+  InputIterator  m_first;
+  InputIterator  m_last;
+  bool           m_default_end;
+
+public:
+
+  // end iterator
+  from_iterator() : m_default_end(true) {}
+
+  // by_null
+  from_iterator(InputIterator first) : m_first(first), m_last(first),
+    m_default_end(false) 
+  {
+    for (;
+          *m_last != typename std::iterator_traits<InputIterator>::value_type();
+          ++m_last) {}
+  }
+
+  // by range
+  template <class T>
+  from_iterator(InputIterator first, T last,
+    // enable_if ensures 2nd argument of 0 is treated as size, not range end
+    typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type =0)
+    : m_first(first), m_last(end), m_default_end(false) {}
+
+  // by_size
+  from_iterator(InputIterator first, std::size_t sz)
+    : m_first(first), m_last(first), m_default_end(false) {std::advance(m_last, sz);}
+
+  char32_t dereference() const
+  {
+    BOOST_ASSERT_MSG(!m_default_end && m_first != m_last,
+      "Attempt to dereference end iterator");
+    unsigned char c = static_cast<unsigned char>(*m_first);
+    return static_cast<char32_t>(string_interop::detail::to_utf16[c]);
+  }
+
+  bool equal(const from_iterator& that) const
+  {
+    if (m_default_end || m_first == m_last)
+      return that.m_default_end || that.m_first == that.m_last;
+    if (that.m_default_end || that.m_first == that.m_last)
+      return false;
+    return m_first == that.m_first;
+  }
+
+  void increment()
+  { 
+    BOOST_ASSERT_MSG(!m_default_end && m_first != m_last,
+      "Attempt to increment end iterator");
+    ++m_first;
+  }
+};
 
 //-----------------------------  UTF-8 from_iterator  ----------------------------------//
 
@@ -877,78 +949,6 @@ public:
 //  template <class charT>
 //  struct codec { typedef narrow type; };
 //
-//  //  narrow::from_iterator  -----------------------------------------------------------//
-//  //
-//  //  meets the DefaultCtorEndIterator requirements
-//
-//  template <class InputIterator>  
-//  class from_iterator
-//   : public boost::iterator_facade<from_iterator<InputIterator>,
-//       char32_t, std::input_iterator_tag, const char32_t>
-//  {
-//    typedef boost::iterator_facade<from_iterator<InputIterator>,
-//      char32_t, std::input_iterator_tag, const char32_t> base_type;
-//
-//    typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
-//
-//    BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, char>::value),
-//      "InputIterator value_type must be char for this from_iterator");
-//    BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
-//    BOOST_STATIC_ASSERT(sizeof(char32_t)*CHAR_BIT == 32);
-//    
-//    InputIterator  m_first;
-//    InputIterator  m_last;
-//    bool           m_default_end;
-//
-//  public:
-//
-//    // end iterator
-//    from_iterator() : m_default_end(true) {}
-//
-//    // by_null
-//    from_iterator(InputIterator first) : m_first(first), m_last(first),
-//      m_default_end(false) 
-//    {
-//      for (;
-//           *m_last != typename std::iterator_traits<InputIterator>::value_type();
-//           ++m_last) {}
-//    }
-//
-//    // by range
-//    template <class T>
-//    from_iterator(InputIterator first, T last,
-//      // enable_if ensures 2nd argument of 0 is treated as size, not range end
-//      typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type =0)
-//      : m_first(first), m_last(end), m_default_end(false) {}
-//
-//    // by_size
-//    from_iterator(InputIterator first, std::size_t sz)
-//      : m_first(first), m_last(first), m_default_end(false) {std::advance(m_last, sz);}
-//
-//    char32_t dereference() const
-//    {
-//      BOOST_ASSERT_MSG(!m_default_end && m_first != m_last,
-//        "Attempt to dereference end iterator");
-//      unsigned char c = static_cast<unsigned char>(*m_first);
-//      return static_cast<char32_t>(string_interop::detail::to_utf16[c]);
-//    }
-//
-//    bool equal(const from_iterator& that) const
-//    {
-//      if (m_default_end || m_first == m_last)
-//        return that.m_default_end || that.m_first == that.m_last;
-//      if (that.m_default_end || that.m_first == that.m_last)
-//        return false;
-//      return m_first == that.m_first;
-//    }
-//
-//    void increment()
-//    { 
-//      BOOST_ASSERT_MSG(!m_default_end && m_first != m_last,
-//        "Attempt to increment end iterator");
-//      ++m_first;
-//    }
-//  };
 //
 //  //  narrow::to_iterator  -------------------------------------------------------------//
 //  //
@@ -1019,16 +1019,16 @@ public:
 
 template <class ToEncoding, class FromEncoding, class InputIterator>
 class conversion_iterator
-  : public to_iterator<typename ToEncoding::actual_encoding,
+  : public to_iterator<typename ToEncoding::physical_encoding,
       typename ToEncoding::value_type,
-        from_iterator<typename FromEncoding::actual_encoding,
+        from_iterator<typename FromEncoding::physical_encoding,
           typename FromEncoding::value_type, InputIterator> >
 {
 public:
-  typedef typename from_iterator<typename FromEncoding::actual_encoding,
+  typedef typename from_iterator<typename FromEncoding::physical_encoding,
     typename FromEncoding::value_type, InputIterator>     from_iterator_type;
 
-  typedef typename to_iterator<typename ToEncoding::actual_encoding,
+  typedef typename to_iterator<typename ToEncoding::physical_encoding,
     typename ToEncoding::value_type, from_iterator_type>  to_iterator_type;
 
   conversion_iterator() BOOST_DEFAULTED
@@ -1036,15 +1036,48 @@ public:
   conversion_iterator(InputIterator first)
     : to_iterator_type(from_iterator_type(first)) {}
 
-  template <class U>
-  conversion_iterator(InputIterator first, U end,
-    // enable_if ensures 2nd argument of 0 is treated as size, not range end
-    typename boost::enable_if<boost::is_same<InputIterator, U>, void* >::type = 0)
-    : to_iterator_type(from_iterator_type(begin, end)) {}
+  //template <class U>
+  //conversion_iterator(InputIterator first, U end,
+  //  // enable_if ensures 2nd argument of 0 is treated as size, not range end
+  //  typename boost::enable_if<boost::is_same<InputIterator, U>, void* >::type = 0)
+  //  : to_iterator_type(from_iterator_type(begin, end)) {}
 
-  conversion_iterator(InputIterator first, std::size_t sz)
-    : to_iterator_type(from_iterator_type(begin, sz)) {}
+  //conversion_iterator(InputIterator first, std::size_t sz)
+  //  : to_iterator_type(from_iterator_type(begin, sz)) {}
 };
+
+
+//--------------------------------------------------------------------------------------//
+
+//  what might a generic to_string look like?
+//
+//  Assumptions:
+//
+//  * Use basic_string_view for "from" source.
+//  * Encoding also embodies error handling in a way it can be overridden by inheritance.
+//  * Narrow encoding has ctor that takes std::codecvt. Thus encoding objects must be
+//    passed to conversion or to_/from_ iterators.
+
+//  to_basic_string; names being considered: to_basic_string, to_string
+
+template <class ToEncoding,
+          class ToString = std::basic_string<typename ToEncoding::value_type>,
+          class From,
+          class FromEncoding
+            = default_encoding<typename std::iterator_traits<From>::value_type>::type>
+inline
+ToString to_basic_string(const From& from, FromEncoding from_encoding = FromEncoding(),
+  ToEncoding to_encoding = ToEncoding())
+{
+  typedef typename std::iterator_traits<From>::value_type  from_value_type;
+  typedef boost::basic_string_view<from_value_type>        string_view_type;
+  typedef conversion_iterator<ToEncoding, FromEncoding,
+    string_view_type::const_iterator>                      iterator_type;
+
+  boost::basic_string_view<from_value_type> view(from);
+
+  return ToString(iterator_type(view.cbegin(), view.cend(), from_encoding, to_encoding));
+}
 
 //--------------------------------------------------------------------------------------//
 
