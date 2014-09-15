@@ -1036,14 +1036,14 @@ public:
   conversion_iterator(InputIterator first)
     : to_iterator_type(from_iterator_type(first)) {}
 
-  //template <class U>
-  //conversion_iterator(InputIterator first, U end,
-  //  // enable_if ensures 2nd argument of 0 is treated as size, not range end
-  //  typename boost::enable_if<boost::is_same<InputIterator, U>, void* >::type = 0)
-  //  : to_iterator_type(from_iterator_type(begin, end)) {}
+  template <class U>
+  conversion_iterator(InputIterator first, U end,
+    // enable_if ensures 2nd argument of 0 is treated as size, not range end
+    typename boost::enable_if<boost::is_same<InputIterator, U>, void* >::type = 0)
+    : to_iterator_type(from_iterator_type(begin, end)) {}
 
-  //conversion_iterator(InputIterator first, std::size_t sz)
-  //  : to_iterator_type(from_iterator_type(begin, sz)) {}
+  conversion_iterator(InputIterator first, std::size_t sz)
+    : to_iterator_type(from_iterator_type(begin, sz)) {}
 };
 
 
