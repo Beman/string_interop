@@ -106,10 +106,9 @@ int cpp_main(int, char*[])
 
 
   {
-    std::u32string s32;
     //to_basic_string<utf16>(boost::u32string_view(s32.c_str()));
     //to_basic_string<utf16>(s32);
-    to_basic_string<utf16>(s32.c_str());
+    BOOST_TEST(to_basic_string<utf16>(u32s.c_str()) == u16s);
   }
 
   return ::boost::report_errors();
