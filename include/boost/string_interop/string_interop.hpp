@@ -51,11 +51,14 @@
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/decay.hpp>
+#include <boost/smart_ptr/shared_ptr.hpp>
+#include <boost/smart_ptr/make_shared.hpp>
 #include <stdexcept>
 #include <sstream>
 #include <iterator>
+#include <locale>
 #include <algorithm>
-#include <limits.h> // CHAR_BIT
+#include <limits.h> // CHAR_BIT, WCHAR_MAX
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
@@ -69,26 +72,64 @@ namespace boost
 {
 namespace string_interop
 {
-namespace detail
-{
-template <class charT>
-  class generic_utf32;  // i.e. utf-32 <--> utf-32
-template <class charT>
-  class generic_utf16;  // i.e. wide and utf16
-}
 
 //--------------------------------------------------------------------------------------//
 //                                     Synopsis                                         //
 //--------------------------------------------------------------------------------------//
 
+  template <class charT, class ErrorPolicy, class EncodingPolicy>
+    class generic_narrow;
+  template <class charT, class ErrorPolicy>
+    class generic_utf32;
+  template <class charT, class ErrorPolicy>
+    class generic_utf16;
+
+  template <class charT>
+    class default_error_policy;
+
+  typedef std::codecvt<char32_t, char, std::mbstate_t>  codecvt_type;
+
+  class default_codecvt_policy;
+
+  template <class Codecvt>
+  class codecvt_policy
+  {
+    static boost::shared_ptr<Codecvt> m_codecvt;
+  public:
+    codecvt_policy()
+    {
+      if (!m_codecvt.get())
+        m_codecvt.reset(boost::make_shared<Codecvt>());
+    }
+
+    const codecvt_type* operator()() BOOST_NOEXCEPT
+    {
+      BOOST_ASSERT(m_codecvt.get());  // internal implementation error
+      return m_codecvt.get();
+    }
+  };
+
+  class dynamic_codecvt_policy
+  {
+    boost::shared_ptr<codecvt_type> m_codecvt;
+  public:
+    dynamic_codecvt_policy(boost::shared_ptr<codecvt_type> shared) BOOST_NOEXCEPT
+      : m_codecvt(shared) {}
+
+    const codecvt_type* operator()() BOOST_NOEXCEPT
+    {
+      BOOST_ASSERT(m_codecvt.get());  // internal implementation error
+      return m_codecvt.get();
+    }
+  };
+
+
   //  codecs
   class utf8;                                        // UTF-8 encoding for char
+  class narrow;
 #ifdef BOOST_WINDOWS_API
-  class narrow;                                      // native encoding for char
   typedef detail::generic_utf16<wchar_t>  wide;      // UTF-16 encoding for wchar_t
 #else
-  // hack: assume POSIX narrow encoding is UTF-8 
-  typedef utf8 narrow;
   // hack: assume POSIX wide encoding is UTF-16 or UTF-32
 # if WCHAR_MAX == 0xffff
   typedef detail::generic_utf16<wchar_t>  wide;      // UTF-16 encoding for wchar_t
@@ -96,8 +137,9 @@ template <class charT>
   typedef detail::generic_utf32<wchar_t>  wide;      // UTF-32 encoding for wchar_t
 # endif
 #endif
-  typedef detail::generic_utf16<char16_t>    utf16;     // UTF-16 encoding for char16_t
-  typedef detail::generic_utf32<char32_t>    utf32;     // UTF-32 encoding for char32_t
+  typedef detail::generic_utf16<char16_t>    utf16;
+
+  typedef detail::generic_utf32<char32_t, default_error_policy<char32_t> > utf32;
   class default_codec;
 
 //  select_codec type selector
@@ -214,12 +256,17 @@ inline void invalid_utf32_code_point(::boost::uint32_t val)
 //                                   generic_utf32                                      //
 //--------------------------------------------------------------------------------------//
 
-template <class charT>
+template <class charT, class ErrorPolicy>
 class generic_utf32
 {
+  ErrorPolicy m_error_policy;
 public:
   typedef charT value_type;
-  template <class charT2> struct codec { typedef generic_utf32<charT> type; };
+  template <class charT2>
+  struct codec { typedef generic_utf32<charT, ErrorPolicy> type; };
+
+  explicit generic_utf32(ErrorPolicy ep = ErrorPolicy()) BOOST_NOE
+    : m_error_policy(ep) {}
 
   //  generic_utf32::from_iterator  ---------------------------------------------------//
 
@@ -231,18 +278,18 @@ public:
     BOOST_STATIC_ASSERT_MSG((boost::is_same<typename std::iterator_traits<InputIterator>::value_type,
       charT>::value),
       "InputIterator value_type must be same as codec value_type");
-    InputIterator  m_begin;
-    InputIterator  m_end;
+    InputIterator    m_begin;
+    InputIterator    m_end;
+    ErrorPolicy      m_error_policy;
     bool             m_default_end;
-
   public:
 
     // end iterator
     from_iterator() : m_default_end(true) {}
 
     // by_null
-    from_iterator(InputIterator begin) : m_begin(begin), m_end(begin),
-      m_default_end(false) 
+    from_iterator(const generic_utf32& codec, InputIterator begin)
+      : m_begin(begin), m_end(begin), m_error_policy(codec), m_default_end(false)
     {
       for (;
            *m_end != typename std::iterator_traits<InputIterator>::value_type();
@@ -251,14 +298,15 @@ public:
 
     // by range
     template <class T>
-    from_iterator(InputIterator begin, T end,
+    from_iterator(const generic_utf32& codec, InputIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
       typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type =0)
-      : m_begin(begin), m_end(end), m_default_end(false) {}
+      : m_begin(begin), m_end(end), m_error_policy(codec), m_default_end(false)
+    {}
 
     // by_size
-    from_iterator(InputIterator begin, std::size_t sz)
-      : m_begin(begin), m_end(begin), m_default_end(false)
+    from_iterator(const generic_utf32& codec, InputIterator begin, std::size_t sz)
+      : m_begin(begin), m_end(begin), m_error_policy(codec), m_default_end(false)
     {
       std::advance(m_end, sz);
     }
