@@ -19,6 +19,7 @@ codecvt implementations.
 #include <locale>
 #include <string>
 #include <vector>
+#include <cstdint>
 #include <cvt/utf8>
 
 using namespace std;
@@ -34,14 +35,22 @@ namespace
   void build_tests()
   {
     tests.push_back("test");
+    tests.push_back("t");
+    tests.push_back("\xEF\xBB\xBFt");  // UTF-8 byte order mark, 't' 
+    tests.push_back("\xF0\x9F\x98\x8A");  // U+1F60A SMILING FACE WITH SMILING EYES
+    tests.push_back("\xF0\x9F\x98");  // partial U+1F60A SMILING FACE WITH SMILING EYES
+    tests.push_back("\xc3\x28");  // Invalid 2 Octet Sequence
+    tests.push_back("\xe2\x82\x28");  // Invalid 3 Octet Sequence (in 3rd Octet)
+    tests.push_back("\xf8\xa1\xa1\xa1\xa1");  // Valid 5 Octet Sequence (but not Unicode!)
+
   }
 
   void report(const string& s)
   {
     size_t ct = 0;
-    for (char c : s)
+    for (unsigned char c : s)
     {
-      cout << int(c);
+      cout << uint16_t(c);
       if (++ct < s.size())
         cout << ',';
     }
@@ -59,13 +68,22 @@ namespace
 
     cout << " result=" << results_table[result];
     if (from_next)
-      cout << ", from_next=begin+" << from_next - from_begin;
+      cout << ", from_next=from_begin+" << from_next - from_begin;
     else
       cout << ", from_next=n/a";
     if (to_next)
-      cout << ", to_next=begin+" << to_next - to_begin;
+      cout << ", to_next=to_begin+" << to_next - to_begin;
     else
       cout << ", to_next=n/a";
+
+    cout << " ";
+    for (; to_next && to_begin != to_next; ++to_begin)
+    {
+      cout << uint32_t(*to_begin);
+      if (to_begin != (to_next-1))
+        cout << ',';
+    }
+
     cout << endl;
   }
 
