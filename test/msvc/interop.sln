@@ -47,6 +47,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ntcts_iterator_test", "ntct
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "smoke_test1", "smoke_test1\smoke_test1.vcxproj", "{BCA933A8-2BDF-4609-8C0D-176D6EF69846}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "report_codecvt_results", "report_codecvt_results\report_codecvt_results.vcxproj", "{11F13071-64FC-4527-96EB-0A9EF51544F0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -103,6 +105,10 @@ Global
 		{BCA933A8-2BDF-4609-8C0D-176D6EF69846}.Debug|Win32.Build.0 = Debug|Win32
 		{BCA933A8-2BDF-4609-8C0D-176D6EF69846}.Release|Win32.ActiveCfg = Release|Win32
 		{BCA933A8-2BDF-4609-8C0D-176D6EF69846}.Release|Win32.Build.0 = Release|Win32
+		{11F13071-64FC-4527-96EB-0A9EF51544F0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{11F13071-64FC-4527-96EB-0A9EF51544F0}.Debug|Win32.Build.0 = Debug|Win32
+		{11F13071-64FC-4527-96EB-0A9EF51544F0}.Release|Win32.ActiveCfg = Release|Win32
+		{11F13071-64FC-4527-96EB-0A9EF51544F0}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
