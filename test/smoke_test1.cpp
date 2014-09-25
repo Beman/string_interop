@@ -72,12 +72,14 @@ int cpp_main(int, char*[])
     typedef codecvt_policy<cvt_utf8_type> cvt_utf8_policy;
     typedef generic_narrow<char, default_error_policy<char>, cvt_utf8_policy> narrow_utf8;
 
-    narrow_utf8 char_utf8_dummy;  // not used; tests default construction compiles
+    narrow_utf8 char_utf8_dummy;  // not used; tests default construction compiles.
+    // Note that codecvt is constructed only once as long as iterators are constructed
+    // using char_utf8_dummy. 
 
     cvt_utf8_policy cvt_policy;
     narrow_utf8 char_utf8(cvt_policy);
 
-    typedef narrow_utf8::from_iterator<const char*> test_from_iterator;
+    typedef narrow_utf8::from_iterator test_from_iterator;
 
     test_from_iterator begin1(char_utf8, chars.c_str());
                                                          

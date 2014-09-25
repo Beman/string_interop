@@ -58,7 +58,8 @@
 #include <iterator>
 #include <locale>
 #include <algorithm>
-#include <limits.h> // CHAR_BIT, WCHAR_MAX
+#include <limits.h>  // for CHAR_BIT, WCHAR_MAX
+#include <cstring>   // for strlen
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
@@ -628,30 +629,22 @@ public:
   generic_narrow() {}
   explicit generic_narrow(CodecvtPolicy ccvt) : m_codecvt_policy(ccvt) {}
 
-  //  narrow::from_iterator  -----------------------------------------------------------//
+  //  generic_narrow::from_iterator  ---------------------------------------------------//
   //
   //  meets the DefaultCtorEndIterator requirements
 
-  template <class InputIterator>  
   class from_iterator
-   : public boost::iterator_facade<from_iterator<InputIterator>,
+   : public boost::iterator_facade<from_iterator,
        char32_t, std::input_iterator_tag, const char32_t>
   {
-    typedef boost::iterator_facade<from_iterator<InputIterator>,
+    typedef boost::iterator_facade<from_iterator,
       char32_t, std::input_iterator_tag, const char32_t> base_type;
-
-    typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
-
-    BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, char>::value),
-      "InputIterator value_type must be char for this from_iterator");
-    BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
-    BOOST_STATIC_ASSERT(sizeof(char32_t)*CHAR_BIT == 32);
 
     // special values for pending iterator reads:
     BOOST_STATIC_CONSTANT(char32_t, read_pending = 0xffffffffu);
 
-    InputIterator           m_begin;
-    InputIterator           m_end;
+    const char*             m_begin;
+    const char*             m_end;
     mutable const char*     m_next;
     ErrorPolicy             m_error_policy;
     CodecvtPolicy           m_codecvt_policy;
@@ -665,28 +658,27 @@ public:
     from_iterator() : m_default_end(true) {}
 
     // by_null
-    from_iterator(const generic_narrow& codec, InputIterator begin) : m_begin(begin), m_end(begin),
+    from_iterator(const generic_narrow& codec, const char* begin) : m_begin(begin), m_end(begin),
       m_error_policy(codec.m_error_policy), m_codecvt_policy(codec.m_codecvt_policy),
       m_state(std::mbstate_t()), m_default_end(false)
     {
-      for (;
-           *m_end != typename std::iterator_traits<InputIterator>::value_type();
+      for (; *m_end != '\0';
            ++m_end) {}
       m_value = read_pending;
     }
 
     // by range
     template <class T>
-    from_iterator(const generic_narrow& codec, InputIterator begin, T end,
+    from_iterator(const generic_narrow& codec, const char* begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type =0)
+      typename boost::enable_if<boost::is_same<const char*, T>, void* >::type =0)
       : m_begin(begin), m_end(end), m_error_policy(codec.m_error_policy),
         m_codecvt_policy(codec.m_codecvt_policy), m_state(std::mbstate_t()),
         m_default_end(false)
     { m_value = read_pending; }
 
     // by_size
-    from_iterator(const generic_narrow& codec, InputIterator begin, std::size_t sz)
+    from_iterator(const generic_narrow& codec, const char* begin, std::size_t sz)
       : m_begin(begin), m_end(begin), m_error_policy(codec.m_error_policy),
         m_codecvt_policy(codec.m_codecvt_policy), m_state(std::mbstate_t()), 
         m_default_end(false)
@@ -742,7 +734,7 @@ public:
     }
   };
 
-  //  narrow::to_iterator  -------------------------------------------------------------//
+  //  generic_narrow::::to_iterator  ---------------------------------------------------//
   //
   //  meets the DefaultCtorEndIterator requirements
 
