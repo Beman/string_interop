@@ -80,6 +80,30 @@ int cpp_main(int, char*[])
     test_from_iterator begin1end;
     BOOST_TEST(begin1 != begin1end);
     BOOST_TEST(*begin1 == char32_t(0x1F60A));
+    ++begin1;
+    BOOST_TEST(begin1 != begin1end);
+    BOOST_TEST(*begin1 == char32_t(0x1F60E));
+    ++begin1;
+    BOOST_TEST(begin1 == begin1end);
+
+    begin1 = test_from_iterator(char_utf8, chars.c_str());
+    BOOST_TEST(begin1 != begin1end);
+    BOOST_TEST(*begin1 == char32_t(0x1F60A));
+    ++begin1;
+    BOOST_TEST(begin1 != begin1end);
+    BOOST_TEST(*begin1 == char32_t(0x1F60E));
+    ++begin1;
+    BOOST_TEST(begin1 == begin1end);
+
+    begin1 = test_from_iterator(char_utf8, chars.c_str());
+    BOOST_TEST(begin1 != begin1end);
+    ++begin1;
+    BOOST_TEST(begin1 != begin1end);
+    BOOST_TEST(*begin1 == char32_t(0x1F60E));
+    ++begin1;
+    BOOST_TEST(begin1 == begin1end);
+
+
 
     //typedef narrow::to_iterator<const char32_t*> test_to_iterator;
     //test_to_iterator begin2(u32c);

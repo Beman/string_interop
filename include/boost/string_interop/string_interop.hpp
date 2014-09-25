@@ -724,17 +724,14 @@ public:
     { 
       BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
         "Attempt to increment end iterator");
-      if (m_value != read_pending) 
-      {
-        //  a code-point has been dereferenced, so m_next points to next code point
-        m_begin = m_next;
-        m_value = read_pending;
-      }
-      else
-      {
-        //  since a read already is pending, just find the start of next code point
-        m_begin += m_codecvt_policy()->length(m_state, m_begin, m_end, 1);
-      }
+
+      //  call dereference() if it has not already been called
+      if (m_value == read_pending)
+        dereference();
+
+      //  since dereference() has been called, m_next points to next code point
+      m_begin = m_next;
+      m_value = read_pending;
     }
   };
 
