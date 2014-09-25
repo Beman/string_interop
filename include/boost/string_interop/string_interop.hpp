@@ -87,6 +87,7 @@ namespace string_interop
   template <class charT>
   class default_error_policy
   {
+  public:
     void operator()(const std::string& msg) const
     {
       std::cout << "default error policy" << std::endl;
@@ -98,6 +99,7 @@ namespace string_interop
 
   //class default_codecvt_policy
   //{
+  //public:
   //  const codecvt_type* operator()() BOOST_NOEXCEPT
   //  {
   //    return detail::default_codecvt();  // kick the can down the road
@@ -641,14 +643,14 @@ public:
     // special values for pending iterator reads:
     BOOST_STATIC_CONSTANT(char32_t, read_pending = 0xffffffffu);
 
-    InputIterator     m_begin;
-    InputIterator     m_end;
-    mutable const char*  m_next;
-    ErrorPolicy       m_error_policy;
-    CodecvtPolicy     m_codecvt_policy;
-    mutable char32_t  m_value;     // current value or read_pending
-    std::mbstate_t    m_state;
-    bool              m_default_end;
+    InputIterator           m_begin;
+    InputIterator           m_end;
+    mutable const char*     m_next;
+    ErrorPolicy             m_error_policy;
+    CodecvtPolicy           m_codecvt_policy;
+    mutable char32_t        m_value;     // current value or read_pending
+    mutable std::mbstate_t  m_state;
+    bool                    m_default_end;
 
   public:
 
@@ -700,7 +702,7 @@ public:
         std::codecvt_base::result result = 
           m_codecvt_policy()->
             in(m_state, m_begin, m_end, m_next, &m_value, &m_value+1, to_next);
-        if (result != std::codecvt::ok) 
+        if (result != std::codecvt_base::ok) 
         {
           m_error_policy("barf");  // TODO
         }

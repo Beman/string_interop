@@ -79,7 +79,7 @@ int cpp_main(int, char*[])
                                                          
     test_from_iterator begin1end;
     BOOST_TEST(begin1 != begin1end);
-//    BOOST_TEST_EQ(*begin1, char32_t(0x1F60A));
+    BOOST_TEST(*begin1 == char32_t(0x1F60A));
 
     //typedef narrow::to_iterator<const char32_t*> test_to_iterator;
     //test_to_iterator begin2(u32c);
