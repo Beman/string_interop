@@ -43,9 +43,6 @@ namespace
   const string chars("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
   const wstring wchars(L"\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
 
-  typedef stdext::cvt::codecvt_utf8<char32_t> cvt_utf8_type;
-  typedef codecvt_policy<cvt_utf8_type> cvt_utf8_policy;
-  typedef generic_narrow<char, default_error_policy<char>, cvt_utf8_policy> narrow_utf8;
 
 
 
@@ -71,7 +68,14 @@ int cpp_main(int, char*[])
   {
     std::cout << "narrow..." << std::endl;
 
-    narrow_utf8 char_utf8;
+    typedef stdext::cvt::codecvt_utf8<char32_t> cvt_utf8_type;
+    typedef codecvt_policy<cvt_utf8_type> cvt_utf8_policy;
+    typedef generic_narrow<char, default_error_policy<char>, cvt_utf8_policy> narrow_utf8;
+
+    narrow_utf8 char_utf8_dummy;  // not used; tests default construction compiles
+
+    cvt_utf8_policy cvt_policy;
+    narrow_utf8 char_utf8(cvt_policy);
 
     typedef narrow_utf8::from_iterator<const char*> test_from_iterator;
 

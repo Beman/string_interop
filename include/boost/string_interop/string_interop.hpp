@@ -112,6 +112,8 @@ namespace string_interop
     boost::shared_ptr<Codecvt>  m_codecvt;
   public:
     codecvt_policy() : m_codecvt(new Codecvt) {}
+    BOOST_DEFAULTED_FUNCTION(codecvt_policy(const codecvt_policy& rhs), 
+      {m_codecvt = rhs.m_codecvt;})
 
     const codecvt_type* operator()() const BOOST_NOEXCEPT
     {
@@ -620,6 +622,11 @@ public:
 
   //template <class charT>
   //struct codec { typedef narrow type; };
+
+  //  constructors
+
+  generic_narrow() {}
+  explicit generic_narrow(CodecvtPolicy ccvt) : m_codecvt_policy(ccvt) {}
 
   //  narrow::from_iterator  -----------------------------------------------------------//
   //
