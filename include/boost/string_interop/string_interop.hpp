@@ -349,6 +349,9 @@ public:
   };
 
   //  generic_utf32::::to_iterator  ---------------------------------------------------//
+  //
+  //  Remarks: to_iterator meets the DefaultCtorEndIterator requirements
+  //  Requires: InputIterator meets the DefaultCtorEndIterator requirements
 
   template <class InputIterator>
   class to_iterator
@@ -503,6 +506,9 @@ public:
   };
 
   //  generic_utf16::to_iterator  ------------------------------------------------------//
+  //
+  //  Remarks: to_iterator meets the DefaultCtorEndIterator requirements
+  //  Requires: InputIterator meets the DefaultCtorEndIterator requirements
 
   template <class InputIterator>
   class to_iterator
@@ -739,9 +745,10 @@ public:
     }
   };
 
-  //  generic_narrow::::to_iterator  ---------------------------------------------------//
+  //  generic_narrow::to_iterator  -----------------------------------------------------//
   //
-  //  meets the DefaultCtorEndIterator requirements
+  //  Remarks: to_iterator meets the DefaultCtorEndIterator requirements
+  //  Requires: InputIterator meets the DefaultCtorEndIterator requirements
 
   template <class InputIterator>  
   class to_iterator
@@ -756,12 +763,14 @@ public:
      BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, char32_t>::value),
        "InputIterator value_type must be char32_t for this iterator");
 
-     ErrorPolicy       m_error_policy;
-     CodecvtPolicy     m_codecvt_policy;
-     InputIterator     m_begin;  // value_type is char32_t
-     const char*       m_current_value;   // m_current_value == m_end_value
-     const char*       m_end_value;       //  indicates read pending
-     mutable char      m_value[max_char_buf];
+     ErrorPolicy             m_error_policy;
+     CodecvtPolicy           m_codecvt_policy;
+     mutable std::mbstate_t  m_state;
+     mutable InputIterator   m_begin;  // value_type is char32_t
+     mutable const char*     m_current_value;   // m_current_value == m_end_value
+                                                //  indicates read pending
+     mutable char*           m_end_value;       
+     mutable char            m_value[max_char_buf];
 
   public:
     // construct:
@@ -779,18 +788,21 @@ public:
       
       if (m_current_value == m_end_value)  // read pending
       {
-        const char* from_next;
+        const char32_t* from_next;
+        char32_t from = *m_begin;  // std::codecvt::out need char32_t*, not InputIterator
+        ++m_begin;
         std::codecvt_base::result result =
           m_codecvt_policy()->
-            out(m_state, m_begin, m_begin+1, m_begin,
+            out(m_state, &from, &from+1, from_next,
                 &m_value[0], &m_value[max_char_buf], m_end_value);
+
         if (result != std::codecvt_base::ok)
         {
           m_error_policy("barf");  // TODO
         }
         m_current_value = &m_value[0];
       }
-      return 
+      return *m_current_value;
     }
 
     bool equal(const to_iterator& that) const
@@ -802,7 +814,11 @@ public:
     { 
       BOOST_ASSERT_MSG(m_begin != InputIterator(),
         "Attempt to increment end iterator");
-      ++m_begin;  // may change m_begin to end iterator
+
+      if (m_current_value == m_end_value)
+        dereference();
+      else
+        ++m_current_value;
     }
 
   };  // to_iterator
@@ -951,7 +967,8 @@ public:
 
   //  utf8::to_iterator  ---------------------------------------------------------------//
   //
-  //  meets the DefaultCtorEndIterator requirements
+  //  Remarks: to_iterator meets the DefaultCtorEndIterator requirements
+  //  Requires: InputIterator meets the DefaultCtorEndIterator requirements
 
   template <class InputIterator>
   class to_iterator
@@ -963,8 +980,9 @@ public:
    
      typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
-     BOOST_ASSERT_MSG((boost::is_same<base_value_type, char32_t>::value),
-       "InputIterator value_type must be char32_t for this iterator");
+     // TODO: why does this fail to compile?
+     //BOOST_ASSERT_MSG((boost::is_same<base_value_type, char32_t>::value),
+     //  "InputIterator value_type must be char32_t for this iterator");
 
      InputIterator      m_begin;
      mutable char32_t   m_values[5];
@@ -1030,7 +1048,7 @@ public:
     }
   private:
 
-     void extract_current()const
+     void extract_current() const
      {
         boost::uint32_t c = *m_begin;
         if(c > 0x10FFFFu)

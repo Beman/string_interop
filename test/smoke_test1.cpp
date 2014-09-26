@@ -79,6 +79,8 @@ int cpp_main(int, char*[])
     cvt_utf8_policy cvt_policy;
     narrow_utf8 char_utf8(cvt_policy);
 
+    //  from_iterator tests
+
     typedef narrow_utf8::from_iterator test_from_iterator;
 
     test_from_iterator begin1(char_utf8, chars.c_str());
@@ -109,12 +111,38 @@ int cpp_main(int, char*[])
     ++begin1;
     BOOST_TEST(begin1 == begin1end);
 
+    //  to_iterator tests
+
+    typedef narrow_utf8::to_iterator<const char32_t*> test_to_iterator;
+
+    test_to_iterator begin2(char_utf8, u32c);
+    test_to_iterator begin2end;
+    BOOST_TEST(begin2 != begin2end);
+
+    BOOST_TEST(*begin2 == '\xF0');
+    ++begin2;
+    BOOST_TEST(*begin2 == '\x9F');
+    ++begin2;
+    BOOST_TEST(*begin2 == '\x98');
+    ++begin2;
+    BOOST_TEST(*begin2 == '\x8A');
+    ++begin2;
+    BOOST_TEST(*begin2 == '\xF0');
+    ++begin2;
+    BOOST_TEST(*begin2 == '\x9F');
+    ++begin2;
+    BOOST_TEST(*begin2 == '\x98');
+    ++begin2;
+    BOOST_TEST(*begin2 == '\x8E');
+    ++begin2;
+    BOOST_TEST(begin2 == begin2end);
 
 
-    //typedef narrow::to_iterator<const char32_t*> test_to_iterator;
-    //test_to_iterator begin2(u32c);
+    //string temp(begin2, begin2end);
+    //BOOST_TEST(temp == u8s);
 
-    //typedef narrow::from_iterator<string::const_iterator> test_string_from_iterator;
+    
+      //typedef narrow::from_iterator<string::const_iterator> test_string_from_iterator;
     //test_string_from_iterator begin4(chars.begin(), chars.begin());
     //test_string_from_iterator begin4end;
     //BOOST_TEST(begin4 == begin4end); // will assert in VC++ <xstring> debug build
