@@ -134,14 +134,34 @@ int cpp_main(int, char*[])
     BOOST_TEST(*begin2 == '\x98');
     ++begin2;
     BOOST_TEST(*begin2 == '\x8E');
-    ++begin2;
-    BOOST_TEST(begin2 == begin2end);
+    // Note: test_to_iterator does not meet DefaultCtorEndIterator requirements, so
+    // we cannot test to see that the end iterator is reached.
+
+    //  conversion_iterator tests
+
+    typedef conversion_iterator<const char*, narrow_utf8, narrow_utf8> cvt_type;
+
+    cvt_type iter3(chars.c_str());
+
+    BOOST_TEST(*iter3 == '\xF0');
+    ++iter3;
+    BOOST_TEST(*iter3 == '\x9F');
+    ++iter3;
+    BOOST_TEST(*iter3 == '\x98');
+    ++iter3;
+    BOOST_TEST(*iter3 == '\x8A');
+    ++iter3;
+    BOOST_TEST(*iter3 == '\xF0');
+    ++iter3;
+    BOOST_TEST(*iter3 == '\x9F');
+    ++iter3;
+    BOOST_TEST(*iter3 == '\x98');
+    ++iter3;
+    BOOST_TEST(*iter3 == '\x8E');
+    ++iter3;
+    BOOST_TEST(iter3 == cvt_type());
 
 
-    //string temp(begin2, begin2end);
-    //BOOST_TEST(temp == u8s);
-
-    
       //typedef narrow::from_iterator<string::const_iterator> test_string_from_iterator;
     //test_string_from_iterator begin4(chars.begin(), chars.begin());
     //test_string_from_iterator begin4end;

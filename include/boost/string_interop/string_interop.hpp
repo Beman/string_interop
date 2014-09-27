@@ -56,9 +56,9 @@
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
 #ifndef BOOST_NO_DEFAULTED_FUNCTIONS
-# define BOOST_DEFAULTED = default;
+# define BOOST_STR_IOP_DEFAULTED = default;
 #else
-# define BOOST_DEFAULTED {}
+# define BOOST_STR_IOP_DEFAULTED {}
 #endif
 
 namespace boost
@@ -622,7 +622,7 @@ class generic_narrow
 
   static const int max_char_buf = 4;  // enough for UTF-8; just a guess for other encodings.
                                // codecvt will report failure if it encounters a UTF-32
-                               // code-point that needs more buffer space.)
+                               // code-point that needs more buffer space.
 public:
   typedef generic_narrow<charT,
     ErrorPolicy, CodecvtPolicy>   type;
@@ -766,59 +766,66 @@ public:
      ErrorPolicy             m_error_policy;
      CodecvtPolicy           m_codecvt_policy;
      mutable std::mbstate_t  m_state;
-     mutable InputIterator   m_begin;  // value_type is char32_t
-     mutable const char*     m_current_value;   // m_current_value == m_end_value
-                                                //  indicates read pending
-     mutable char*           m_end_value;       
-     mutable char            m_value[max_char_buf];
+     mutable InputIterator   m_from;      // value_type is char32_t
+     mutable uint8_t         m_to;        // index into m_values; always 0 if read pending  
+     mutable uint8_t         m_to_count;  // 0 if and only if read pending
+     mutable char            m_values[max_char_buf];
 
   public:
     // construct:
-    to_iterator() : m_begin(InputIterator()) {}
+    to_iterator() : m_from(InputIterator()), m_to(0), m_to_count(0) {}  // end iterator
+
     to_iterator(const generic_narrow& codec, InputIterator begin)
       : m_error_policy(codec.m_error_policy), m_codecvt_policy(codec.m_codecvt_policy),
-      m_state(std::mbstate_t()), m_begin(begin),
-      m_current_value(&m_value[0]), m_end_value(&m_value[0])
+      m_state(std::mbstate_t()), m_from(begin),
+      m_to(0), m_to_count(0)
     {}
+
+    bool equal(const to_iterator& that) const
+    {
+      return m_from == that.m_from && m_to == that.m_to;
+    }
 
     char dereference() const
     {
-      BOOST_ASSERT_MSG(m_begin != InputIterator(),
+      BOOST_ASSERT_MSG(m_from != InputIterator(),
         "Attempt to dereference end iterator");
       
-      if (m_current_value == m_end_value)  // read pending
+      if (!m_to_count)  // read pending
       {
         const char32_t* from_next;
-        char32_t from = *m_begin;  // std::codecvt::out need char32_t*, not InputIterator
-        ++m_begin;
+        char*           to_next;
+        char32_t from = *m_from;  // std::codecvt::out needs char32_t*, not InputIterator
         std::codecvt_base::result result =
           m_codecvt_policy()->
             out(m_state, &from, &from+1, from_next,
-                &m_value[0], &m_value[max_char_buf], m_end_value);
+                &m_values[0], &m_values[max_char_buf], to_next);
 
         if (result != std::codecvt_base::ok)
         {
           m_error_policy("barf");  // TODO
         }
-        m_current_value = &m_value[0];
+        m_to = 0;
+        m_to_count = to_next - &m_values[0];
       }
-      return *m_current_value;
-    }
-
-    bool equal(const to_iterator& that) const
-    {
-      return m_begin == that.m_begin;
+      BOOST_ASSERT_MSG(m_to_count,
+        "generic_narrow::to_iterator internal implementation error");
+      return m_values[m_to];
     }
 
     void increment()
     { 
-      BOOST_ASSERT_MSG(m_begin != InputIterator(),
+      BOOST_ASSERT_MSG(m_from != InputIterator(),
         "Attempt to increment end iterator");
 
-      if (m_current_value == m_end_value)
+      if (m_to == m_to_count)  // if read pending
         dereference();
-      else
-        ++m_current_value;
+      ++m_to;
+      if (m_to == m_to_count)  // reached end
+      {
+        m_to = m_to_count = 0;  // mark as read pending
+        ++m_from;               // move to next UTF-32 code point
+      }
     }
 
   };  // to_iterator
@@ -984,26 +991,28 @@ public:
      //BOOST_ASSERT_MSG((boost::is_same<base_value_type, char32_t>::value),
      //  "InputIterator value_type must be char32_t for this iterator");
 
-     InputIterator      m_begin;
-     mutable char32_t   m_values[5];
-     mutable unsigned   m_current;
+     InputIterator      m_from;
+     // TODO: shouldn't this be unsigned char? Was it char32_t in John's original code:
+     mutable char32_t   m_values[5];  // zero terminated; thus room for any value UTF-8
+                                      // sequence + zero termination 
+     mutable unsigned   m_current;    // index into m_values; 4 implies read pending.
 
   public:
 
      typename base_type::reference
      dereference()const
      {
-        if(m_current == 4)
+        if(m_current == 4)  // read pending?
            extract_current();
         return m_values[m_current];
      }
 
      bool equal(const to_iterator& that)const
      {
-        if(m_begin == that.m_begin)
+        if(m_from == that.m_from)
         {
-           // either the m_begin's must be equal, or one must be 0 and 
-           // the other 4: which means neither must have bits 1 or 2 set:
+           // either the m_current's must be equal, or one must be 0 and 
+           // the other 4 (i.e. read pending): thus neither must have bits 1 or 2 set:
            return (m_current == that.m_current)
               || (((m_current | that.m_current) & 3) == 0);
         }
@@ -1024,13 +1033,13 @@ public:
         // if we've reached the end skip a position:
         if(m_values[m_current] == 0)
         {
-           m_current = 4;
-           ++m_begin;
+           m_current = 4;  // mark as read pending
+           ++m_from;
         }
      }
 
      // construct:
-     to_iterator() : m_begin(InputIterator()), m_current(0)
+     to_iterator() : m_from(InputIterator()), m_current(0)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -1038,7 +1047,7 @@ public:
         m_values[3] = 0;
         m_values[4] = 0;
      }
-     to_iterator(InputIterator b) : m_begin(b), m_current(4)
+     to_iterator(InputIterator b) : m_from(b), m_current(4)
      {
         m_values[0] = 0;
         m_values[1] = 0;
@@ -1050,7 +1059,7 @@ public:
 
      void extract_current() const
      {
-        boost::uint32_t c = *m_begin;
+        boost::uint32_t c = *m_from;
         if(c > 0x10FFFFu)
            detail::invalid_utf32_code_point(c);
         if(c < 0x80u)
@@ -1095,28 +1104,27 @@ public:
 //  into a single iterator that adapts an InputIterator to FromCodec's value_type to 
 //  behave as an iterator to the ToCodec's value_type.
 
-template <class ToCodec, class FromCodec, class InputIterator>
+template <class InputIterator, class FromCodec, class ToCodec>
 class conversion_iterator
-  : public ToCodec::template to_iterator<
-      typename FromCodec::template from_iterator<InputIterator> >
+  : public ToCodec::template to_iterator<typename FromCodec::from_iterator>
 {
 public:
-  typedef typename FromCodec::template from_iterator<InputIterator>  from_iterator_type;
-  typedef typename ToCodec::template to_iterator<from_iterator_type>   to_iterator_type;
+  typedef typename FromCodec::from_iterator                           from_iterator_type;
+  typedef typename ToCodec::template to_iterator<from_iterator_type>  to_iterator_type;
 
-  conversion_iterator() BOOST_DEFAULTED
+  conversion_iterator() BOOST_STR_IOP_DEFAULTED
 
-  conversion_iterator(InputIterator begin)
-    : to_iterator_type(from_iterator_type(begin)) {}
+  conversion_iterator(InputIterator begin, FromCodec fc = FromCodec(), ToCodec tc = ToCodec())
+    : to_iterator_type(tc, from_iterator_type(fc, begin)) {}
 
-  template <class U>
-  conversion_iterator(InputIterator begin, U end,
-    // enable_if ensures 2nd argument of 0 is treated as size, not range end
-    typename boost::enable_if<boost::is_same<InputIterator, U>, void* >::type = 0)
-    : to_iterator_type(from_iterator_type(begin, end)) {}
+  //template <class U>
+  //conversion_iterator(InputIterator begin, U end,
+  //  // enable_if ensures 2nd argument of 0 is treated as size, not range end
+  //  typename boost::enable_if<boost::is_same<InputIterator, U>, void* >::type = 0)
+  //  : to_iterator_type(from_iterator_type(begin, end)) {}
 
-  conversion_iterator(InputIterator begin, std::size_t sz)
-    : to_iterator_type(from_iterator_type(begin, sz)) {}
+  //conversion_iterator(InputIterator begin, std::size_t sz)
+  //  : to_iterator_type(from_iterator_type(begin, sz)) {}
 };
 
 
