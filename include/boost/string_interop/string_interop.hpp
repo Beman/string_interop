@@ -642,13 +642,13 @@ public:
 
   //  make iterators
 
-  from_iterator make_from(const char* begin)
+  from_iterator from(const char* begin)
   {
     return from_iterator(begin, m_error_policy, m_codecvt_policy);
   }
 
   template <class InputIterator>
-  to_iterator<InputIterator> make_to(InputIterator begin)
+  to_iterator<InputIterator> to(InputIterator begin)
   {
     return to_iterator<InputIterator>(begin, m_error_policy, m_codecvt_policy);
   }
@@ -1125,7 +1125,7 @@ public:
   conversion_iterator() BOOST_STR_IOP_DEFAULTED
 
   conversion_iterator(InputIterator begin, FromCodec fc = FromCodec(), ToCodec tc = ToCodec())
-    : to_iterator_type(tc.make_to(fc.make_from(begin))) {}
+    : to_iterator_type(tc.to(fc.from(begin))) {}
 
   //template <class U>
   //conversion_iterator(InputIterator begin, U end,
