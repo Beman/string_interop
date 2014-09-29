@@ -615,8 +615,8 @@ public:
 template <class charT, class ErrorHandler, class CodecvtMgr>
 class generic_narrow
 {
-  ErrorHandler    m_error_handler;
-  CodecvtMgr  m_codecvt_mgr;
+  ErrorHandler  m_error_handler;
+  CodecvtMgr    m_codecvt_mgr;
 
   static const int max_char_buf = 4;  // enough for UTF-8; just a guess for other encodings.
                                // codecvt will report failure if it encounters a UTF-32
@@ -634,8 +634,7 @@ public:
   //  constructors
 
   explicit generic_narrow(ErrorHandler ep = ErrorHandler(), 
-    CodecvtMgr ccvt = CodecvtMgr())
-    : m_error_handler(ep), m_codecvt_mgr(ccvt)  {}
+    CodecvtMgr ccvt = CodecvtMgr()) : m_error_handler(ep), m_codecvt_mgr(ccvt)  {}
 
   explicit generic_narrow(CodecvtMgr ccvt)  // m_error_handler is default constructed 
     :  m_codecvt_mgr(ccvt) {}
@@ -670,8 +669,8 @@ public:
     const char*             m_begin;
     const char*             m_end;
     mutable const char*     m_next;
-    ErrorHandler             m_error;
-    CodecvtMgr           m_codecvt;
+    ErrorHandler            m_error;
+    CodecvtMgr              m_codecvt;
     mutable char32_t        m_value;     // current value or read_pending
     mutable std::mbstate_t  m_state;
     bool                    m_default_end;
@@ -689,25 +688,22 @@ public:
       for (; *m_end != '\0'; ++m_end) {}
     }
 
-    //// range
-    //template <class T>
-    //from_iterator(const generic_narrow& codec, const char* begin, T end,
-    //  // enable_if ensures 2nd argument of 0 is treated as size, not range end
-    //  typename boost::enable_if<boost::is_same<const char*, T>, void* >::type =0)
-    //  : m_begin(begin), m_end(end), m_error(m_error_handler),
-    //    m_codecvt(m_codecvt_mgr), m_state(std::mbstate_t()),
-    //    m_default_end(false)
-    //{ m_value = read_pending; }
+    // range
+    template <class T>
+    from_iterator(const char* begin, T end, ErrorHandler ep, CodecvtMgr cp,
+      // enable_if ensures 2nd argument of 0 is treated as size, not range end
+      typename boost::enable_if<boost::is_same<const char*, T>, void* >::type = 0)
+      : m_begin(begin), m_end(end), m_error(ep), m_codecvt(cp), m_value(read_pending),
+      m_state(std::mbstate_t()), m_default_end(false) {}
 
-    //// sized
-    //from_iterator(const generic_narrow& codec, const char* begin, std::size_t sz)
-    //  : m_begin(begin), m_end(begin), m_error(m_error_handler),
-    //    m_codecvt(m_codecvt_mgr), m_state(std::mbstate_t()), 
-    //    m_default_end(false)
-    //{
-    //  std::advance(m_end, sz);
-    //  m_value = read_pending;
-    //}
+    // sized
+    from_iterator(const char* begin, std::size_t sz, ErrorHandler ep, CodecvtMgr cp
+      )
+      : m_begin(begin), m_end(begin), m_error(ep), m_codecvt(cp), m_value(read_pending),
+        m_state(std::mbstate_t()), m_default_end(false)
+    {
+      std::advance(m_end, sz);
+    }
 
     char32_t dereference() const
     {
@@ -774,8 +770,8 @@ public:
      BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, char32_t>::value),
        "InputIterator value_type must be char32_t for this iterator");
 
-     error_handler_type       m_error;
-     codecvt_mgr_type     m_codecvt;
+     error_handler_type      m_error;
+     codecvt_mgr_type        m_codecvt;
      mutable std::mbstate_t  m_state;
      mutable InputIterator   m_from;      // value_type is char32_t
      mutable uint8_t         m_to;        // index into m_values; always 0 if read pending  
@@ -1124,17 +1120,20 @@ public:
 
   conversion_iterator() BOOST_STR_IOP_DEFAULTED
 
-  conversion_iterator(InputIterator begin, FromCodec fc = FromCodec(), ToCodec tc = ToCodec())
+  conversion_iterator(InputIterator begin, FromCodec fc = FromCodec(),
+    ToCodec tc = ToCodec())
     : to_iterator_type(tc.to(fc.from(begin))) {}
 
-  //template <class U>
-  //conversion_iterator(InputIterator begin, U end,
-  //  // enable_if ensures 2nd argument of 0 is treated as size, not range end
-  //  typename boost::enable_if<boost::is_same<InputIterator, U>, void* >::type = 0)
-  //  : to_iterator_type(from_iterator_type(begin, end)) {}
+  template <class U>
+  conversion_iterator(InputIterator begin, U end, FromCodec fc = FromCodec(),
+    ToCodec tc = ToCodec(),
+    // enable_if ensures 2nd argument of 0 is treated as size, not range end
+    typename boost::enable_if<boost::is_same<InputIterator, U>, void* >::type = 0)
+    : to_iterator_type(tc.to(fc.from(begin, end))) {}
 
-  //conversion_iterator(InputIterator begin, std::size_t sz)
-  //  : to_iterator_type(from_iterator_type(begin, sz)) {}
+  conversion_iterator(InputIterator begin, std::size_t sz, FromCodec fc = FromCodec(),
+    ToCodec tc = ToCodec())
+    : to_iterator_type(tc.to(fc.from(begin, sz))) {}
 };
 
 
