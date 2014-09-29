@@ -83,7 +83,7 @@ int cpp_main(int, char*[])
 
     typedef narrow_utf8::from_iterator test_from_iterator;
 
-    test_from_iterator begin1(char_utf8, chars.c_str());
+    test_from_iterator begin1(char_utf8.make_from(chars.c_str()));
                                                          
     test_from_iterator begin1end;
     BOOST_TEST(begin1 != begin1end);
@@ -94,7 +94,7 @@ int cpp_main(int, char*[])
     ++begin1;
     BOOST_TEST(begin1 == begin1end);
 
-    begin1 = test_from_iterator(char_utf8, chars.c_str());
+    begin1 = char_utf8.make_from(chars.c_str());
     BOOST_TEST(begin1 != begin1end);
     BOOST_TEST(*begin1 == char32_t(0x1F60A));
     ++begin1;
@@ -103,7 +103,7 @@ int cpp_main(int, char*[])
     ++begin1;
     BOOST_TEST(begin1 == begin1end);
 
-    begin1 = test_from_iterator(char_utf8, chars.c_str());
+    begin1 = char_utf8.make_from(chars.c_str());
     BOOST_TEST(begin1 != begin1end);
     ++begin1;
     BOOST_TEST(begin1 != begin1end);

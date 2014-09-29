@@ -629,14 +629,21 @@ public:
 
   //  constructors
 
-  generic_narrow() BOOST_NOEXCEPT {}
-
-  explicit generic_narrow(ErrorPolicy ep, 
-    CodecvtPolicy ccvt = CodecvtPolicy()) BOOST_NOEXCEPT
+  explicit generic_narrow(ErrorPolicy ep = ErrorPolicy(), 
+    CodecvtPolicy ccvt = CodecvtPolicy())
     : m_error_policy(ep), m_codecvt_policy(ccvt)  {}
 
-  explicit generic_narrow(CodecvtPolicy ccvt) BOOST_NOEXCEPT 
+  explicit generic_narrow(CodecvtPolicy ccvt)  // m_error_policy is default constructed 
     :  m_codecvt_policy(ccvt) {}
+
+  //  make iterators
+
+  class from_iterator;
+
+  from_iterator make_from(const char* begin)
+  {
+    return from_iterator(begin, m_error_policy, m_codecvt_policy);
+  }
 
   //  generic_narrow::from_iterator  ---------------------------------------------------//
   //
@@ -655,8 +662,8 @@ public:
     const char*             m_begin;
     const char*             m_end;
     mutable const char*     m_next;
-    ErrorPolicy             m_error_policy;
-    CodecvtPolicy           m_codecvt_policy;
+    ErrorPolicy             m_error;
+    CodecvtPolicy           m_codecvt;
     mutable char32_t        m_value;     // current value or read_pending
     mutable std::mbstate_t  m_state;
     bool                    m_default_end;
@@ -666,35 +673,33 @@ public:
     // end iterator
     from_iterator() : m_default_end(true) {}
 
-    // by_null
-    from_iterator(const generic_narrow& codec, const char* begin) : m_begin(begin), m_end(begin),
-      m_error_policy(codec.m_error_policy), m_codecvt_policy(codec.m_codecvt_policy),
-      m_state(std::mbstate_t()), m_default_end(false)
+    // ntcts
+    from_iterator(const char* begin, ErrorPolicy ep, CodecvtPolicy cp)
+      : m_begin(begin), m_end(begin), m_error(ep), m_codecvt(cp), m_value(read_pending),
+        m_state(std::mbstate_t()), m_default_end(false)
     {
-      for (; *m_end != '\0';
-           ++m_end) {}
-      m_value = read_pending;
+      for (; *m_end != '\0'; ++m_end) {}
     }
 
-    // by range
-    template <class T>
-    from_iterator(const generic_narrow& codec, const char* begin, T end,
-      // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<const char*, T>, void* >::type =0)
-      : m_begin(begin), m_end(end), m_error_policy(codec.m_error_policy),
-        m_codecvt_policy(codec.m_codecvt_policy), m_state(std::mbstate_t()),
-        m_default_end(false)
-    { m_value = read_pending; }
+    //// range
+    //template <class T>
+    //from_iterator(const generic_narrow& codec, const char* begin, T end,
+    //  // enable_if ensures 2nd argument of 0 is treated as size, not range end
+    //  typename boost::enable_if<boost::is_same<const char*, T>, void* >::type =0)
+    //  : m_begin(begin), m_end(end), m_error(m_error_policy),
+    //    m_codecvt(m_codecvt_policy), m_state(std::mbstate_t()),
+    //    m_default_end(false)
+    //{ m_value = read_pending; }
 
-    // by_size
-    from_iterator(const generic_narrow& codec, const char* begin, std::size_t sz)
-      : m_begin(begin), m_end(begin), m_error_policy(codec.m_error_policy),
-        m_codecvt_policy(codec.m_codecvt_policy), m_state(std::mbstate_t()), 
-        m_default_end(false)
-    {
-      std::advance(m_end, sz);
-      m_value = read_pending;
-    }
+    //// sized
+    //from_iterator(const generic_narrow& codec, const char* begin, std::size_t sz)
+    //  : m_begin(begin), m_end(begin), m_error(m_error_policy),
+    //    m_codecvt(m_codecvt_policy), m_state(std::mbstate_t()), 
+    //    m_default_end(false)
+    //{
+    //  std::advance(m_end, sz);
+    //  m_value = read_pending;
+    //}
 
     char32_t dereference() const
     {
@@ -708,11 +713,11 @@ public:
 #      endif
         char32_t*  to_next;
         std::codecvt_base::result result = 
-          m_codecvt_policy()->
+          m_codecvt()->
             in(m_state, m_begin, m_end, m_next, &m_value, &m_value+1, to_next);
         if (result != std::codecvt_base::ok) 
         {
-          m_error_policy("barf");  // TODO
+          m_error("barf");  // TODO
         }
         BOOST_ASSERT(m_next && m_begin != m_next);  // result was ok, so verify have made progress
       }
@@ -1113,7 +1118,7 @@ public:
   conversion_iterator() BOOST_STR_IOP_DEFAULTED
 
   conversion_iterator(InputIterator begin, FromCodec fc = FromCodec(), ToCodec tc = ToCodec())
-    : to_iterator_type(tc, from_iterator_type(fc, begin)) {}
+    : to_iterator_type(tc, fc.make_from(begin)) {}
 
   //template <class U>
   //conversion_iterator(InputIterator begin, U end,
