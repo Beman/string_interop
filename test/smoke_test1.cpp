@@ -115,7 +115,7 @@ int cpp_main(int, char*[])
 
     typedef narrow_utf8::to_iterator<const char32_t*> test_to_iterator;
 
-    test_to_iterator begin2(char_utf8, u32c);
+    test_to_iterator begin2(char_utf8.make_to(u32c));
     test_to_iterator begin2end;
     BOOST_TEST(begin2 != begin2end);
 

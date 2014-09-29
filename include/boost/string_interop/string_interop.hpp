@@ -622,10 +622,14 @@ class generic_narrow
                                // codecvt will report failure if it encounters a UTF-32
                                // code-point that needs more buffer space.
 public:
-  typedef generic_narrow<charT,
-    ErrorPolicy, CodecvtPolicy>   type;
+  typedef generic_narrow<charT, ErrorPolicy, CodecvtPolicy>   type;
   typedef charT                   value_type;
   typedef ErrorPolicy             error_policy_type;
+  typedef CodecvtPolicy           codecvt_policy_type;
+
+  class from_iterator;
+  template <class InputIterator>
+  class to_iterator;
 
   //  constructors
 
@@ -638,11 +642,15 @@ public:
 
   //  make iterators
 
-  class from_iterator;
-
   from_iterator make_from(const char* begin)
   {
     return from_iterator(begin, m_error_policy, m_codecvt_policy);
+  }
+
+  template <class InputIterator>
+  to_iterator<InputIterator> make_to(InputIterator begin)
+  {
+    return to_iterator<InputIterator>(begin, m_error_policy, m_codecvt_policy);
   }
 
   //  generic_narrow::from_iterator  ---------------------------------------------------//
@@ -746,7 +754,7 @@ public:
       m_begin = m_next;
       m_value = read_pending;
     }
-  };
+  };  // from_iterator
 
   //  generic_narrow::to_iterator  -----------------------------------------------------//
   //
@@ -766,8 +774,8 @@ public:
      BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, char32_t>::value),
        "InputIterator value_type must be char32_t for this iterator");
 
-     ErrorPolicy             m_error_policy;
-     CodecvtPolicy           m_codecvt_policy;
+     error_policy_type       m_error;
+     codecvt_policy_type     m_codecvt;
      mutable std::mbstate_t  m_state;
      mutable InputIterator   m_from;      // value_type is char32_t
      mutable uint8_t         m_to;        // index into m_values; always 0 if read pending  
@@ -778,10 +786,9 @@ public:
     // construct:
     to_iterator() : m_from(InputIterator()), m_to(0), m_to_count(0) {}  // end iterator
 
-    to_iterator(const generic_narrow& codec, InputIterator begin)
-      : m_error_policy(codec.m_error_policy), m_codecvt_policy(codec.m_codecvt_policy),
-      m_state(std::mbstate_t()), m_from(begin),
-      m_to(0), m_to_count(0)
+    to_iterator(InputIterator begin, error_policy_type ep, codecvt_policy_type cp)
+      : m_error(ep), m_codecvt(cp), m_state(std::mbstate_t()), m_from(begin),
+        m_to(0), m_to_count(0)
     {}
 
     bool equal(const to_iterator& that) const
@@ -800,13 +807,13 @@ public:
         char*           to_next;
         char32_t from = *m_from;  // std::codecvt::out needs char32_t*, not InputIterator
         std::codecvt_base::result result =
-          m_codecvt_policy()->
+          m_codecvt()->
             out(m_state, &from, &from+1, from_next,
                 &m_values[0], &m_values[max_char_buf], to_next);
 
         if (result != std::codecvt_base::ok)
         {
-          m_error_policy("barf");  // TODO
+          m_error("barf");  // TODO
         }
         m_to = 0;
         m_to_count = to_next - &m_values[0];
@@ -1118,7 +1125,7 @@ public:
   conversion_iterator() BOOST_STR_IOP_DEFAULTED
 
   conversion_iterator(InputIterator begin, FromCodec fc = FromCodec(), ToCodec tc = ToCodec())
-    : to_iterator_type(tc, fc.make_from(begin)) {}
+    : to_iterator_type(tc.make_to(fc.make_from(begin))) {}
 
   //template <class U>
   //conversion_iterator(InputIterator begin, U end,
