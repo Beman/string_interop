@@ -24,8 +24,6 @@
 
    * Add error handling options
 
-   * Replace hacks with policy based error handling, narrow codecvt management.
-
 */
 
 
