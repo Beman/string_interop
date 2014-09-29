@@ -68,15 +68,15 @@ namespace string_interop
 //                                     Synopsis                                         //
 //--------------------------------------------------------------------------------------//
 
-  template <class charT, class ErrorPolicy, class CodecvtPolicy>
+  template <class charT, class ErrorHandler, class CodecvtMgr>
     class generic_narrow;
-  template <class charT, class ErrorPolicy>
+  template <class charT, class ErrorHandler>
     class generic_utf32;
-  template <class charT, class ErrorPolicy>
+  template <class charT, class ErrorHandler>
     class generic_utf16;
 
   template <class charT>
-  class default_error_policy
+  class default_error_handler
   {
   public:
     void operator()(const std::string& msg) const
@@ -88,7 +88,7 @@ namespace string_interop
 
   typedef std::codecvt<char32_t, char, std::mbstate_t>  codecvt_type;
 
-  //class default_codecvt_policy
+  //class default_codecvt_mgr
   //{
   //public:
   //  const codecvt_type* operator()() BOOST_NOEXCEPT
@@ -98,12 +98,12 @@ namespace string_interop
   //};
 
   template <class Codecvt>
-  class codecvt_policy
+  class shared_codecvt_mgr
   {
     boost::shared_ptr<Codecvt>  m_codecvt;
   public:
-    codecvt_policy() : m_codecvt(new Codecvt) {}
-    BOOST_DEFAULTED_FUNCTION(codecvt_policy(const codecvt_policy& rhs), 
+    shared_codecvt_mgr() : m_codecvt(new Codecvt) {}
+    BOOST_DEFAULTED_FUNCTION(shared_codecvt_mgr(const shared_codecvt_mgr& rhs), 
       {m_codecvt = rhs.m_codecvt;})
 
     const codecvt_type* operator()() const BOOST_NOEXCEPT
@@ -113,11 +113,11 @@ namespace string_interop
     }
   };
 
-  class dynamic_codecvt_policy
+  class dynamic_codecvt_mgr
   {
     boost::shared_ptr<codecvt_type> m_codecvt;
   public:
-    dynamic_codecvt_policy(boost::shared_ptr<codecvt_type> shared) BOOST_NOEXCEPT
+    dynamic_codecvt_mgr(boost::shared_ptr<codecvt_type> shared) BOOST_NOEXCEPT
       : m_codecvt(shared) {}
 
     const codecvt_type* operator()() BOOST_NOEXCEPT
@@ -142,8 +142,8 @@ namespace string_interop
 //#endif
 //  typedef detail::generic_utf16<char16_t>    utf16;
 
-  //typedef generic_narrow<char, default_error_policy<char>, default_codecvt_policy> narrow;
-  typedef generic_utf32<char32_t, default_error_policy<char32_t> >                 utf32;
+  //typedef generic_narrow<char, default_error_handler<char>, default_codecvt_mgr> narrow;
+  typedef generic_utf32<char32_t, default_error_handler<char32_t> >                 utf32;
 
   class default_codec;
 
@@ -264,19 +264,19 @@ namespace detail
 //                                   generic_utf32                                      //
 //--------------------------------------------------------------------------------------//
 
-template <class charT, class ErrorPolicy>
+template <class charT, class ErrorHandler>
 class generic_utf32
 {
-  ErrorPolicy m_error_policy;
+  ErrorHandler m_error_handler;
 
 public:
 
-  typedef generic_utf32<charT, ErrorPolicy>  type;
+  typedef generic_utf32<charT, ErrorHandler>  type;
   typedef charT                              value_type;
-  typedef ErrorPolicy                        error_policy_type;
+  typedef ErrorHandler                        error_handler_type;
 
-  explicit generic_utf32(ErrorPolicy ep = ErrorPolicy()) BOOST_NOEXCEPT
-    : m_error_policy(ep) {}
+  explicit generic_utf32(ErrorHandler ep = ErrorHandler()) BOOST_NOEXCEPT
+    : m_error_handler(ep) {}
 
   //  generic_utf32::from_iterator  ---------------------------------------------------//
 
@@ -290,7 +290,7 @@ public:
       "InputIterator value_type must be same as codec value_type");
     InputIterator    m_begin;
     InputIterator    m_end;
-    ErrorPolicy      m_error_policy;
+    ErrorHandler      m_error_handler;
     bool             m_default_end;
 
   public:
@@ -300,7 +300,7 @@ public:
 
     // by_null
     from_iterator(const generic_utf32& codec, InputIterator begin)
-      : m_begin(begin), m_end(begin), m_error_policy(codec.m_error_policy), m_default_end(false)
+      : m_begin(begin), m_end(begin), m_error_handler(codec.m_error_handler), m_default_end(false)
     {
       for (;
            *m_end != typename std::iterator_traits<InputIterator>::value_type();
@@ -312,12 +312,12 @@ public:
     from_iterator(const generic_utf32& codec, InputIterator begin, T end,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
       typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type =0)
-      : m_begin(begin), m_end(end), m_error_policy(codec.m_error_policy), m_default_end(false)
+      : m_begin(begin), m_end(end), m_error_handler(codec.m_error_handler), m_default_end(false)
     {}
 
     // by_size
     from_iterator(const generic_utf32& codec, InputIterator begin, std::size_t sz)
-      : m_begin(begin), m_end(begin), m_error_policy(codec.m_error_policy), m_default_end(false)
+      : m_begin(begin), m_end(begin), m_error_handler(codec.m_error_handler), m_default_end(false)
     {
       std::advance(m_end, sz);
     }
@@ -371,18 +371,18 @@ public:
 //                                   generic_utf16                                      //
 //--------------------------------------------------------------------------------------//
 
-template <class charT, class ErrorPolicy>
+template <class charT, class ErrorHandler>
 class generic_utf16
 {
-  ErrorPolicy m_error_policy;
+  ErrorHandler m_error_handler;
 
 public:
-  typedef generic_utf16<charT, ErrorPolicy>  type;
+  typedef generic_utf16<charT, ErrorHandler>  type;
   typedef charT                              value_type;
-  typedef ErrorPolicy                        error_policy_type;
+  typedef ErrorHandler                        error_handler_type;
 
-  explicit generic_utf16(ErrorPolicy ep = ErrorPolicy()) BOOST_NOEXCEPT
-    : m_error_policy(ep) {}
+  explicit generic_utf16(ErrorHandler ep = ErrorHandler()) BOOST_NOEXCEPT
+    : m_error_handler(ep) {}
 
   //  generic_utf16::from_iterator  ----------------------------------------------------//
 
@@ -612,20 +612,20 @@ public:
 //                                  generic_narrow                                      //
 //--------------------------------------------------------------------------------------//
 
-template <class charT, class ErrorPolicy, class CodecvtPolicy>
+template <class charT, class ErrorHandler, class CodecvtMgr>
 class generic_narrow
 {
-  ErrorPolicy    m_error_policy;
-  CodecvtPolicy  m_codecvt_policy;
+  ErrorHandler    m_error_handler;
+  CodecvtMgr  m_codecvt_mgr;
 
   static const int max_char_buf = 4;  // enough for UTF-8; just a guess for other encodings.
                                // codecvt will report failure if it encounters a UTF-32
                                // code-point that needs more buffer space.
 public:
-  typedef generic_narrow<charT, ErrorPolicy, CodecvtPolicy>   type;
-  typedef charT                   value_type;
-  typedef ErrorPolicy             error_policy_type;
-  typedef CodecvtPolicy           codecvt_policy_type;
+  typedef generic_narrow<charT, ErrorHandler, CodecvtMgr>   type;
+  typedef charT                                             value_type;
+  typedef ErrorHandler                                      error_handler_type;
+  typedef CodecvtMgr                                        codecvt_mgr_type;
 
   class from_iterator;
   template <class InputIterator>
@@ -633,24 +633,24 @@ public:
 
   //  constructors
 
-  explicit generic_narrow(ErrorPolicy ep = ErrorPolicy(), 
-    CodecvtPolicy ccvt = CodecvtPolicy())
-    : m_error_policy(ep), m_codecvt_policy(ccvt)  {}
+  explicit generic_narrow(ErrorHandler ep = ErrorHandler(), 
+    CodecvtMgr ccvt = CodecvtMgr())
+    : m_error_handler(ep), m_codecvt_mgr(ccvt)  {}
 
-  explicit generic_narrow(CodecvtPolicy ccvt)  // m_error_policy is default constructed 
-    :  m_codecvt_policy(ccvt) {}
+  explicit generic_narrow(CodecvtMgr ccvt)  // m_error_handler is default constructed 
+    :  m_codecvt_mgr(ccvt) {}
 
   //  make iterators
 
   from_iterator from(const char* begin)
   {
-    return from_iterator(begin, m_error_policy, m_codecvt_policy);
+    return from_iterator(begin, m_error_handler, m_codecvt_mgr);
   }
 
   template <class InputIterator>
   to_iterator<InputIterator> to(InputIterator begin)
   {
-    return to_iterator<InputIterator>(begin, m_error_policy, m_codecvt_policy);
+    return to_iterator<InputIterator>(begin, m_error_handler, m_codecvt_mgr);
   }
 
   //  generic_narrow::from_iterator  ---------------------------------------------------//
@@ -670,8 +670,8 @@ public:
     const char*             m_begin;
     const char*             m_end;
     mutable const char*     m_next;
-    ErrorPolicy             m_error;
-    CodecvtPolicy           m_codecvt;
+    ErrorHandler             m_error;
+    CodecvtMgr           m_codecvt;
     mutable char32_t        m_value;     // current value or read_pending
     mutable std::mbstate_t  m_state;
     bool                    m_default_end;
@@ -682,7 +682,7 @@ public:
     from_iterator() : m_default_end(true) {}
 
     // ntcts
-    from_iterator(const char* begin, ErrorPolicy ep, CodecvtPolicy cp)
+    from_iterator(const char* begin, ErrorHandler ep, CodecvtMgr cp)
       : m_begin(begin), m_end(begin), m_error(ep), m_codecvt(cp), m_value(read_pending),
         m_state(std::mbstate_t()), m_default_end(false)
     {
@@ -694,15 +694,15 @@ public:
     //from_iterator(const generic_narrow& codec, const char* begin, T end,
     //  // enable_if ensures 2nd argument of 0 is treated as size, not range end
     //  typename boost::enable_if<boost::is_same<const char*, T>, void* >::type =0)
-    //  : m_begin(begin), m_end(end), m_error(m_error_policy),
-    //    m_codecvt(m_codecvt_policy), m_state(std::mbstate_t()),
+    //  : m_begin(begin), m_end(end), m_error(m_error_handler),
+    //    m_codecvt(m_codecvt_mgr), m_state(std::mbstate_t()),
     //    m_default_end(false)
     //{ m_value = read_pending; }
 
     //// sized
     //from_iterator(const generic_narrow& codec, const char* begin, std::size_t sz)
-    //  : m_begin(begin), m_end(begin), m_error(m_error_policy),
-    //    m_codecvt(m_codecvt_policy), m_state(std::mbstate_t()), 
+    //  : m_begin(begin), m_end(begin), m_error(m_error_handler),
+    //    m_codecvt(m_codecvt_mgr), m_state(std::mbstate_t()), 
     //    m_default_end(false)
     //{
     //  std::advance(m_end, sz);
@@ -774,8 +774,8 @@ public:
      BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, char32_t>::value),
        "InputIterator value_type must be char32_t for this iterator");
 
-     error_policy_type       m_error;
-     codecvt_policy_type     m_codecvt;
+     error_handler_type       m_error;
+     codecvt_mgr_type     m_codecvt;
      mutable std::mbstate_t  m_state;
      mutable InputIterator   m_from;      // value_type is char32_t
      mutable uint8_t         m_to;        // index into m_values; always 0 if read pending  
@@ -786,7 +786,7 @@ public:
     // construct:
     to_iterator() : m_from(InputIterator()), m_to(0), m_to_count(0) {}  // end iterator
 
-    to_iterator(InputIterator begin, error_policy_type ep, codecvt_policy_type cp)
+    to_iterator(InputIterator begin, error_handler_type ep, codecvt_mgr_type cp)
       : m_error(ep), m_codecvt(cp), m_state(std::mbstate_t()), m_from(begin),
         m_to(0), m_to_count(0)
     {}
@@ -845,17 +845,17 @@ public:
 //                                     utf8 codec                                       //
 //--------------------------------------------------------------------------------------//
 
-template <class ErrorPolicy>
+template <class ErrorHandler>
 class generic_utf8
 {
-  ErrorPolicy  m_error_policy;
+  ErrorHandler  m_error_handler;
 public:
-  typedef generic_utf8<ErrorPolicy>  type;
+  typedef generic_utf8<ErrorHandler>  type;
   typedef char                       value_type;
-  typedef ErrorPolicy                error_policy_type;
+  typedef ErrorHandler                error_handler_type;
 
-  explicit generic_utf8(ErrorPolicy ep = ErrorPolicy()) BOOST_NOEXCEPT
-    : m_error_policy(ep) {}
+  explicit generic_utf8(ErrorHandler ep = ErrorHandler()) BOOST_NOEXCEPT
+    : m_error_handler(ep) {}
 
   //  utf8::from_iterator  -------------------------------------------------------------//
   //
