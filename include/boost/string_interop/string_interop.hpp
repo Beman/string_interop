@@ -72,37 +72,41 @@ namespace string_interop
     class generic_narrow;
   template <class charT, class ErrorHandler>
     class generic_utf32;
-  template <class charT, class ErrorHandler>
+    template <class charT, class ErrorHandler>
     class generic_utf16;
+    template <class charT, class ErrorHandler>
+    class generic_utf8;
 
-  template <class charT>
   class default_error_handler
   {
   public:
-    void operator()(const std::string& msg) const
+    char32_t operator()(const std::string& msg) const
     {
-      std::cout << "default error policy" << std::endl;
+      std::cout << "default error handler" << std::endl;
       throw std::runtime_error(msg);   // TODO need a codec_error
     }
   };
 
   typedef std::codecvt<char32_t, char, std::mbstate_t>  codecvt_type;
 
-  //class default_codecvt_mgr
-  //{
-  //public:
-  //  const codecvt_type* operator()() BOOST_NOEXCEPT
-  //  {
-  //    return detail::default_codecvt();  // kick the can down the road
-  //  }
-  //};
+  class default_codecvt_mgr
+  {
+  public:
+    const codecvt_type* operator()() const BOOST_NOEXCEPT
+    {
+      throw "not implemented yet";
+      return new codecvt_type;
+    }
+  };
 
   template <class Codecvt>
   class shared_codecvt_mgr
   {
     boost::shared_ptr<Codecvt>  m_codecvt;
   public:
+
     shared_codecvt_mgr() : m_codecvt(new Codecvt) {}
+
     BOOST_DEFAULTED_FUNCTION(shared_codecvt_mgr(const shared_codecvt_mgr& rhs), 
       {m_codecvt = rhs.m_codecvt;})
 
@@ -127,55 +131,57 @@ namespace string_interop
     }
   };
 
+  //  supplied codecs
 
-  //  codecs
-//  class utf8;                                        // UTF-8 encoding for char
-//#ifdef BOOST_WINDOWS_API
-//  typedef detail::generic_utf16<wchar_t>  wide;      // UTF-16 encoding for wchar_t
-//#else
-//  // hack: assume POSIX wide encoding is UTF-16 or UTF-32
-//# if WCHAR_MAX == 0xffff
-//  typedef detail::generic_utf16<wchar_t>  wide;      // UTF-16 encoding for wchar_t
-//# else
-//  typedef detail::generic_utf32<wchar_t>  wide;      // UTF-32 encoding for wchar_t
-//# endif
-//#endif
-//  typedef detail::generic_utf16<char16_t>    utf16;
+  typedef generic_narrow<char, default_error_handler, default_codecvt_mgr>  narrow;
+  typedef generic_utf8<char, default_error_handler>                         utf8;
+  typedef generic_utf16<char16_t, default_error_handler>                    utf16;
+  typedef generic_utf32<char32_t, default_error_handler>                    utf32;
 
-  //typedef generic_narrow<char, default_error_handler<char>, default_codecvt_mgr> narrow;
-  typedef generic_utf32<char32_t, default_error_handler<char32_t> >                 utf32;
+#ifdef BOOST_WINDOWS_API
+  //  Windows wchar_t is always UTF-16
+  typedef generic_utf16<wchar_t, default_error_handler>                     wide;
+#else
+  //  POSIX specifies wchar_t as 32, 16, or 8 bits. We assume the encoding
+  //  is UTF-32, UTF-16, or UTF-8 respectively.
+# if WCHAR_MAX == 0xff
+  typedef detail::generic_utf8<wchar_t, default_error_handler>              wide;
+# elif WCHAR_MAX == 0xffff
+  typedef detail::generic_utf16<wchar_t, default_error_handler>             wide;
+# else
+  typedef detail::generic_utf32<wchar_t, default_error_handler>             wide;
+# endif
+#endif
 
   class default_codec;
 
-//  select_codec type selector
+//  select_codec type
 
   template <class charT> struct select_codec;
-  //template <> struct select_codec<char>    { typedef narrow type; };
-  //template <> struct select_codec<wchar_t> { typedef wide type; };
-  //template <> struct select_codec<char16_t>   { typedef utf16 type; };
+  template <> struct select_codec<char>       { typedef narrow type; };
+  template <> struct select_codec<wchar_t>    { typedef wide type; };
+  template <> struct select_codec<char16_t>   { typedef utf16 type; };
   template <> struct select_codec<char32_t>   { typedef utf32 type; };
 
-//  default_codec pseudo codec
+////  default_codec pseudo codec
+////
+////  provides lazy select_codec selection so that codec template parameters with defaults
+////  can appear before the template parameter that determines charT.  
 //
-//  provides lazy select_codec selection so that codec template parameters with defaults
-//  can appear before the template parameter that determines charT.  
-
-  class default_codec
-  {
-  public:
-    template <class charT>
-    struct codec
-    { 
-      typedef typename select_codec<charT>::type type; 
-    };
-
-  };
+//  class default_codec
+//  {
+//  public:
+//    template <class charT>
+//    struct codec
+//    { 
+//      typedef typename select_codec<charT>::type type; 
+//    };
+//
+//  };
 
   //  conversion_iterator
   template <class ToCodec, class FromCodec, class InputIterator>
     class conversion_iterator;
-
-//  see make_string() functions below
 
 //---------------------------------  Requirements  -------------------------------------//
 //
@@ -883,14 +889,14 @@ public:
 //                                     utf8 codec                                       //
 //--------------------------------------------------------------------------------------//
 
-template <class ErrorHandler>
+template <class charT, class ErrorHandler>
 class generic_utf8
 {
   ErrorHandler  m_error_handler;
 public:
-  typedef generic_utf8<ErrorHandler>  type;
-  typedef char                        value_type;
-  typedef ErrorHandler                error_handler_type;
+  typedef generic_utf8<charT, ErrorHandler>  type;
+  typedef charT                              value_type;
+  typedef ErrorHandler                       error_handler_type;
 
   template <class InputIterator>
   class from_iterator;
@@ -1048,16 +1054,15 @@ public:
   template <class InputIterator>
   class to_iterator
    : public boost::iterator_facade<to_iterator<InputIterator>,
-       char, std::input_iterator_tag, const char>
+     value_type, std::input_iterator_tag, const value_type>
   {
      typedef boost::iterator_facade<to_iterator<InputIterator>,
-       char, std::input_iterator_tag, const char> base_type;
+       value_type, std::input_iterator_tag, const value_type> base_type;
    
      typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
-     // TODO: why does this fail to compile?
-     //BOOST_ASSERT_MSG((boost::is_same<base_value_type, char32_t>::value),
-     //  "InputIterator value_type must be char32_t for this iterator");
+     //BOOST_ASSERT_MSG((boost::is_same<base_value_type, value_type>::value),
+     //  "InputIterator value_type must be value_type for this iterator");
 
      InputIterator       m_from;
      error_handler_type  m_error;
