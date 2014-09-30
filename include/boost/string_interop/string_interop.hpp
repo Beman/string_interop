@@ -270,59 +270,78 @@ class generic_utf32
   ErrorHandler m_error_handler;
 
 public:
-
   typedef generic_utf32<charT, ErrorHandler>  type;
-  typedef charT                              value_type;
+  typedef charT                               value_type;
   typedef ErrorHandler                        error_handler_type;
+
+  template <class InputIterator>
+  class from_iterator;
+  template <class InputIterator>
+  class to_iterator;
 
   explicit generic_utf32(ErrorHandler ep = ErrorHandler()) BOOST_NOEXCEPT
     : m_error_handler(ep) {}
+
+  //  make iterator functions
+
+  template <class InputIterator>
+  from_iterator<InputIterator> from(InputIterator begin)
+  {
+    return from_iterator(begin, m_error_handler);
+  }
+
+  template <class InputIterator>
+  to_iterator<InputIterator> to(InputIterator begin)
+  {
+    return to_iterator<InputIterator>(begin, m_error_handler);
+  }
 
   //  generic_utf32::from_iterator  ---------------------------------------------------//
 
   template <class InputIterator>
   class from_iterator
     : public boost::iterator_facade<from_iterator<InputIterator>,
-        charT, std::input_iterator_tag, const charT> 
+      value_type, std::input_iterator_tag, const value_type>
   {
     BOOST_STATIC_ASSERT_MSG((boost::is_same<typename std::iterator_traits<InputIterator>::value_type,
-      charT>::value),
+      value_type>::value),
       "InputIterator value_type must be same as codec value_type");
-    InputIterator    m_begin;
-    InputIterator    m_end;
-    ErrorHandler      m_error_handler;
-    bool             m_default_end;
+
+    InputIterator       m_begin;
+    InputIterator       m_end;
+    error_handler_type  m_error;
+    bool                m_default_end;
 
   public:
 
     // end iterator
     from_iterator() : m_default_end(true) {}
 
-    // by_null
-    from_iterator(const generic_utf32& codec, InputIterator begin)
-      : m_begin(begin), m_end(begin), m_error_handler(codec.m_error_handler), m_default_end(false)
+    // ntcts
+    from_iterator(InputIterator begin, error_handler_type eh)
+      : m_begin(begin), m_end(begin), m_error(eh), m_default_end(false)
     {
       for (;
            *m_end != typename std::iterator_traits<InputIterator>::value_type();
            ++m_end) {}
     }
 
-    // by range
+    // range
     template <class T>
-    from_iterator(const generic_utf32& codec, InputIterator begin, T end,
+    from_iterator(InputIterator begin, T end, error_handler_type eh,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
       typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type =0)
-      : m_begin(begin), m_end(end), m_error_handler(codec.m_error_handler), m_default_end(false)
+      : m_begin(begin), m_end(end), m_error(eh), m_default_end(false)
     {}
 
-    // by_size
-    from_iterator(const generic_utf32& codec, InputIterator begin, std::size_t sz)
-      : m_begin(begin), m_end(begin), m_error_handler(codec.m_error_handler), m_default_end(false)
+    // sized
+    from_iterator(InputIterator begin, std::size_t sz, error_handler_type eh)
+      : m_begin(begin), m_end(begin), m_error(eh), m_default_end(false)
     {
       std::advance(m_end, sz);
     }
 
-    charT dereference() const
+    value_type dereference() const
     {
       BOOST_ASSERT_MSG(!m_default_end && m_begin != m_end,
         "Attempt to dereference end iterator");
@@ -354,15 +373,19 @@ public:
   template <class InputIterator>
   class to_iterator
    : public boost::iterator_facade<to_iterator<InputIterator>,
-      charT, std::input_iterator_tag, const charT>
+     value_type, std::input_iterator_tag, const value_type>
   {
     InputIterator m_itr;
   public:
     to_iterator() : m_itr(InputIterator()) {}
-    to_iterator(InputIterator itr) : m_itr(itr) {}
-    charT dereference() const { return *m_itr; }
+
+    to_iterator(InputIterator itr, error_handler_type) : m_itr(itr) {}
+
+    value_type dereference() const { return *m_itr; }
+
     bool equal(const to_iterator& that) const {return m_itr == that.m_itr;}
-    void increment() { ++m_itr; }
+
+    void increment() {++m_itr;}
   };
 
 };
@@ -378,11 +401,30 @@ class generic_utf16
 
 public:
   typedef generic_utf16<charT, ErrorHandler>  type;
-  typedef charT                              value_type;
+  typedef charT                               value_type;
   typedef ErrorHandler                        error_handler_type;
+
+  template <class InputIterator>
+  class from_iterator;
+  template <class InputIterator>
+  class to_iterator;
 
   explicit generic_utf16(ErrorHandler ep = ErrorHandler()) BOOST_NOEXCEPT
     : m_error_handler(ep) {}
+
+  //  make iterator functions
+
+  template <class InputIterator>
+  from_iterator<InputIterator> from(InputIterator begin)
+  {
+    return from_iterator(begin, m_error_handler);
+  }
+
+  template <class InputIterator>
+  to_iterator<InputIterator> to(InputIterator begin)
+  {
+    return to_iterator<InputIterator>(begin, m_error_handler);
+  }
 
   //  generic_utf16::from_iterator  ----------------------------------------------------//
 
@@ -399,42 +441,40 @@ public:
 
      typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
-     BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, charT>::value),
+     BOOST_STATIC_ASSERT_MSG((boost::is_same<base_value_type, value_type>::value),
        "InputIterator value_type must be charT for this from_iterator");
 
-     InputIterator    m_begin;   // current position
-     InputIterator    m_end;  
-     mutable char32_t m_value;     // current value or read_pending
-     bool             m_default_end;
+     InputIterator       m_begin;        // current position
+     InputIterator       m_end;
+     error_handler_type  m_error_handler;
+     mutable char32_t    m_value;        // current value or read_pending
+     bool                m_default_end;
 
    public:
 
     // end iterator
     from_iterator() : m_default_end(true) {}
 
-    // by_null
-    from_iterator(InputIterator begin) : m_begin(begin), m_end(begin),
-      m_default_end(false) 
+    // ntcts
+    from_iterator(InputIterator begin, error_handler_type eh)
+      : m_begin(begin), m_end(begin), m_error_handler(eh), m_value(read_pending), m_default_end(false) 
     {
-      for (;
-           *m_end != typename std::iterator_traits<InputIterator>::value_type();
-           ++m_end) {}
-      m_value = read_pending;
+      for (; *m_end != typename std::iterator_traits<InputIterator>::value_type(); ++m_end) {}
     }
 
-    // by range
+    // range
     template <class T>
-    from_iterator(InputIterator begin, T end,
+    from_iterator(InputIterator begin, T end, error_handler_type eh,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
       typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type = 0)
-      : m_begin(begin), m_end(end), m_default_end(false) { m_value = read_pending; }
+      : m_begin(begin), m_end(end), m_error_handler(eh), m_value(read_pending),
+        m_default_end(false) {}
 
-    // by_size
-    from_iterator(InputIterator begin, std::size_t sz)
-      : m_begin(begin), m_end(begin), m_default_end(false)
+    // sized
+    from_iterator(InputIterator begin, std::size_t sz, error_handler_type eh)
+      : m_begin(begin), m_end(begin), m_error_handler(eh), m_value(read_pending), m_default_end(false)
     {
       std::advance(m_end, sz);
-      m_value = read_pending;
     }
 
      typename base_type::reference
@@ -511,16 +551,17 @@ public:
   template <class InputIterator>
   class to_iterator
    : public boost::iterator_facade<to_iterator<InputIterator>,
-      charT, std::input_iterator_tag, const charT>
+     value_type, std::input_iterator_tag, const value_type>
   {
      typedef boost::iterator_facade<to_iterator<InputIterator>,
-       charT, std::input_iterator_tag, const charT> base_type;
+       value_type, std::input_iterator_tag, const value_type> base_type;
 
      typedef typename std::iterator_traits<InputIterator>::value_type base_value_type;
 
-     InputIterator     m_begin;
-     mutable charT     m_values[3];
-     mutable unsigned  m_current;
+     InputIterator       m_begin;
+     error_handler_type  m_error_handler;
+     mutable value_type  m_values[3];
+     mutable unsigned    m_current;
 
   public:
 
@@ -569,12 +610,13 @@ public:
         m_values[1] = 0;
         m_values[2] = 0;
      }
-     to_iterator(InputIterator b) : m_begin(b), m_current(2)
+     to_iterator(InputIterator b, error_handler_type eh)
+       : m_begin(b), m_error_handler(eh), m_current(2)
      {
         m_values[0] = 0;
         m_values[1] = 0;
         m_values[2] = 0;
-    }
+     }
   private:
 
      void extract_current()const
@@ -669,8 +711,8 @@ public:
     const char*             m_begin;
     const char*             m_end;
     mutable const char*     m_next;
-    ErrorHandler            m_error;
-    CodecvtMgr              m_codecvt;
+    error_handler_type      m_error;
+    codecvt_mgr_type        m_codecvt;
     mutable char32_t        m_value;     // current value or read_pending
     mutable std::mbstate_t  m_state;
     bool                    m_default_end;
@@ -681,7 +723,7 @@ public:
     from_iterator() : m_default_end(true) {}
 
     // ntcts
-    from_iterator(const char* begin, ErrorHandler ep, CodecvtMgr cp)
+    from_iterator(const char* begin, error_handler_type ep, codecvt_mgr_type cp)
       : m_begin(begin), m_end(begin), m_error(ep), m_codecvt(cp), m_value(read_pending),
         m_state(std::mbstate_t()), m_default_end(false)
     {
@@ -690,14 +732,14 @@ public:
 
     // range
     template <class T>
-    from_iterator(const char* begin, T end, ErrorHandler ep, CodecvtMgr cp,
+    from_iterator(const char* begin, T end, error_handler_type ep, codecvt_mgr_type cp,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
       typename boost::enable_if<boost::is_same<const char*, T>, void* >::type = 0)
       : m_begin(begin), m_end(end), m_error(ep), m_codecvt(cp), m_value(read_pending),
       m_state(std::mbstate_t()), m_default_end(false) {}
 
     // sized
-    from_iterator(const char* begin, std::size_t sz, ErrorHandler ep, CodecvtMgr cp
+    from_iterator(const char* begin, std::size_t sz, error_handler_type ep, codecvt_mgr_type cp
       )
       : m_begin(begin), m_end(begin), m_error(ep), m_codecvt(cp), m_value(read_pending),
         m_state(std::mbstate_t()), m_default_end(false)
@@ -847,11 +889,30 @@ class generic_utf8
   ErrorHandler  m_error_handler;
 public:
   typedef generic_utf8<ErrorHandler>  type;
-  typedef char                       value_type;
+  typedef char                        value_type;
   typedef ErrorHandler                error_handler_type;
+
+  template <class InputIterator>
+  class from_iterator;
+  template <class InputIterator>
+  class to_iterator;
 
   explicit generic_utf8(ErrorHandler ep = ErrorHandler()) BOOST_NOEXCEPT
     : m_error_handler(ep) {}
+
+  //  make iterator functions
+
+  template <class InputIterator>
+  from_iterator<InputIterator> from(InputIterator begin)
+  {
+    return from_iterator<InputIterator>(begin, m_error_handler);
+  }
+
+  template <class InputIterator>
+  to_iterator<InputIterator> to(InputIterator begin)
+  {
+    return to_iterator<InputIterator>(begin, m_error_handler);
+  }
 
   //  utf8::from_iterator  -------------------------------------------------------------//
   //
@@ -875,39 +936,40 @@ public:
      BOOST_STATIC_ASSERT(sizeof(base_value_type)*CHAR_BIT == 8);
      BOOST_STATIC_ASSERT(sizeof(char32_t)*CHAR_BIT == 32);
 
-     InputIterator     m_begin;  // current position
-     InputIterator     m_end;
-     mutable char32_t  m_value;    // current value or read_pending
-     bool              m_default_end;
+     error_handler_type  m_error;
+     InputIterator       m_begin;  // current position
+     InputIterator       m_end;
+     mutable char32_t    m_value;    // current value or read_pending
+     bool                m_default_end;
 
    public:
 
     // end iterator
     from_iterator() : m_default_end(true) {}
 
-    // by_null
-    from_iterator(InputIterator begin) : m_begin(begin), m_end(begin),
-      m_default_end(false) 
+    // ntcts
+    from_iterator(InputIterator begin, error_handler_type eh)
+      : m_error(eh), m_begin(begin), m_end(begin),
+        m_value(read_pending), m_default_end(false) 
     {
-      for (;
-           *m_end != typename std::iterator_traits<InputIterator>::value_type();
-           ++m_end) {}
-      m_value = read_pending;
+      for (; *m_end != typename std::iterator_traits<InputIterator>::value_type();
+        ++m_end) {}
     }
 
     // by range
     template <class T>
-    from_iterator(InputIterator begin, T end,
+    from_iterator(InputIterator begin, T end, error_handler_type eh,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type =0)
-      : m_begin(begin), m_end(end), m_default_end(false) { m_value = read_pending; }
+      typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type = 0)
+      : m_error(eh), m_begin(begin), m_end(end),
+        m_value(read_pending), m_default_end(false) {}
 
     // by_size
-    from_iterator(InputIterator begin, std::size_t sz)
-      : m_begin(begin), m_end(begin), m_default_end(false)
+    from_iterator(InputIterator begin, std::size_t sz, error_handler_type eh)
+      : m_error(eh), m_begin(begin), m_end(begin),
+        m_value(read_pending), m_default_end(false)
     {
       std::advance(m_end, sz);
-      m_value = read_pending;
     }
 
      typename base_type::reference
@@ -997,7 +1059,9 @@ public:
      //BOOST_ASSERT_MSG((boost::is_same<base_value_type, char32_t>::value),
      //  "InputIterator value_type must be char32_t for this iterator");
 
-     InputIterator      m_from;
+     InputIterator       m_from;
+     error_handler_type  m_error;
+
      // TODO: shouldn't this be unsigned char? Was it char32_t in John's original code:
      mutable char32_t   m_values[5];  // zero terminated; thus room for any value UTF-8
                                       // sequence + zero termination 
@@ -1053,7 +1117,8 @@ public:
         m_values[3] = 0;
         m_values[4] = 0;
      }
-     to_iterator(InputIterator b) : m_from(b), m_current(4)
+     to_iterator(InputIterator b, error_handler_type eh)
+       : m_from(b), m_error(eh), m_current(4)
      {
         m_values[0] = 0;
         m_values[1] = 0;
