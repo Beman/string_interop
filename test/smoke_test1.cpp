@@ -70,7 +70,7 @@ int cpp_main(int, char*[])
 
     typedef stdext::cvt::codecvt_utf8<char32_t> cvt_utf8_type;
     typedef shared_codecvt_mgr<cvt_utf8_type> cvt_utf8_policy;
-    typedef generic_narrow<char, default_error_handler, cvt_utf8_policy> narrow_utf8;
+    typedef basic_narrow<char, default_error_handler, cvt_utf8_policy> narrow_utf8;
 
     narrow_utf8 char_utf8_dummy;  // not used; tests default construction compiles.
     // Note that codecvt is constructed only once as long as iterators are constructed

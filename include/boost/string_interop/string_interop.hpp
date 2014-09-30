@@ -69,13 +69,13 @@ namespace string_interop
 //--------------------------------------------------------------------------------------//
 
   template <class charT, class ErrorHandler, class CodecvtMgr>
-    class generic_narrow;
+    class basic_narrow;
   template <class charT, class ErrorHandler>
-    class generic_utf32;
+    class basic_utf32;
     template <class charT, class ErrorHandler>
-    class generic_utf16;
+    class basic_utf16;
     template <class charT, class ErrorHandler>
-    class generic_utf8;
+    class basic_utf8;
 
   class default_error_handler
   {
@@ -133,23 +133,23 @@ namespace string_interop
 
   //  supplied codecs
 
-  typedef generic_narrow<char, default_error_handler, default_codecvt_mgr>  narrow;
-  typedef generic_utf8<char, default_error_handler>                         utf8;
-  typedef generic_utf16<char16_t, default_error_handler>                    utf16;
-  typedef generic_utf32<char32_t, default_error_handler>                    utf32;
+  typedef basic_narrow<char, default_error_handler, default_codecvt_mgr>  narrow;
+  typedef basic_utf8<char, default_error_handler>                         utf8;
+  typedef basic_utf16<char16_t, default_error_handler>                    utf16;
+  typedef basic_utf32<char32_t, default_error_handler>                    utf32;
 
 #ifdef BOOST_WINDOWS_API
   //  Windows wchar_t is always UTF-16
-  typedef generic_utf16<wchar_t, default_error_handler>                     wide;
+  typedef basic_utf16<wchar_t, default_error_handler>                     wide;
 #else
   //  POSIX specifies wchar_t as 32, 16, or 8 bits. We assume the encoding
   //  is UTF-32, UTF-16, or UTF-8 respectively.
 # if WCHAR_MAX == 0xff
-  typedef detail::generic_utf8<wchar_t, default_error_handler>              wide;
+  typedef detail::basic_utf8<wchar_t, default_error_handler>              wide;
 # elif WCHAR_MAX == 0xffff
-  typedef detail::generic_utf16<wchar_t, default_error_handler>             wide;
+  typedef detail::basic_utf16<wchar_t, default_error_handler>             wide;
 # else
-  typedef detail::generic_utf32<wchar_t, default_error_handler>             wide;
+  typedef detail::basic_utf32<wchar_t, default_error_handler>             wide;
 # endif
 #endif
 
@@ -267,16 +267,16 @@ namespace detail
 }  // namespace detail
 
 //--------------------------------------------------------------------------------------//
-//                                   generic_utf32                                      //
+//                                   basic_utf32                                      //
 //--------------------------------------------------------------------------------------//
 
 template <class charT, class ErrorHandler>
-class generic_utf32
+class basic_utf32
 {
   ErrorHandler m_error_handler;
 
 public:
-  typedef generic_utf32<charT, ErrorHandler>  type;
+  typedef basic_utf32<charT, ErrorHandler>  type;
   typedef charT                               value_type;
   typedef ErrorHandler                        error_handler_type;
 
@@ -285,7 +285,7 @@ public:
   template <class InputIterator>
   class to_iterator;
 
-  explicit generic_utf32(ErrorHandler ep = ErrorHandler()) BOOST_NOEXCEPT
+  explicit basic_utf32(ErrorHandler ep = ErrorHandler()) BOOST_NOEXCEPT
     : m_error_handler(ep) {}
 
   //  make iterator functions
@@ -302,7 +302,7 @@ public:
     return to_iterator<InputIterator>(begin, m_error_handler);
   }
 
-  //  generic_utf32::from_iterator  ---------------------------------------------------//
+  //  basic_utf32::from_iterator  ---------------------------------------------------//
 
   template <class InputIterator>
   class from_iterator
@@ -371,7 +371,7 @@ public:
     }
   };
 
-  //  generic_utf32::::to_iterator  ---------------------------------------------------//
+  //  basic_utf32::::to_iterator  ---------------------------------------------------//
   //
   //  Remarks: to_iterator meets the DefaultCtorEndIterator requirements
   //  Requires: InputIterator meets the DefaultCtorEndIterator requirements
@@ -397,16 +397,16 @@ public:
 };
 
 //--------------------------------------------------------------------------------------//
-//                                   generic_utf16                                      //
+//                                   basic_utf16                                      //
 //--------------------------------------------------------------------------------------//
 
 template <class charT, class ErrorHandler>
-class generic_utf16
+class basic_utf16
 {
   ErrorHandler m_error_handler;
 
 public:
-  typedef generic_utf16<charT, ErrorHandler>  type;
+  typedef basic_utf16<charT, ErrorHandler>  type;
   typedef charT                               value_type;
   typedef ErrorHandler                        error_handler_type;
 
@@ -415,7 +415,7 @@ public:
   template <class InputIterator>
   class to_iterator;
 
-  explicit generic_utf16(ErrorHandler ep = ErrorHandler()) BOOST_NOEXCEPT
+  explicit basic_utf16(ErrorHandler ep = ErrorHandler()) BOOST_NOEXCEPT
     : m_error_handler(ep) {}
 
   //  make iterator functions
@@ -432,7 +432,7 @@ public:
     return to_iterator<InputIterator>(begin, m_error_handler);
   }
 
-  //  generic_utf16::from_iterator  ----------------------------------------------------//
+  //  basic_utf16::from_iterator  ----------------------------------------------------//
 
   template <class InputIterator>
   class from_iterator
@@ -549,7 +549,7 @@ public:
      }
   };
 
-  //  generic_utf16::to_iterator  ------------------------------------------------------//
+  //  basic_utf16::to_iterator  ------------------------------------------------------//
   //
   //  Remarks: to_iterator meets the DefaultCtorEndIterator requirements
   //  Requires: InputIterator meets the DefaultCtorEndIterator requirements
@@ -657,11 +657,11 @@ public:
 };
 
 //--------------------------------------------------------------------------------------//
-//                                  generic_narrow                                      //
+//                                  basic_narrow                                      //
 //--------------------------------------------------------------------------------------//
 
 template <class charT, class ErrorHandler, class CodecvtMgr>
-class generic_narrow
+class basic_narrow
 {
   ErrorHandler  m_error_handler;
   CodecvtMgr    m_codecvt_mgr;
@@ -670,7 +670,7 @@ class generic_narrow
                                // codecvt will report failure if it encounters a UTF-32
                                // code-point that needs more buffer space.
 public:
-  typedef generic_narrow<charT, ErrorHandler, CodecvtMgr>   type;
+  typedef basic_narrow<charT, ErrorHandler, CodecvtMgr>   type;
   typedef charT                                             value_type;
   typedef ErrorHandler                                      error_handler_type;
   typedef CodecvtMgr                                        codecvt_mgr_type;
@@ -681,10 +681,10 @@ public:
 
   //  constructors
 
-  explicit generic_narrow(ErrorHandler ep = ErrorHandler(), 
+  explicit basic_narrow(ErrorHandler ep = ErrorHandler(), 
     CodecvtMgr ccvt = CodecvtMgr()) : m_error_handler(ep), m_codecvt_mgr(ccvt)  {}
 
-  explicit generic_narrow(CodecvtMgr ccvt)  // m_error_handler is default constructed 
+  explicit basic_narrow(CodecvtMgr ccvt)  // m_error_handler is default constructed 
     :  m_codecvt_mgr(ccvt) {}
 
   //  make iterators
@@ -700,7 +700,7 @@ public:
     return to_iterator<InputIterator>(begin, m_error_handler, m_codecvt_mgr);
   }
 
-  //  generic_narrow::from_iterator  ---------------------------------------------------//
+  //  basic_narrow::from_iterator  ---------------------------------------------------//
   //
   //  meets the DefaultCtorEndIterator requirements
 
@@ -800,7 +800,7 @@ public:
     }
   };  // from_iterator
 
-  //  generic_narrow::to_iterator  -----------------------------------------------------//
+  //  basic_narrow::to_iterator  -----------------------------------------------------//
   //
   //  Remarks: to_iterator meets the DefaultCtorEndIterator requirements
   //  Requires: InputIterator meets the DefaultCtorEndIterator requirements
@@ -863,7 +863,7 @@ public:
         m_to_count = to_next - &m_values[0];
       }
       BOOST_ASSERT_MSG(m_to_count,
-        "generic_narrow::to_iterator internal implementation error");
+        "basic_narrow::to_iterator internal implementation error");
       return m_values[m_to];
     }
 
@@ -890,11 +890,11 @@ public:
 //--------------------------------------------------------------------------------------//
 
 template <class charT, class ErrorHandler>
-class generic_utf8
+class basic_utf8
 {
   ErrorHandler  m_error_handler;
 public:
-  typedef generic_utf8<charT, ErrorHandler>  type;
+  typedef basic_utf8<charT, ErrorHandler>  type;
   typedef charT                              value_type;
   typedef ErrorHandler                       error_handler_type;
 
@@ -903,7 +903,7 @@ public:
   template <class InputIterator>
   class to_iterator;
 
-  explicit generic_utf8(ErrorHandler ep = ErrorHandler()) BOOST_NOEXCEPT
+  explicit basic_utf8(ErrorHandler ep = ErrorHandler()) BOOST_NOEXCEPT
     : m_error_handler(ep) {}
 
   //  make iterator functions
