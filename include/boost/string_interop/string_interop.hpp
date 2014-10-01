@@ -43,6 +43,7 @@
 #include <boost/type_traits/decay.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
+#include <string>
 #include <stdexcept>
 #include <sstream>
 #include <iterator>
@@ -671,9 +672,9 @@ class basic_narrow
                                // code-point that needs more buffer space.
 public:
   typedef basic_narrow<charT, ErrorHandler, CodecvtMgr>   type;
-  typedef charT                                             value_type;
-  typedef ErrorHandler                                      error_handler_type;
-  typedef CodecvtMgr                                        codecvt_mgr_type;
+  typedef charT                                           value_type;
+  typedef ErrorHandler                                    error_handler_type;
+  typedef CodecvtMgr                                      codecvt_mgr_type;
 
   class from_iterator;
   template <class InputIterator>
@@ -687,12 +688,34 @@ public:
   explicit basic_narrow(CodecvtMgr ccvt)  // m_error_handler is default constructed 
     :  m_codecvt_mgr(ccvt) {}
 
-  //  make iterators
+  //  make from iterators
 
-  from_iterator from(const char* begin)
+  template <class traits = std::char_traits<charT>, class Alloc = std::allocator<charT> >
+  from_iterator from(const std::basic_string<charT, traits, Alloc>& str)
   {
+    std::cout << "basic_string" << std::endl;
+    return from_iterator(str.c_str(), str.c_str()+str.size(), m_error_handler, m_codecvt_mgr);
+  }
+  from_iterator from(const charT* begin)
+  {
+    std::cout << "ntcts" << std::endl;
     return from_iterator(begin, m_error_handler, m_codecvt_mgr);
   }
+  from_iterator from(const charT* begin, std::size_t sz)
+  {
+    std::cout << "begin, size" << std::endl;
+    return from_iterator(begin, m_error_handler, m_codecvt_mgr);
+  }
+  template <class T>
+  // enable_if ensures 2nd argument of 0 is treated as size, not range end
+  typename boost::enable_if<boost::is_same<const charT*, T>, from_iterator>::type
+  from(const charT* begin, T end)
+  {
+    std::cout << "range" << std::endl;
+    return from_iterator(begin, end, m_error_handler, m_codecvt_mgr);
+  }
+
+  //  make to iterators
 
   template <class InputIterator>
   to_iterator<InputIterator> to(InputIterator begin)
@@ -740,7 +763,7 @@ public:
     template <class T>
     from_iterator(const char* begin, T end, error_handler_type ep, codecvt_mgr_type cp,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<const char*, T>, void* >::type = 0)
+      typename boost::enable_if<boost::is_same<const charT*, T>, void* >::type = 0)
       : m_begin(begin), m_end(end), m_error(ep), m_codecvt(cp), m_value(read_pending),
       m_state(std::mbstate_t()), m_default_end(false) {}
 
