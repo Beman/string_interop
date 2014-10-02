@@ -84,12 +84,12 @@ int cpp_main(int, char*[])
     typedef narrow_utf8::from_iterator test_from_iterator;
 
     {
-      // from_iterator::from() tests
+      // narrow from_iterator::from() tests
       test_from_iterator itr1(char_utf8.from(chars));
       test_from_iterator itr2(char_utf8.from(chars.c_str()));
       test_from_iterator itr3(char_utf8.from(chars.c_str(), chars.c_str()+chars.size()));
       test_from_iterator itr4(char_utf8.from(chars.c_str(), 1));
-      test_from_iterator itr5(char_utf8.from(chars.c_str(), 0u));
+      test_from_iterator itr5(char_utf8.from(chars.c_str(), 0));  // ambiguous without enable_if
     }
 
     test_from_iterator begin1(char_utf8.from(chars));

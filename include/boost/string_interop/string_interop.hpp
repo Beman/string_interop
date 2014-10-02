@@ -658,7 +658,7 @@ public:
 };
 
 //--------------------------------------------------------------------------------------//
-//                                  basic_narrow                                      //
+//                                   basic_narrow                                       //
 //--------------------------------------------------------------------------------------//
 
 template <class charT, class ErrorHandler, class CodecvtMgr>
@@ -707,7 +707,7 @@ public:
     return from_iterator(begin, m_error_handler, m_codecvt_mgr);
   }
   template <class T>
-  // enable_if ensures 2nd argument of 0 is treated as size, not range end
+  // enable_if ensures 2nd argument of 0 is unambiguously size, not range end
   typename boost::enable_if<boost::is_same<const charT*, T>, from_iterator>::type
   from(const charT* begin, T end)
   {
