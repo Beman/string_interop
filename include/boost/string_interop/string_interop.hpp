@@ -24,6 +24,9 @@
 
    * Add error handling options
 
+   * Using #include <cvt/utf8> as a kludge until a real default_codecvt_mgr is available
+
+
 */
 
 
@@ -52,6 +55,8 @@
 #include <limits.h>  // for CHAR_BIT, WCHAR_MAX
 #include <cstring>   // for strlen
 
+#include <cvt/utf8>    // TODO: fix this kludge! 
+
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
 #ifndef BOOST_NO_DEFAULTED_FUNCTIONS
@@ -64,6 +69,19 @@ namespace boost
 {
 namespace string_interop
 {
+  namespace detail
+  {
+    template <class T>
+    class is_codec
+    {
+      struct size2 { char a[2]; };
+      template <class U> static size2 sfinae(...);
+      template <class U> static char sfinae(typename U::string_interop_codec_tag*);
+    public:
+      BOOST_STATIC_CONSTANT(bool, value = sizeof(sfinae<T>(0)) == 1);
+    };
+
+  }
 
 //--------------------------------------------------------------------------------------//
 //                                     Synopsis                                         //
@@ -90,15 +108,15 @@ namespace string_interop
 
   typedef std::codecvt<char32_t, char, std::mbstate_t>  codecvt_type;
 
-  class default_codecvt_mgr
-  {
-  public:
-    const codecvt_type* operator()() const BOOST_NOEXCEPT
-    {
-      throw "not implemented yet";
-      return new codecvt_type;
-    }
-  };
+  //class default_codecvt_mgr
+  //{
+  //public:
+  //  const codecvt_type* operator()() const BOOST_NOEXCEPT
+  //  {
+  //    throw "not implemented yet";
+  //    return new codecvt_type;
+  //  }
+  //};
 
   template <class Codecvt>
   class shared_codecvt_mgr
@@ -134,10 +152,11 @@ namespace string_interop
 
   //  supplied codecs
 
-  typedef basic_narrow<char, default_error_handler, default_codecvt_mgr>  narrow;
-  typedef basic_utf8<char, default_error_handler>                         utf8;
-  typedef basic_utf16<char16_t, default_error_handler>                    utf16;
-  typedef basic_utf32<char32_t, default_error_handler>                    utf32;
+  typedef basic_narrow<char, default_error_handler,
+    shared_codecvt_mgr<stdext::cvt::codecvt_utf8<char32_t>> >  narrow; // TODO: fix this kludge! 
+  typedef basic_utf8<char, default_error_handler>              utf8;
+  typedef basic_utf16<char16_t, default_error_handler>         utf16;
+  typedef basic_utf32<char32_t, default_error_handler>         utf32;
 
 #ifdef BOOST_WINDOWS_API
   //  Windows wchar_t is always UTF-16
@@ -277,9 +296,10 @@ class basic_utf32
   ErrorHandler m_error_handler;
 
 public:
+  struct string_interop_codec_tag {};
   typedef basic_utf32<charT, ErrorHandler>  type;
-  typedef charT                               value_type;
-  typedef ErrorHandler                        error_handler_type;
+  typedef charT                             value_type;
+  typedef ErrorHandler                      error_handler_type;
 
   template <class InputIterator>
   class from_iterator;
@@ -407,6 +427,7 @@ class basic_utf16
   ErrorHandler m_error_handler;
 
 public:
+  struct string_interop_codec_tag {};
   typedef basic_utf16<charT, ErrorHandler>  type;
   typedef charT                               value_type;
   typedef ErrorHandler                        error_handler_type;
@@ -671,6 +692,7 @@ class basic_narrow
                                // codecvt will report failure if it encounters a UTF-32
                                // code-point that needs more buffer space.
 public:
+  struct string_interop_codec_tag {};
   typedef basic_narrow<charT, ErrorHandler, CodecvtMgr>   type;
   typedef charT                                           value_type;
   typedef ErrorHandler                                    error_handler_type;
@@ -693,17 +715,17 @@ public:
   template <class traits = std::char_traits<charT>, class Alloc = std::allocator<charT> >
   from_iterator from(const std::basic_string<charT, traits, Alloc>& str)
   {
-    std::cout << "basic_string" << std::endl;
+    std::cout << "from basic_string" << std::endl;
     return from_iterator(str.c_str(), str.c_str()+str.size(), m_error_handler, m_codecvt_mgr);
   }
   from_iterator from(const charT* begin)
   {
-    std::cout << "ntcts" << std::endl;
+    std::cout << "from ntcts" << std::endl;
     return from_iterator(begin, m_error_handler, m_codecvt_mgr);
   }
   from_iterator from(const charT* begin, std::size_t sz)
   {
-    std::cout << "begin, size" << std::endl;
+    std::cout << "from begin, size" << std::endl;
     return from_iterator(begin, m_error_handler, m_codecvt_mgr);
   }
   template <class T>
@@ -711,7 +733,7 @@ public:
   typename boost::enable_if<boost::is_same<const charT*, T>, from_iterator>::type
   from(const charT* begin, T end)
   {
-    std::cout << "range" << std::endl;
+    std::cout << "from range" << std::endl;
     return from_iterator(begin, end, m_error_handler, m_codecvt_mgr);
   }
 
@@ -792,7 +814,7 @@ public:
             in(m_state, m_begin, m_end, m_next, &m_value, &m_value+1, to_next);
         if (result != std::codecvt_base::ok) 
         {
-          m_error("barf");  // TODO
+          m_error("basic_narrow::from_iterator dreference says: barf");  // TODO
         }
         BOOST_ASSERT(m_next && m_begin != m_next);  // result was ok, so verify have made progress
       }
@@ -880,7 +902,7 @@ public:
 
         if (result != std::codecvt_base::ok)
         {
-          m_error("barf");  // TODO
+          m_error("basic_narrow::to_iterator dereference says: barf");  // TODO
         }
         m_to = 0;
         m_to_count = to_next - &m_values[0];
@@ -917,6 +939,7 @@ class basic_utf8
 {
   ErrorHandler  m_error_handler;
 public:
+  struct string_interop_codec_tag {};
   typedef basic_utf8<charT, ErrorHandler>  type;
   typedef charT                              value_type;
   typedef ErrorHandler                       error_handler_type;
@@ -1228,6 +1251,76 @@ public:
     ToCodec tc = ToCodec())
     : to_iterator_type(tc.to(fc.from(begin, sz))) {}
 };
+
+//--------------------------------------------------------------------------------------//
+//                                 to_*string family                                    //
+//--------------------------------------------------------------------------------------//
+
+//  The plan: keep the to_*string family simple and provide basic_to_string for more
+//  generic use cases
+
+
+template <class Source,
+  class FromCodec = select_codec<std::iterator_traits<Source>::value_type>::type,
+  class ToCodec = narrow>
+typename boost::enable_if<detail::is_codec<FromCodec>, std::string>::type
+to_string(const Source& source,
+  FromCodec fc = FromCodec(), ToCodec tc = ToCodec())
+{
+  typedef conversion_iterator<Source, FromCodec, ToCodec> iter_type;
+  return std::string(iter_type(source, fc, tc), iter_type());
+}
+
+template <class T1, class T2,
+  class FromCodec = select_codec<std::iterator_traits<T1>::value_type>::type,
+  class ToCodec = narrow>
+//   TODO? ... disable_if  is_codec<T2>
+std::string to_string(T1 source1, T2 source2,
+  FromCodec fc = FromCodec(), ToCodec tc = ToCodec())
+{
+  typedef conversion_iterator<T1, FromCodec, ToCodec> iter_type;
+  return std::string(iter_type(source1, source2, fc, tc), iter_type());
+}
+
+template <class Source,
+          class FromCodec = select_codec<std::iterator_traits<Source>::value_type>::type,
+          class ToCodec = wide>
+std::wstring to_wstring(const Source& source,
+  FromCodec fc = FromCodec(), ToCodec tc = ToCodec())
+{
+  typedef conversion_iterator<Source, FromCodec, ToCodec> iter_type;
+  return std::wstring(iter_type(source, fc, tc), iter_type());
+}
+
+template <class Source,
+  class FromCodec = select_codec<std::iterator_traits<Source>::value_type>::type,
+  class ToCodec = utf8>
+std::string to_u8string(const Source& source,
+  FromCodec fc = FromCodec(), ToCodec tc = ToCodec())
+{
+  typedef conversion_iterator<Source, FromCodec, ToCodec> iter_type;
+  return std::u16string(iter_type(source, fc, tc), iter_type());
+}
+
+template <class Source,
+  class FromCodec = select_codec<std::iterator_traits<Source>::value_type>::type,
+  class ToCodec = utf16>
+std::u16string to_u16string(const Source& source,
+  FromCodec fc = FromCodec(), ToCodec tc = ToCodec())
+{
+  typedef conversion_iterator<Source, FromCodec, ToCodec> iter_type;
+  return std::u16string(iter_type(source, fc, tc), iter_type());
+}
+
+template <class Source,
+  class FromCodec = select_codec<std::iterator_traits<Source>::value_type>::type,
+  class ToCodec = utf32>
+std::u32string to_u32string(const Source& source,
+  FromCodec fc = FromCodec(), ToCodec tc = ToCodec())
+{
+  typedef conversion_iterator<Source, FromCodec, ToCodec> iter_type;
+  return std::u16string(iter_type(source, fc, tc), iter_type());
+}
 
 
 }  // namespace string_interop

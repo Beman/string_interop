@@ -21,6 +21,8 @@
 #include <cstdint>
 #include <cvt/utf8>
 
+using std::cout;
+using std::endl;
 using std::string;
 using std::wstring;
 using std::u16string;
@@ -68,6 +70,27 @@ int cpp_main(int, char*[])
   {
     std::cout << "narrow..." << std::endl;
 
+    {
+      // narrow from_iterator::from() tests
+      typedef narrow::from_iterator test_from_iterator;
+      narrow my_narrow;
+
+      test_from_iterator itr1(my_narrow.from(chars));
+      test_from_iterator itr2(my_narrow.from(chars.c_str()));
+      test_from_iterator itr3(my_narrow.from(chars.c_str(), chars.c_str()+chars.size()));
+      test_from_iterator itr4(my_narrow.from(chars.c_str(), 1));
+      test_from_iterator itr5(my_narrow.from(chars.c_str(), 0));  // ambiguous without enable_if
+
+      test_from_iterator itr1end;
+      BOOST_TEST(itr1 != itr1end);
+      BOOST_TEST(*itr1 == char32_t(0x1F60A));
+      ++itr1;
+      BOOST_TEST(itr1 != itr1end);
+      BOOST_TEST(*itr1 == char32_t(0x1F60E));
+      ++itr1;
+      BOOST_TEST(itr1 == itr1end);
+    }
+
     typedef stdext::cvt::codecvt_utf8<char32_t> cvt_utf8_type;
     typedef shared_codecvt_mgr<cvt_utf8_type> cvt_utf8_policy;
     typedef basic_narrow<char, default_error_handler, cvt_utf8_policy> narrow_utf8;
@@ -93,7 +116,7 @@ int cpp_main(int, char*[])
     }
 
     test_from_iterator begin1(char_utf8.from(chars));
-                                                         
+
     test_from_iterator begin1end;
     BOOST_TEST(begin1 != begin1end);
     BOOST_TEST(*begin1 == char32_t(0x1F60A));
@@ -170,24 +193,35 @@ int cpp_main(int, char*[])
     ++iter3;
     BOOST_TEST(iter3 == cvt_type());
 
+   }
 
-      //typedef narrow::from_iterator<string::const_iterator> test_string_from_iterator;
-    //test_string_from_iterator begin4(chars.begin(), chars.begin());
-    //test_string_from_iterator begin4end;
-    //BOOST_TEST(begin4 == begin4end); // will assert in VC++ <xstring> debug build
-    //                                 // if invalid assumptions made about default
-    //                                 // constructed iterator
 
-    //BOOST_STATIC_ASSERT_MSG((boost::is_same<default_codec::codec<char>::type,
-    //  narrow>::value), "auto detected the wrong type");
-
-    //typedef conversion_iterator<narrow, narrow, const char*>
-    //  conversion_iterator_example;
-    //conversion_iterator_example cvn_iterator;
-
-    //string source("foo");
-    //string result = make_string<narrow, narrow, string>(source);
-    //BOOST_TEST_EQ(source, result);
+  //  to_*string() family
+  {
+    cout << "  testing to_*string() family..." << endl;
+    string s;
+    s = to_string(chars);
+    BOOST_TEST(s == u8s);
+    s.clear();
+    s = to_string(chars.c_str());
+    BOOST_TEST(s == u8s);
+    s.clear();
+    s = to_string(chars.c_str(), 1);
+    BOOST_TEST(s == u8s);
+    s.clear();
+    s = to_string(chars.c_str(), 0);
+    BOOST_TEST(s == u8s);
+    s.clear();
+    s = to_string(chars.c_str(), chars.c_str()+chars.size());
+    BOOST_TEST(s == u8s);
+    //string s8 = to_u8string(chars);
+    //BOOST_TEST(s8 == u8s);
+    //u16string s16 = to_u16string(chars);
+    //BOOST_TEST(s16 == u16s);
+    //u32string s32 = to_u32string(chars);
+    //BOOST_TEST(s32 == u32s);
+    //wstring ws = to_wstring(chars);
+    //BOOST_TEST(ws == wchars);
   }
 
   ////  wide
