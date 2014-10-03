@@ -200,8 +200,8 @@ namespace string_interop
 //  };
 
   //  conversion_iterator
-  template <class ToCodec, class FromCodec, class InputIterator>
-    class conversion_iterator;
+  template <class FromCodec, class ToCodec>
+  class conversion_iterator;
 
 //---------------------------------  Requirements  -------------------------------------//
 //
@@ -1223,10 +1223,10 @@ public:
 //--------------------------------------------------------------------------------------//
 
 //  A conversion_iterator composes a ToCodec's to_iterator and a FromCodec's from_iterator
-//  into a single iterator that adapts an InputIterator to FromCodec's value_type to 
+//  into a single iterator that adapts an iterator to FromCodec's value_type to 
 //  behave as an iterator to the ToCodec's value_type.
 
-template <class InputIterator, class FromCodec, class ToCodec>
+template <class FromCodec, class ToCodec>
 class conversion_iterator
   : public ToCodec::template to_iterator<typename FromCodec::from_iterator>
 {
@@ -1236,20 +1236,15 @@ public:
 
   conversion_iterator() BOOST_STR_IOP_DEFAULTED
 
-  conversion_iterator(InputIterator begin, FromCodec fc = FromCodec(),
+  template<class Source>
+  conversion_iterator(const Source& source, FromCodec fc = FromCodec(),
     ToCodec tc = ToCodec())
-    : to_iterator_type(tc.to(fc.from(begin))) {}
+    : to_iterator_type(tc.to(fc.from(source))) {}
 
-  template <class U>
-  conversion_iterator(InputIterator begin, U end, FromCodec fc = FromCodec(),
-    ToCodec tc = ToCodec(),
-    // enable_if ensures 2nd argument of 0 is treated as size, not range end
-    typename boost::enable_if<boost::is_same<InputIterator, U>, void* >::type = 0)
-    : to_iterator_type(tc.to(fc.from(begin, end))) {}
-
-  conversion_iterator(InputIterator begin, std::size_t sz, FromCodec fc = FromCodec(),
+  template<class Iterator, class U>
+  conversion_iterator(Iterator first, U source2, FromCodec fc = FromCodec(),
     ToCodec tc = ToCodec())
-    : to_iterator_type(tc.to(fc.from(begin, sz))) {}
+    : to_iterator_type(tc.to(fc.from(first, source2))) {}
 };
 
 //--------------------------------------------------------------------------------------//
@@ -1267,7 +1262,7 @@ typename boost::enable_if<detail::is_codec<FromCodec>, std::string>::type
 to_string(const Source& source,
   FromCodec fc = FromCodec(), ToCodec tc = ToCodec())
 {
-  typedef conversion_iterator<Source, FromCodec, ToCodec> iter_type;
+  typedef conversion_iterator<FromCodec, ToCodec> iter_type;
   return std::string(iter_type(source, fc, tc), iter_type());
 }
 
@@ -1278,7 +1273,7 @@ template <class T1, class T2,
 std::string to_string(T1 source1, T2 source2,
   FromCodec fc = FromCodec(), ToCodec tc = ToCodec())
 {
-  typedef conversion_iterator<T1, FromCodec, ToCodec> iter_type;
+  typedef conversion_iterator<FromCodec, ToCodec> iter_type;
   return std::string(iter_type(source1, source2, fc, tc), iter_type());
 }
 

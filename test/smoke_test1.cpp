@@ -171,7 +171,7 @@ int cpp_main(int, char*[])
 
     //  conversion_iterator tests
 
-    typedef conversion_iterator<const char*, narrow_utf8, narrow_utf8> cvt_type;
+    typedef conversion_iterator<narrow_utf8, narrow_utf8> cvt_type;
 
     cvt_type iter3(chars.c_str());
 
