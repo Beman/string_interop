@@ -1,4 +1,4 @@
-//  string_interop/smoke_test2.cpp  ----------------------------------------------------------//
+//  string_interop/smoke_test1.cpp  ----------------------------------------------------//
 
 //  Copyright Beman Dawes 2012
 
@@ -8,7 +8,7 @@
 #include <boost/config/warning_disable.hpp>  // must precede other headers
 
 #include <iostream>
-#include <boost/string_interop/string_interop.hpp>
+#include "../include/boost/string_interop/string_interop.hpp"
 #include <cstring>  // for memcmp
 #include <boost/static_assert.hpp>
 #include <boost/detail/lightweight_test.hpp>
@@ -108,6 +108,7 @@ int cpp_main(int, char*[])
 
     {
       // narrow from_iterator::from() tests
+      cout << "    narrow from_iterator::from() constructor tests" << endl;
       test_from_iterator itr1(char_utf8.from(chars));
       test_from_iterator itr2(char_utf8.from(chars.c_str()));
       test_from_iterator itr3(char_utf8.from(chars.c_str(), chars.c_str()+chars.size()));
@@ -115,6 +116,17 @@ int cpp_main(int, char*[])
       test_from_iterator itr5(char_utf8.from(chars.c_str(), 0));  // ambiguous without enable_if
     }
 
+    {
+      // utf32 from_iterator::from() tests
+      cout << "    utf32 from_iterator::from() constructor tests" << endl;
+      utf32::from_iterator itr1(utf32().from(u32s));
+      utf32::from_iterator itr2(utf32().from(u32s.c_str()));
+      utf32::from_iterator itr3(utf32().from(u32s.c_str(), u32s.c_str()+u32s.size()));
+      utf32::from_iterator itr4(utf32().from(u32s.c_str(), 1));
+      utf32::from_iterator itr5(utf32().from(u32s.c_str(), 0));  // ambiguous without enable_if
+    }
+
+    cout << "  narrow from_iterator::from() use tests" << endl;
     test_from_iterator begin1(char_utf8.from(chars));
 
     test_from_iterator begin1end;

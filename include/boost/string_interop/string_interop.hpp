@@ -287,11 +287,66 @@ namespace detail
 }  // namespace detail
 
 //--------------------------------------------------------------------------------------//
-//                                   basic_utf32                                      //
+//  Curiously recurring template pattern (CRTP) base class supplying the from() and     //
+//  to() make iterator functions common to basic_utf32, basic_utf16, and basic_utf8.    //
+//--------------------------------------------------------------------------------------//
+
+template <class Derived>
+class basic_make_iterators
+{
+public:
+  template <class traits = std::char_traits<Derived::charT>,
+    class Alloc = std::allocator<Derived::charT>,
+    class charT = Derived::charT, class FromIterator = Derived::from_iterator>
+  FromIterator from(const std::basic_string<charT, traits, Alloc>& str)
+  {
+    std::cout << "from basic_string" << std::endl;
+    Derived const& self = static_cast<Derived const&>(*this);
+    return FromIterator(str.c_str(), str.c_str()+str.size(), self.error_handler());
+  }
+    template <class charT = Derived::charT, class FromIterator = Derived::from_iterator>
+  FromIterator from(const charT* begin)
+  {
+    std::cout << "from ntcts" << std::endl;
+    Derived const& self = static_cast<Derived const&>(*this);
+    return FromIterator(begin, self.error_handler());
+  }
+  template <class charT = Derived::charT, class FromIterator = Derived::from_iterator>
+  FromIterator from(const charT* begin, std::size_t sz)
+  {
+    std::cout << "from begin, size" << std::endl;
+    Derived const& self = static_cast<Derived const&>(*this);
+    return FromIterator(begin, self.error_handler());
+  }
+  template <class charT = Derived::charT,
+    class T, class FromIterator = Derived::from_iterator>
+  // enable_if ensures 2nd argument of 0 is unambiguously size, not range end
+  typename boost::enable_if<boost::is_same<const charT*, T>, FromIterator>::type
+    from(const charT* begin, T end)
+  {
+    std::cout << "from range" << std::endl;
+    Derived const& self = static_cast<Derived const&>(*this);
+    return FromIterator(begin, end, self.error_handler());
+  }
+
+};
+
+  ////  make to iterators
+
+  //template <class InputIterator>
+  //typename Derived::to_iterator<InputIterator> to(InputIterator begin)
+  //{
+  //  return to_iterator<InputIterator>(begin, m_error_handler);
+  //}
+
+
+//--------------------------------------------------------------------------------------//
+//                                    basic_utf32                                       //
 //--------------------------------------------------------------------------------------//
 
 template <class charT, class ErrorHandler>
 class basic_utf32
+  : public basic_make_iterators<basic_utf32<charT, ErrorHandler>/*, charT, ErrorHandler*/>
 {
   ErrorHandler m_error_handler;
 
@@ -301,7 +356,6 @@ public:
   typedef charT                             value_type;
   typedef ErrorHandler                      error_handler_type;
 
-  template <class InputIterator>
   class from_iterator;
   template <class InputIterator>
   class to_iterator;
@@ -309,13 +363,15 @@ public:
   explicit basic_utf32(ErrorHandler ep = ErrorHandler()) BOOST_NOEXCEPT
     : m_error_handler(ep) {}
 
-  //  make iterator functions
+  ErrorHandler error_handler() const {return m_error_handler;}
 
-  template <class InputIterator>
-  from_iterator<InputIterator> from(InputIterator begin)
-  {
-    return from_iterator(begin, m_error_handler);
-  }
+  ////  make iterator functions
+
+  //template <class InputIterator>
+  //from_iterator<InputIterator> from(InputIterator begin)
+  //{
+  //  return from_iterator(begin, m_error_handler);
+  //}
 
   template <class InputIterator>
   to_iterator<InputIterator> to(InputIterator begin)
@@ -325,17 +381,16 @@ public:
 
   //  basic_utf32::from_iterator  ---------------------------------------------------//
 
-  template <class InputIterator>
   class from_iterator
-    : public boost::iterator_facade<from_iterator<InputIterator>,
+    : public boost::iterator_facade<from_iterator,
       value_type, std::input_iterator_tag, const value_type>
   {
-    BOOST_STATIC_ASSERT_MSG((boost::is_same<typename std::iterator_traits<InputIterator>::value_type,
-      value_type>::value),
-      "InputIterator value_type must be same as codec value_type");
+    //BOOST_STATIC_ASSERT_MSG((boost::is_same<typename std::iterator_traits<InputIterator>::value_type,
+    //  value_type>::value),
+    //  "InputIterator value_type must be same as codec value_type");
 
-    InputIterator       m_begin;
-    InputIterator       m_end;
+    const value_type*   m_begin;
+    const value_type*   m_end;
     error_handler_type  m_error;
     bool                m_default_end;
 
@@ -345,24 +400,24 @@ public:
     from_iterator() : m_default_end(true) {}
 
     // ntcts
-    from_iterator(InputIterator begin, error_handler_type eh)
+    from_iterator(const value_type* begin, error_handler_type eh)
       : m_begin(begin), m_end(begin), m_error(eh), m_default_end(false)
     {
       for (;
-           *m_end != typename std::iterator_traits<InputIterator>::value_type();
+           *m_end != value_type();
            ++m_end) {}
     }
 
     // range
     template <class T>
-    from_iterator(InputIterator begin, T end, error_handler_type eh,
+    from_iterator(const value_type* begin, T end, error_handler_type eh,
       // enable_if ensures 2nd argument of 0 is treated as size, not range end
-      typename boost::enable_if<boost::is_same<InputIterator, T>, void* >::type =0)
+      typename boost::enable_if<boost::is_same<const value_type*, T>, void* >::type =0)
       : m_begin(begin), m_end(end), m_error(eh), m_default_end(false)
     {}
 
     // sized
-    from_iterator(InputIterator begin, std::size_t sz, error_handler_type eh)
+    from_iterator(const value_type* begin, std::size_t sz, error_handler_type eh)
       : m_begin(begin), m_end(begin), m_error(eh), m_default_end(false)
     {
       std::advance(m_end, sz);
